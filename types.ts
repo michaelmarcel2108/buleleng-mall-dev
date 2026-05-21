@@ -7,6 +7,8 @@ export interface Business {
 export interface Product {
   id: string;
   name: string;
+  slug: string;
+  image_url: string;
   shopee_id: string;
   shopee_url: string;
 }
