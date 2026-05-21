@@ -1,16 +1,16 @@
+import { Product } from "@/types";
+
 // Mendefinisikan tipe data yang akan diterima dari luar
 interface ProductCardProps {
-  id?: string;
-  namaBarang?: string;
-  linkShopee?: string;
+  product: Product;
 }
 
-const ProductCard = ({ namaBarang, linkShopee }: ProductCardProps) => {
+const ProductCard = ({ product }: ProductCardProps) => {
   return (
     // Tag anchor untuk redirect jika linkShopee tersedia
-    <a 
-      href={linkShopee || "#"} 
-      target={linkShopee ? "_blank" : "_self"} 
+    <a
+      href={product.shopee_url || "#"}
+      target={product.shopee_url ? "_blank" : "_self"}
       rel="noopener noreferrer"
       className="w-full block group cursor-pointer hover:opacity-90 transition-opacity"
     >
@@ -18,14 +18,14 @@ const ProductCard = ({ namaBarang, linkShopee }: ProductCardProps) => {
         {/* Tambahan efek hover sederhana pada gambar kosong */}
         <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition"></div>
       </div>
-      
+
       {/* Teks dinamis dari database */}
       <p className="font-display text-xl font-medium mt-2 line-clamp-1">
-        {namaBarang || "Nama Produk"}
+        {product.name || "Nama Produk"}
       </p>
-      
+
       {/* Harga statis sementara (akan diganti dari API Shopee nantinya) */}
-      <p className="font-semibold text-orange-600">Rp --</p>
+      <p className="font-semibold">Rp800.000</p>
       <p className="text-foreground/75 text-sm truncate">Toko UMKM</p>
     </a>
   );

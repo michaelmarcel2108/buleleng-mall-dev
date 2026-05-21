@@ -2,26 +2,18 @@ import BrandCard from "@/components/BrandCard";
 import ProductCard from "@/components/ProductCard";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
-
-interface UMKM {
-  id: string;
-  nama_umkm: string;
-  deskripsi: string;
-}
-
-interface Barang {
-  id: string;
-  nama_barang_internal: string;
-  link_shopee: string;
-}
+import { Business } from "./../types";
 
 export default async function Home() {
   // Ambil data UMKM dan Barang
-  const { data: rawUmkmList } = await supabase.from("umkm").select("*").limit(4);
-  const { data: rawBarangList } = await supabase.from("barang").select("*").limit(4);
-
-  const umkmList = rawUmkmList as UMKM[] | null;
-  const barangList = rawBarangList as Barang[] | null;
+  const { data: businesses } = await supabase
+    .from("businesses")
+    .select("*")
+    .limit(4);
+  const { data: products } = await supabase
+    .from("products")
+    .select("*")
+    .limit(4);
 
   return (
     <main>
@@ -55,12 +47,8 @@ export default async function Home() {
 
         <div className="w-full grid grid-cols-2 md:grid-cols-4 gap-4">
           {/* Memanggil ProductCard dan mengirim (passing) data dari Supabase */}
-          {barangList?.map((barang) => (
-            <ProductCard 
-              key={barang.id} 
-              namaBarang={barang.nama_barang_internal} 
-              linkShopee={barang.link_shopee} 
-            />
+          {products?.map((product) => (
+            <ProductCard key={product.id} product={product} />
           ))}
         </div>
       </section>
@@ -72,12 +60,8 @@ export default async function Home() {
 
         <div className="w-full grid grid-cols-2 md:grid-cols-4 gap-4">
           {/* Memanggil BrandCard dan mengirim (passing) data dari Supabase */}
-          {umkmList?.map((umkm) => (
-            <BrandCard 
-              key={umkm.id} 
-              namaUmkm={umkm.nama_umkm} 
-              deskripsi={umkm.deskripsi} 
-            />
+          {businesses?.map((business) => (
+            <BrandCard key={business.id} business={business} />
           ))}
         </div>
       </section>
