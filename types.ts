@@ -4,13 +4,20 @@ export interface Business {
   desc: string;
 }
 
+export interface Category {
+  id: string | number;
+  name: string;
+  color: string;
+}
+
 export interface Product {
   id: string;
-  name: string;
   slug: string;
+  name: string;
   image_url: string;
-  shopee_id: string;
-  shopee_url: string;
+
+  // Change this from an array (Category[]) to a single object:
+  categories: Category | null;
 }
 export interface category {
   id: string;

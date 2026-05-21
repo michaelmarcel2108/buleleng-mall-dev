@@ -8,7 +8,7 @@ interface BrandCardProps {
 const BrandCard = ({ business }: BrandCardProps) => {
   return (
     <div className="">
-      <div className="w-full flex flex-col gap-1 outline outline-foreground rounded-lg p-4 hover:bg-gray-50 transition cursor-pointer">
+      <div className="w-full flex flex-col gap-1 outline outline-foreground rounded-lg p-2 md:p-4 hover:bg-gray-50 transition cursor-pointer">
         <div className="grid grid-cols-2 aspect-square gap-2 rounded-md overflow-hidden">
           <div className="w-full aspect-square bg-gray-500"></div>
           <div className="w-full aspect-square bg-gray-500"></div>

@@ -14,13 +14,20 @@ const ProductDetailPage = async ({ params }: ProductDetailProps) => {
 
   const { data } = await supabase
     .from("products")
-    .select("*")
+    .select(
+      `
+      id,
+      slug,
+      name,
+      image_url,
+      categories:category_id (id, name, color)
+      `,
+    )
     .eq("slug", slug)
     .single();
 
-  const product: Product = data;
-
-  if (!product) return <p>Memuat...</p>;
+  if (!data) return <p>Memuat...</p>;
+  const product = data as unknown as Product;
 
   return (
     <main>
@@ -34,20 +41,26 @@ const ProductDetailPage = async ({ params }: ProductDetailProps) => {
         />
         <div className="flex flex-col gap-4 items-start bg-primary p-8 md:justify-end outline outline-foreground">
           <span className="flex flex-col items-start gap-2">
-            <h2 className="bg-gray-300 text-xl px-2 p-1 font-bold">CATEGORY</h2>
+            <h2
+              style={{ backgroundColor: product.categories?.color }}
+              className="text-xl px-2 p-1 font-bold"
+            >
+              {product.categories?.name}
+            </h2>
+
             <h1 className="font-display text-2xl md:text-3xl">
               {product.name}
             </h1>
             <p className="md:text-xl">Rp800.000</p>
           </span>
           <Link
-            href={product.shopee_url || "#"}
+            href={"#"}
             className="w-full bg-blue-900 px-8 py-2 text-background text-center rounded-full hover:bg-background hover:text-foreground hover:outline-1 outline-foreground transition-all md:self-start md:text-lg"
           >
             Lihat di Shopee
           </Link>
           <Link
-            href={product.shopee_url || "#"}
+            href={"#"}
             className="w-full bg-background outline px-8 py-2 text-foreground text-center rounded-full hover:bg-primary hover:text-foreground hover:outline-1 outline-foreground transition-all md:self-start md:text-lg"
           >
             Hubungi Penjual

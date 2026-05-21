@@ -2,7 +2,6 @@ import BrandCard from "@/components/BrandCard";
 import ProductCard from "@/components/ProductCard";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
-import { Business } from "./../types";
 
 export default async function Home() {
   // Ambil data UMKM dan Barang
@@ -18,13 +17,13 @@ export default async function Home() {
   return (
     <main>
       <section className="flex flex-col gap-4 bg-primary py-8 md:py-16">
-        <div className="flex flex-row gap-4 overflow-x-scroll scrollbar-none pl-4 md:pl-16">
+        <div className="flex flex-row gap-4 overflow-x-scroll scrollbar-none pl-8 md:pl-16">
           <div className="h-48 aspect-video bg-gray-500 rounded-lg md:h-64"></div>
           <div className="h-48 aspect-video bg-gray-500 rounded-lg md:h-64"></div>
           <div className="h-48 aspect-video bg-gray-500 rounded-lg md:h-64"></div>
         </div>
 
-        <div className="flex flex-col gap-4 px-4 md:px-16">
+        <div className="flex flex-col gap-4 px-8 md:px-16">
           <h1 className="font-display text-4xl md:text-5xl">
             Produk lokal Buleleng <br /> dengan kualitas{" "}
             <br className="md:hidden" /> terbaik.
@@ -40,8 +39,8 @@ export default async function Home() {
         </div>
       </section>
 
-      <section className="flex flex-col items-center gap-4 px-4 py-8 md:p-16">
-        <h2 className="bg-primary text-2xl px-2 p-1 font-bold rounded-lg outline-2 outline-foreground uppercase">
+      <section className="flex flex-col items-center gap-4 p-8 md:p-16">
+        <h2 className="bg-primary text-xl md:text-2xl px-2 p-1 font-bold outline-2 outline-foreground uppercase">
           Produk Terlaris
         </h2>
 
@@ -53,8 +52,8 @@ export default async function Home() {
         </div>
       </section>
 
-      <section className="flex flex-col items-center gap-4 px-4 py-8 md:p-16">
-        <h2 className="bg-primary text-2xl px-2 p-1 font-bold rounded-lg outline-2 outline-foreground uppercase">
+      <section className="flex flex-col items-center gap-4 p-8 md:p-16">
+        <h2 className="bg-primary text-xl md:text-2xl px-2 p-1 font-bold outline-2 outline-foreground uppercase">
           Jelajahi Brand Lokal
         </h2>
 
