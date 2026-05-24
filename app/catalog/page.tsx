@@ -1,40 +1,97 @@
+import { supabase } from "@/lib/supabase";
 import ProductCard from "@/components/ProductCard";
+import Link from "next/link";
 
-const CatalogPage = () => {
+interface CatalogPageProps {
+  searchParams: Promise<{ q?: string; category?: string }>;
+}
+
+export default async function CatalogPage({ searchParams }: CatalogPageProps) {
+  const resolvedSearchParams = await searchParams;
+  const queryText = resolvedSearchParams.q || "";
+  const categoryParam = resolvedSearchParams.category || "";
+
+  let productQuery = supabase
+    .from("products")
+    .select("*, businesses(name)");
+
+  if (queryText) {
+    productQuery = productQuery.ilike("name", `%${queryText}%`);
+  }
+
+  if (categoryParam) {
+    const { data: categoryData } = await supabase
+      .from("categories")
+      .select("id")
+      .eq("slug", categoryParam)
+      .maybeSingle();
+
+    if (categoryData) {
+      productQuery = productQuery.eq("category_id", categoryData.id);
+    }
+  }
+
+  const { data: products } = await productQuery;
+  const { data: allCategories } = await supabase.from("categories").select("*");
+
   return (
-    <main>
-      <section className="bg-primary px-4 md:px-16 py-16 flex flex-col gap-4 items-start">
-        <h2 className="bg-gray-300 text-2xl px-2 p-1 font-bold">CATALOG</h2>
-        <p className="max-w-[35ch]">
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-          eiusmod tempor incididunt ut labore et dolore magna aliqua.
+    <main className="w-full min-h-screen p-8 md:p-16 flex flex-col gap-8 bg-gray-50/50">
+      <div className="flex flex-col gap-2">
+        <h1 className="font-display text-3xl md:text-4xl font-bold text-blue-900">
+          {queryText ? `Hasil Pencarian: "${queryText}"` : "Katalog Produk"}
+        </h1>
+        <p className="text-gray-500 text-sm md:text-base">
+          Menampilkan produk-produk pilihan dari UMKM lokal Buleleng
         </p>
-        <div className="flex flex-row gap-4">
-          <p className="font-display bg-gray-300 text-lg px-2 p-1 font-bold ">
-            Kategori
-          </p>
-          <p className="font-display bg-gray-300 text-lg px-2 p-1 font-bold ">
-            Kategori
-          </p>
-          <p className="font-display bg-gray-300 text-lg px-2 p-1 font-bold ">
-            Kategori
-          </p>
-        </div>
-      </section>
-      <section className="flex flex-col items-center gap-4 px-4 py-8 md:p-16">
-        <h2 className="bg-primary text-2xl px-2 p-1 font-bold rounded-lg outline-2 outline-foreground">
-          PRODUK TERLARIS
-        </h2>
+      </div>
 
-        <div className="w-full grid grid-cols-2 md:grid-cols-4 gap-4">
-          {/* <ProductCard />
-          <ProductCard />
-          <ProductCard />
-          <ProductCard /> */}
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-row flex-wrap gap-2">
+          <Link
+            href="/catalog"
+            className={`px-4 py-2 rounded-full text-xs font-medium border transition-all duration-300 ${
+              !categoryParam
+                ? "bg-blue-900 text-white border-blue-900 shadow-md"
+                : "bg-white text-gray-600 border-gray-200 hover:bg-blue-900 hover:text-white hover:border-blue-900 hover:shadow-md cursor-pointer"
+            }`}
+          >
+            Semua Produk
+          </Link>
+          {allCategories?.map((cat) => {
+            const isSelected = categoryParam === cat.slug;
+            return (
+              <Link
+                key={cat.id}
+                href={`/catalog?category=${cat.slug}`}
+                className={`px-4 py-2 rounded-full text-xs font-medium border transition-all duration-300 ${
+                  isSelected
+                    ? "bg-blue-900 text-white border-blue-900 shadow-md"
+                    : "bg-white text-gray-600 border-gray-200 hover:bg-blue-900 hover:text-white hover:border-blue-900 hover:shadow-md cursor-pointer"
+                }`}
+              >
+                {cat.name}
+              </Link>
+            );
+          })}
         </div>
-      </section>
+      </div>
+
+      {products && products.length > 0 ? (
+        <div className="w-full grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+          {products.map((product) => (
+            <ProductCard key={product.id} product={product} />
+          ))}
+        </div>
+      ) : (
+        <div className="w-full text-center py-16 bg-white rounded-xl border border-gray-100 shadow-sm flex flex-col items-center justify-center gap-2">
+          <p className="text-gray-500 font-medium">
+            Produk yang kamu cari tidak ditemukan.
+          </p>
+          <Link href="/catalog" className="text-sm text-blue-900 font-bold hover:underline">
+            Reset Filter
+          </Link>
+        </div>
+      )}
     </main>
   );
-};
-
-export default CatalogPage;
+}

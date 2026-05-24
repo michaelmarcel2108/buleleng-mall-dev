@@ -1,37 +1,77 @@
-import { Product } from "@/types";
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 
-// Mendefinisikan tipe data yang akan diterima dari luar
 interface ProductCardProps {
-  product: Product;
+  product: {
+    id: string;
+    name: string;
+    price?: number;
+    image_url: string | null;
+    slug: string;
+    businesses?: { name: string } | null;
+  };
 }
 
 const ProductCard = ({ product }: ProductCardProps) => {
+  
+  // Fungsi untuk menyimpan riwayat klik ke Local Storage
+  const handleSaveToRecent = () => {
+    const existing = localStorage.getItem("recent_products");
+    let recentList: any[] = existing ? JSON.parse(existing) : [];
+
+    // Hapus produk dari daftar jika sudah ada (mencegah duplikat)
+    recentList = recentList.filter((item) => item.id !== product.id);
+
+    // Masukkan produk yang baru diklik ke urutan paling depan
+    recentList.unshift(product);
+
+    // Batasi maksimal menyimpan 8 produk agar memori tidak penuh
+    if (recentList.length > 8) {
+      recentList.pop();
+    }
+
+    localStorage.setItem("recent_products", JSON.stringify(recentList));
+  };
+
   return (
-    // Tag anchor untuk redirect jika linkShopee tersedia
     <Link
       href={`/product/${product.slug}`}
-      target={product.shopee_url ? "_blank" : "_self"}
-      rel="noopener noreferrer"
-      className="w-full block group cursor-pointer hover:opacity-90 transition-opacity"
+      onClick={handleSaveToRecent}
+      className="w-full flex flex-col gap-2 rounded-lg p-2 md:p-4 hover:bg-gray-100 transition-colors cursor-pointer bg-white outline-none border-none ring-0 shadow-sm block"
     >
-      <Image
-        src={product.image_url}
-        width={320}
-        height={320}
-        alt="product image"
-        className="w-full aspect-square rounded-lg overflow-hidden relative"
-      />
-
-      {/* Teks dinamis dari database */}
-      <p className="font-display text-xl font-medium mt-2 line-clamp-1">
-        {product.name || "Nama Produk"}
-      </p>
-
-      {/* Harga statis sementara (akan diganti dari API Shopee nantinya) */}
-      <p className="font-semibold">Rp800.000</p>
-      <p className="text-foreground/75 text-sm truncate">Toko UMKM</p>
+      <div className="w-full aspect-square bg-gray-200 relative rounded-md overflow-hidden">
+        {product.image_url ? (
+          <Image
+            src={product.image_url}
+            alt={product.name}
+            fill
+            className="object-cover"
+            sizes="(max-width: 768px) 100vw, 50vw"
+          />
+        ) : (
+          <div className="w-full h-full bg-gray-300 flex items-center justify-center text-xs text-gray-500">
+            No Image
+          </div>
+        )}
+      </div>
+      
+      <div className="flex flex-col">
+        <p className="font-display text-lg font-medium line-clamp-1">
+          {product.name}
+        </p>
+        
+        {product.businesses && (
+          <p className="text-sm text-gray-500 line-clamp-1">
+            {product.businesses.name}
+          </p>
+        )}
+        
+        <p className="font-bold mt-1 text-blue-900">
+          Rp{product.price ? product.price.toLocaleString("id-ID") : "0"}
+        </p>
+      </div>
     </Link>
   );
 };
