@@ -37,7 +37,8 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
   return (
     <main className="w-full min-h-screen p-8 md:p-16 flex flex-col gap-8 bg-gray-50/50">
       <div className="flex flex-col gap-2">
-        <h1 className="font-display text-3xl md:text-4xl font-bold text-blue-900">
+        {/* Class text-blue-900 diubah menjadi text-foreground */}
+        <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground">
           {queryText ? `Hasil Pencarian: "${queryText}"` : "Katalog Produk"}
         </h1>
         <p className="text-gray-500 text-sm md:text-base">
@@ -51,12 +52,14 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
             href="/catalog"
             className={`px-4 py-2 rounded-full text-xs font-medium border transition-all duration-300 ${
               !categoryParam
-                ? "bg-blue-900 text-white border-blue-900 shadow-md"
-                : "bg-white text-gray-600 border-gray-200 hover:bg-blue-900 hover:text-white hover:border-blue-900 hover:shadow-md cursor-pointer"
+                ? "bg-[#274a6a] text-white border-[#274a6a] shadow-md"
+                : "bg-[#274a6a]/10 text-[#274a6a] border-transparent hover:bg-[#274a6a] hover:text-white cursor-pointer" 
+                /* ↑ Menggunakan biru tua transparan (bg-[#274a6a]/10) saat tidak dipilih */
             }`}
           >
             Semua Produk
           </Link>
+          
           {allCategories?.map((cat) => {
             const isSelected = categoryParam === cat.slug;
             return (
@@ -65,8 +68,9 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
                 href={`/catalog?category=${cat.slug}`}
                 className={`px-4 py-2 rounded-full text-xs font-medium border transition-all duration-300 ${
                   isSelected
-                    ? "bg-blue-900 text-white border-blue-900 shadow-md"
-                    : "bg-white text-gray-600 border-gray-200 hover:bg-blue-900 hover:text-white hover:border-blue-900 hover:shadow-md cursor-pointer"
+                    ? "bg-[#274a6a] text-white border-[#274a6a] shadow-md"
+                    : "bg-[#274a6a]/10 text-[#274a6a] border-transparent hover:bg-[#274a6a] hover:text-white cursor-pointer"
+                    /* ↑ Samakan di sini juga untuk list kategorinya */
                 }`}
               >
                 {cat.name}

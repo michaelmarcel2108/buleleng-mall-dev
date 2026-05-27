@@ -17,7 +17,7 @@ export default function Navbar() {
 
   return (
     <header className="w-full bg-white shadow-sm px-4 md:px-16 py-4 flex flex-row items-center justify-between gap-4 sticky top-0 z-50">
-      <Link href="/" className="font-display text-xl md:text-2xl font-bold tracking-tight text-blue-900 flex-shrink-0">
+      <Link href="/" className="font-display text-xl md:text-2xl font-bold tracking-tight text-[#274a6a] flex-shrink-0">
         Buleleng Mall
       </Link>
 
@@ -43,7 +43,7 @@ export default function Navbar() {
       </form>
 
       <div className="flex-shrink-0">
-        <button className="bg-primary text-foreground px-4 py-2 rounded-full text-sm font-bold hover:opacity-90 transition-all flex flex-row items-center gap-2 outline-none">
+        <button className="bg-[#274a6a] text-background px-4 py-2 rounded-full text-sm font-bold hover:opacity-90 transition-all flex flex-row items-center gap-2 outline-none">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"

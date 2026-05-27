@@ -39,7 +39,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
     <Link
       href={`/product/${product.slug}`}
       onClick={handleSaveToRecent}
-      className="w-full flex flex-col gap-2 rounded-lg p-2 md:p-4 hover:bg-gray-100 transition-colors cursor-pointer bg-white outline-none border-none ring-0 shadow-sm block"
+      className="w-full flex flex-col gap-2 rounded-lg p-2 md:p-4 hover:bg-gray-100 transition-colors cursor-pointer bg-white outline-3 outline-[#407d99] border-none ring-0 shadow-sm block"
     >
       <div className="w-full aspect-square bg-gray-200 relative rounded-md overflow-hidden">
         {product.image_url ? (
@@ -68,7 +68,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
           </p>
         )}
         
-        <p className="font-bold mt-1 text-blue-900">
+        <p className="font-bold mt-1 text-[#caa74a]">
           Rp{product.price ? product.price.toLocaleString("id-ID") : "0"}
         </p>
       </div>

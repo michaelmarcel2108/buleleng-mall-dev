@@ -25,45 +25,48 @@ export default function HomeTabs({ products, businesses }: HomeTabsProps) {
 
   return (
     <div className="w-full flex flex-col gap-8">
-      <div className="flex flex-row justify-center items-center gap-2 md:gap-6 pb-4 font-display text-base md:text-xl font-bold uppercase tracking-wider">
+      {/* NAVIGASI TAB: Menggunakan font-sans & warna unselected biru tua #274a6a */}
+      <div className="flex flex-row justify-center items-center gap-2 md:gap-6 pb-4 font-sans text-base md:text-xl font-bold uppercase tracking-wider">
         <button
           onClick={() => setActiveTab("terlaris")}
           className={`px-3 py-1 transition-all outline-none focus:outline-none border-none ring-0 ${
             activeTab === "terlaris"
-              ? "bg-primary text-foreground rounded-lg"
-              : "text-foreground/50 hover:text-foreground"
+              ? "bg-[#274a6a] text-white rounded-lg"
+              : "text-[#274a6a] hover:opacity-80"
           }`}
         >
           Produk Terlaris
         </button>
         
-        <span className="text-foreground/20 font-light">|</span>
+        {/* Garis pembatas menggunakan warna biru tua dengan transparansi tipis */}
+        <span className="text-[#274a6a]/30 font-light">|</span>
         
         <button
           onClick={() => setActiveTab("brand")}
           className={`px-3 py-1 transition-all outline-none focus:outline-none border-none ring-0 ${
             activeTab === "brand"
-              ? "bg-primary text-foreground rounded-lg"
-              : "text-foreground/50 hover:text-foreground"
+              ? "bg-[#274a6a] text-white rounded-lg"
+              : "text-[#274a6a] hover:opacity-80"
           }`}
         >
           Brand Lokal
         </button>
         
-        <span className="text-foreground/20 font-light">|</span>
+        <span className="text-[#274a6a]/30 font-light">|</span>
         
         <button
           onClick={() => setActiveTab("incaran")}
           className={`px-3 py-1 transition-all outline-none focus:outline-none border-none ring-0 ${
             activeTab === "incaran"
-              ? "bg-primary text-foreground rounded-lg"
-              : "text-foreground/50 hover:text-foreground"
+              ? "bg-[#274a6a] text-white rounded-lg"
+              : "text-[#274a6a] hover:opacity-80"
           }`}
         >
           Incaran Anda
         </button>
       </div>
 
+      {/* KONTEN UTAMA TAB */}
       <div className="w-full">
         {activeTab === "terlaris" && (
           <div className="w-full grid grid-cols-2 md:grid-cols-4 gap-4">
