@@ -10,12 +10,12 @@ interface HomeTabsProps {
 }
 
 export default function HomeTabs({ products, businesses }: HomeTabsProps) {
-  const [isMounted, setIsMounted] = useState(false);
   const [activeTab, setActiveTab] = useState("terlaris");
   const [recentProducts, setRecentProducts] = useState<any[]>([]);
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    setIsMounted(true);
+    setIsClient(true);
     if (activeTab === "incaran") {
       const existing = localStorage.getItem("recent_products");
       if (existing) {
@@ -24,12 +24,10 @@ export default function HomeTabs({ products, businesses }: HomeTabsProps) {
     }
   }, [activeTab]);
 
-  if (!isMounted) return null;
-
   return (
     <div className="w-full flex flex-col gap-8">
       {/* NAVIGASI TAB */}
-      <div className="flex flex-row justify-center items-center gap-2 md:gap-6 pb-4 font-sans text-base md:text-l font-bold uppercase tracking-wider">
+      <div className="flex flex-row justify-center items-center gap-2 md:gap-6 pb-4 font-sans text-xs md:text-sm font-bold uppercase tracking-wider">
         <button
           onClick={() => setActiveTab("terlaris")}
           className={`px-3 py-1 transition-all outline-none focus:outline-none whitespace-nowrap border-none ring-0 ${
@@ -86,9 +84,16 @@ export default function HomeTabs({ products, businesses }: HomeTabsProps) {
           </div>
         )}
 
+        {/* PERBAIKAN: Jika belum client, tampilkan skeleton/placeholder agar tidak error */}
         {activeTab === "incaran" && (
           <div className="w-full">
-            {recentProducts.length > 0 ? (
+            {!isClient ? (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 animate-pulse">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="h-64 bg-gray-200 rounded-xl"></div>
+                ))}
+              </div>
+            ) : recentProducts.length > 0 ? (
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {recentProducts.map((product, index) => (
                   <ProductCard key={`recent-${product.id}-${index}`} product={product} />
@@ -96,9 +101,6 @@ export default function HomeTabs({ products, businesses }: HomeTabsProps) {
               </div>
             ) : (
               <div className="w-full py-16 bg-white rounded-xl border border-gray-100 flex flex-col items-center justify-center gap-2 text-gray-500">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-10 h-10 text-gray-300">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                </svg>
                 <p>Belum ada produk yang kamu lihat terakhir ini.</p>
               </div>
             )}
