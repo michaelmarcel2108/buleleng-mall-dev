@@ -38,16 +38,16 @@ export default function ProfileDeveloper() {
           
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-2">
             <div className="p-4 bg-gray-50 rounded-lg border border-gray-100">
-              <p className="font-bold text-gray-800 text-sm sm:text-base">Michael Marcel Hartono</p>
-              <p className="text-xs text-gray-500 mt-0.5">Software Engineer / UI Designer</p>
+              <p className="font-bold text-gray-800 text-sm sm:text-base">Gede Murdana</p>
+              <p className="text-xs text-gray-500 mt-0.5">Project Manager</p>
             </div>
             <div className="p-4 bg-gray-50 rounded-lg border border-gray-100">
-              <p className="font-bold text-gray-800 text-sm sm:text-base">Suniaramana Mardana Putra</p>
+              <p className="font-bold text-gray-800 text-sm sm:text-base">Michael Marcel Hartono</p>
               <p className="text-xs text-gray-500 mt-0.5">Fullstack Developer</p>
             </div>
             <div className="p-4 bg-gray-50 rounded-lg border border-gray-100">
-              <p className="font-bold text-gray-800 text-sm sm:text-base">I Gusti Made Wahyu Nugraha</p>
-              <p className="text-xs text-gray-500 mt-0.5">Database Administrator</p>
+              <p className="font-bold text-gray-800 text-sm sm:text-base">Marvello Adwitya Nyahu</p>
+              <p className="text-xs text-gray-500 mt-0.5">Website & User Optimalisation</p>
             </div>
           </div>
           
