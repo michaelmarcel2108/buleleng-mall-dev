@@ -33,14 +33,17 @@ export default async function Home() {
         <div className="absolute inset-0 bg-pattern z-0"></div>
 
         <div className="relative z-10">
-          <BannerSlideshow banners={banners || []} />
+          
+          {/* PERBAIKAN: Wrapper khusus untuk mengunci ukuran mobile & desktop tanpa menarik gambar */}
+          <div className="w-full px-8 md:px-16 aspect-[2/1] md:aspect-[3/1] max-w-7xl mx-auto overflow-hidden">
+            <BannerSlideshow banners={banners || []} />
+          </div>
 
           <div className="flex flex-col gap-4 px-8 md:px-16 mt-4 text-white font-sans">
-            <h1 className="text-4xl md:text-5xl font-bold">
-              Produk lokal Buleleng <br /> dengan kualitas{" "}
-              <br className="md:hidden" /> terbaik.
+            <h1 className="font-display text-3xl md:text-5xl lg:text-6xl font-bold text-white-100 leading-tight">
+              Produk lokal Buleleng dengan kualitas terbaik.
             </h1>
-            <p className="text-white/90">
+            <p className="text-lg md:text-xl text-white mt-4 max-w-xl">
               Produk-produk dari usaha kecil-menengah Buleleng
             </p>
 
