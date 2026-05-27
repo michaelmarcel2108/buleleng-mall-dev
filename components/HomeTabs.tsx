@@ -32,7 +32,7 @@ export default function HomeTabs({ products, businesses }: HomeTabsProps) {
       <div className="flex flex-row justify-center items-center gap-2 md:gap-6 pb-4 font-sans text-base md:text-l font-bold uppercase tracking-wider">
         <button
           onClick={() => setActiveTab("terlaris")}
-          className={`px-3 py-1 transition-all outline-none focus:outline-none border-none ring-0 ${
+          className={`px-3 py-1 transition-all outline-none focus:outline-none whitespace-nowrap border-none ring-0 ${
             activeTab === "terlaris"
               ? "bg-[#274a6a] text-white rounded-lg"
               : "text-[#274a6a] hover:opacity-80"
@@ -45,7 +45,7 @@ export default function HomeTabs({ products, businesses }: HomeTabsProps) {
         
         <button
           onClick={() => setActiveTab("brand")}
-          className={`px-3 py-1 transition-all outline-none focus:outline-none border-none ring-0 ${
+          className={`px-3 py-1 transition-all outline-none focus:outline-none whitespace-nowrap border-none ring-0 ${
             activeTab === "brand"
               ? "bg-[#274a6a] text-white rounded-lg"
               : "text-[#274a6a] hover:opacity-80"
@@ -58,7 +58,7 @@ export default function HomeTabs({ products, businesses }: HomeTabsProps) {
         
         <button
           onClick={() => setActiveTab("incaran")}
-          className={`px-3 py-1 transition-all outline-none focus:outline-none border-none ring-0 ${
+          className={`px-3 py-1 transition-all outline-none focus:outline-none whitespace-nowrap border-none ring-0 ${
             activeTab === "incaran"
               ? "bg-[#274a6a] text-white rounded-lg"
               : "text-[#274a6a] hover:opacity-80"
