@@ -10,11 +10,12 @@ interface HomeTabsProps {
 }
 
 export default function HomeTabs({ products, businesses }: HomeTabsProps) {
+  const [isMounted, setIsMounted] = useState(false);
   const [activeTab, setActiveTab] = useState("terlaris");
   const [recentProducts, setRecentProducts] = useState<any[]>([]);
 
-  // Mengambil data dari Local Storage setiap kali tab Incaran diklik
   useEffect(() => {
+    setIsMounted(true);
     if (activeTab === "incaran") {
       const existing = localStorage.getItem("recent_products");
       if (existing) {
@@ -23,9 +24,11 @@ export default function HomeTabs({ products, businesses }: HomeTabsProps) {
     }
   }, [activeTab]);
 
+  if (!isMounted) return null;
+
   return (
     <div className="w-full flex flex-col gap-8">
-      {/* NAVIGASI TAB: Menggunakan font-sans & warna unselected biru tua #274a6a */}
+      {/* NAVIGASI TAB */}
       <div className="flex flex-row justify-center items-center gap-2 md:gap-6 pb-4 font-sans text-base md:text-xl font-bold uppercase tracking-wider">
         <button
           onClick={() => setActiveTab("terlaris")}
@@ -38,7 +41,6 @@ export default function HomeTabs({ products, businesses }: HomeTabsProps) {
           Produk Terlaris
         </button>
         
-        {/* Garis pembatas menggunakan warna biru tua dengan transparansi tipis */}
         <span className="text-[#274a6a]/30 font-light">|</span>
         
         <button
@@ -66,7 +68,7 @@ export default function HomeTabs({ products, businesses }: HomeTabsProps) {
         </button>
       </div>
 
-      {/* KONTEN UTAMA TAB */}
+      {/* KONTEN TAB */}
       <div className="w-full">
         {activeTab === "terlaris" && (
           <div className="w-full grid grid-cols-2 md:grid-cols-4 gap-4">

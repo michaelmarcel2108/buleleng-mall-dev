@@ -28,19 +28,13 @@ export default async function Home() {
 
   return (
     <main>
-      {/* SECTION HERO UTAMA */}
-      {/* Tambahan 'overflow-hidden' agar pattern tidak keluar batas */}
       <section className="relative flex flex-col gap-4 bg-primary py-8 md:py-16 overflow-hidden">
-        
-        {/* Layer Pattern Batik */}
+      
         <div className="absolute inset-0 bg-pattern z-0"></div>
 
-        {/* Bungkus konten dengan relative z-10 agar tetap di depan pattern */}
         <div className="relative z-10">
-          {/* Menggunakan komponen slideshow untuk banner */}
           <BannerSlideshow banners={banners || []} />
 
-          {/* Bagian teks informasi dengan font sans-serif dan warna putih */}
           <div className="flex flex-col gap-4 px-8 md:px-16 mt-4 text-white font-sans">
             <h1 className="text-4xl md:text-5xl font-bold">
               Produk lokal Buleleng <br /> dengan kualitas{" "}
@@ -57,7 +51,6 @@ export default async function Home() {
               Belanja Sekarang
             </Link>
 
-            {/* BAGIAN JELAJAHI KATEGORI */}
             <div className="mt-6 flex flex-col gap-3">
               <p className="font-medium text-sm text-white/80 uppercase tracking-wider">
                 Jelajahi Kategori
@@ -78,7 +71,6 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* SECTION PRODUK TERLARIS, BRAND LOKAL, & INCARAN */}
       <section className="p-8 md:p-16">
         <HomeTabs products={products || []} businesses={businesses || []} />
       </section>

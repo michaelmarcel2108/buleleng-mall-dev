@@ -25,6 +25,6 @@ body {
   background-repeat: no-repeat;  
   background-position: center;
   background-size: cover;
-  opacity: 0.1;
+  opacity: 0.05;
   pointer-events: none;
 }

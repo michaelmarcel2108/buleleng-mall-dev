@@ -17,7 +17,7 @@ const BrandCard = ({ business }: BrandCardProps) => {
   return (
     <Link 
       href={`/brand/${business.slug}`}
-      className="w-full flex flex-col gap-2 rounded-lg p-2 md:p-4 hover:bg-gray-100 transition-colors cursor-pointer bg-white outline-3 outline-[#407d99] border-none ring-0 shadow-sm block"
+      className="w-full flex flex-col gap-2 rounded-lg p-2 md:p-4 hover:bg-gray-100 transition-colors cursor-pointer bg-white outline-2 outline-[#407d99] border-none ring-0 shadow-sm block"
     >
       <div className="grid grid-cols-2 aspect-square gap-2 rounded-md overflow-hidden bg-gray-100 p-1 outline-none border-none">
         {[0, 1, 2, 3].map((index) => {

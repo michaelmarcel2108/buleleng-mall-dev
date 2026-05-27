@@ -58,19 +58,25 @@ const ProductCard = ({ product }: ProductCardProps) => {
       </div>
       
       <div className="flex flex-col">
-        <p className="font-display text-lg font-medium line-clamp-1">
+        {/* PERBAIKAN: Gunakan div alih-alih p */}
+        <div className="font-display text-lg font-medium line-clamp-1">
           {product.name}
-        </p>
+        </div>
         
+        {/* PERBAIKAN: Gunakan div alih-alih p */}
         {product.businesses && (
-          <p className="text-sm text-gray-500 line-clamp-1">
+          <div className="text-sm text-gray-500 line-clamp-1">
             {product.businesses.name}
-          </p>
+          </div>
         )}
         
-        <p className="font-bold mt-1 text-[#caa74a]">
+        {/* PERBAIKAN: Gunakan div dan tambahkan suppressHydrationWarning untuk format toLocaleString */}
+        <div 
+          className="font-bold mt-1 text-[#caa74a]"
+          suppressHydrationWarning
+        >
           Rp{product.price ? product.price.toLocaleString("id-ID") : "0"}
-        </p>
+        </div>
       </div>
     </Link>
   );
