@@ -34,7 +34,7 @@ export default async function ProductDetailPage({ params }: ProductDetailProps) 
   const { data: catalogProducts } = await supabase
     .from("products")
     .select("*, businesses(name)")
-    .neq("slug", slug)
+    .neq("slug", slug) // Mengeluarkan produk yang sedang aktif dari daftar
     .limit(4);
 
   if (!data) {
@@ -48,8 +48,8 @@ export default async function ProductDetailPage({ params }: ProductDetailProps) 
     );
   }
 
-  // Trik untuk mengakali TypeScript yang bingung dengan tipe data relasi Supabase
-  const categoryData = data.categories as any;
+  const mainProduct = data as any;
+  const categoryData = mainProduct.categories;
 
   return (
     <main className="w-full min-h-screen bg-gray-50/50 py-8 md:py-16 px-4 md:px-8">
@@ -57,10 +57,10 @@ export default async function ProductDetailPage({ params }: ProductDetailProps) 
       <section className="max-w-5xl mx-auto p-4 md:p-10 grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
         
         <div className="w-full aspect-square relative shadow-sm border border-gray-100 rounded-xl overflow-hidden bg-gray-100">
-          {data.image_url ? (
+          {mainProduct.image_url ? (
             <Image
-              src={data.image_url}
-              alt={`Gambar ${data.name}`}
+              src={mainProduct.image_url}
+              alt={`Gambar ${mainProduct.name}`}
               fill
               className="object-cover"
               sizes="(max-width: 768px) 100vw, 50vw"
@@ -74,7 +74,6 @@ export default async function ProductDetailPage({ params }: ProductDetailProps) 
         
         <div className="flex flex-col gap-5 items-start justify-start">
           <div className="flex flex-col items-start gap-3 w-full">
-            {/* PERBAIKAN: Gunakan div alih-alih h2 untuk badge */}
             {categoryData?.name && (
               <div
                 style={{ backgroundColor: categoryData?.color || "#1e3a8a" }}
@@ -85,15 +84,14 @@ export default async function ProductDetailPage({ params }: ProductDetailProps) 
             )}
 
             <h1 className="font-display text-3xl md:text-4xl mt-2 font-bold text-gray-900">
-              {data.name}
+              {mainProduct.name}
             </h1>
             
-            {/* PERBAIKAN: Gunakan div alih-alih p, dan tambahkan suppressHydrationWarning */}
             <div 
               className="text-3xl md:text-4xl font-bold mt-2 text-foreground border-b border-gray-100 pb-4 w-full"
               suppressHydrationWarning
             >
-              Rp{data.price ? data.price.toLocaleString("id-ID") : "0"}
+              Rp{mainProduct.price ? mainProduct.price.toLocaleString("id-ID") : "0"}
             </div>
           </div>
 
@@ -102,19 +100,18 @@ export default async function ProductDetailPage({ params }: ProductDetailProps) 
             <div className="font-sans font-bold text-gray-900 text-sm md:text-base uppercase tracking-wider">
               Deskripsi Produk
             </div>
-            {/* PERBAIKAN: Gunakan div alih-alih p untuk teks pre-line, dan tambahkan suppressHydrationWarning */}
             <div 
               className="text-gray-600 text-sm md:text-base leading-relaxed whitespace-pre-line"
               suppressHydrationWarning
             >
-              {data.description || "Tidak ada deskripsi untuk produk ini."}
+              {mainProduct.description || "Tidak ada deskripsi untuk produk ini."}
             </div>
           </div>
           
           <div className="flex flex-col gap-3 w-full mt-auto pt-4">
             <Link
-              href={data.shopee_url || "#"}
-              target={data.shopee_url ? "_blank" : "_self"}
+              href={mainProduct.shopee_url || "#"}
+              target={mainProduct.shopee_url ? "_blank" : "_self"}
               rel="noopener noreferrer"
               className="w-full bg-[#EE4D2D] px-8 py-3 text-white text-center rounded-xl font-medium hover:opacity-90 transition-all md:text-lg shadow-sm"
             >
@@ -122,7 +119,7 @@ export default async function ProductDetailPage({ params }: ProductDetailProps) 
             </Link>
             
             <Link
-              href={`https://wa.me/NOMOR_PENJUAL?text=Halo, saya tertarik dengan produk ${data.name}`}
+              href={`https://wa.me/+6282341657788?text=Halo, saya tertarik dengan produk ${mainProduct.name}`}
               target="_blank"
               rel="noopener noreferrer"
               className="w-full bg-[#25D366] text-white px-8 py-3 rounded-xl font-medium hover:bg-[#128C7E] transition-all md:text-lg flex items-center justify-center gap-3"
@@ -150,7 +147,8 @@ export default async function ProductDetailPage({ params }: ProductDetailProps) 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {catalogProducts && catalogProducts.length > 0 ? (
             catalogProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
+              // PERBAIKAN: Berikan casting 'as any' di sini untuk menyamakan ekspektasi relasi bisnis
+              <ProductCard key={product.id} product={product as any} />
             ))
           ) : (
             <p className="text-gray-500 col-span-full py-4 text-center">
@@ -162,7 +160,7 @@ export default async function ProductDetailPage({ params }: ProductDetailProps) 
         <div className="mt-8 text-center">
           <Link 
             href="/catalog" 
-            className="inline-block px-6 py-2 border border-blue-900 text-blue-900 rounded-full hover:bg-blue-900 hover:text-white transition-all font-medium text-sm md:text-base shadow-sm"
+            className="inline-block px-6 py-2 border border-foreground text-foreground rounded-full hover:bg-foreground hover:text-white transition-all font-medium text-sm md:text-base shadow-sm"
           >
             Lihat Semua Katalog
           </Link>

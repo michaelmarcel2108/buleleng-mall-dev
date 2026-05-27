@@ -39,7 +39,8 @@ const ProductCard = ({ product }: ProductCardProps) => {
     <Link
       href={`/product/${product.slug}`}
       onClick={handleSaveToRecent}
-      className="w-full flex flex-col gap-2 rounded-lg p-2 md:p-4 hover:bg-gray-100 transition-colors cursor-pointer bg-white outline-3 outline-[#407d99] border-none ring-0 shadow-sm block"
+      suppressHydrationWarning={true}
+      className="w-full flex flex-col gap-2 rounded-lg p-2 md:p-4 hover:bg-gray-100 transition-colors cursor-pointer bg-white outline-2 outline-[#407d99] border-none ring-0 shadow-sm block"
     >
       <div className="w-full aspect-square bg-gray-200 relative rounded-md overflow-hidden">
         {product.image_url ? (
@@ -58,19 +59,16 @@ const ProductCard = ({ product }: ProductCardProps) => {
       </div>
       
       <div className="flex flex-col">
-        {/* PERBAIKAN: Gunakan div alih-alih p */}
         <div className="font-display text-lg font-medium line-clamp-1">
           {product.name}
         </div>
         
-        {/* PERBAIKAN: Gunakan div alih-alih p */}
         {product.businesses && (
           <div className="text-sm text-gray-500 line-clamp-1">
             {product.businesses.name}
           </div>
         )}
         
-        {/* PERBAIKAN: Gunakan div dan tambahkan suppressHydrationWarning untuk format toLocaleString */}
         <div 
           className="font-bold mt-1 text-[#caa74a]"
           suppressHydrationWarning
