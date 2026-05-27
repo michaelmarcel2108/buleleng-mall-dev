@@ -3,12 +3,14 @@ import ProductCard from "@/components/ProductCard";
 import Link from "next/link";
 
 interface CatalogPageProps {
-  searchParams: Promise<{ q?: string; category?: string }>;
+  // PERBAIKAN: Ubah 'q?: string' menjadi 'search?: string' agar sesuai dengan URL dari Navbar
+  searchParams: Promise<{ search?: string; category?: string }>;
 }
 
 export default async function CatalogPage({ searchParams }: CatalogPageProps) {
   const resolvedSearchParams = await searchParams;
-  const queryText = resolvedSearchParams.q || "";
+  // PERBAIKAN: Tangkap dari .search, bukan .q
+  const queryText = resolvedSearchParams.search || "";
   const categoryParam = resolvedSearchParams.category || "";
 
   let productQuery = supabase
@@ -37,7 +39,6 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
   return (
     <main className="w-full min-h-screen p-8 md:p-16 flex flex-col gap-8 bg-gray-50/50">
       <div className="flex flex-col gap-2">
-        {/* Class text-blue-900 diubah menjadi text-foreground */}
         <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground">
           {queryText ? `Hasil Pencarian: "${queryText}"` : "Katalog Produk"}
         </h1>
@@ -54,7 +55,6 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
               !categoryParam
                 ? "bg-[#274a6a] text-white border-[#274a6a] shadow-md"
                 : "bg-[#274a6a]/10 text-[#274a6a] border-transparent hover:bg-[#274a6a] hover:text-white cursor-pointer" 
-                /* ↑ Menggunakan biru tua transparan (bg-[#274a6a]/10) saat tidak dipilih */
             }`}
           >
             Semua Produk
@@ -70,7 +70,6 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
                   isSelected
                     ? "bg-[#274a6a] text-white border-[#274a6a] shadow-md"
                     : "bg-[#274a6a]/10 text-[#274a6a] border-transparent hover:bg-[#274a6a] hover:text-white cursor-pointer"
-                    /* ↑ Samakan di sini juga untuk list kategorinya */
                 }`}
               >
                 {cat.name}
@@ -91,7 +90,7 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
           <p className="text-gray-500 font-medium">
             Produk yang kamu cari tidak ditemukan.
           </p>
-          <Link href="/catalog" className="text-sm text-blue-900 font-bold hover:underline">
+          <Link href="/catalog" className="text-sm text-[#274a6a] font-bold hover:underline">
             Reset Filter
           </Link>
         </div>
