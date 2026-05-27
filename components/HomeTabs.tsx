@@ -29,7 +29,7 @@ export default function HomeTabs({ products, businesses }: HomeTabsProps) {
   return (
     <div className="w-full flex flex-col gap-8">
       {/* NAVIGASI TAB */}
-      <div className="flex flex-row justify-center items-center gap-2 md:gap-6 pb-4 font-sans text-base md:text-xl font-bold uppercase tracking-wider">
+      <div className="flex flex-row justify-center items-center gap-2 md:gap-6 pb-4 font-sans text-base md:text-l font-bold uppercase tracking-wider">
         <button
           onClick={() => setActiveTab("terlaris")}
           className={`px-3 py-1 transition-all outline-none focus:outline-none border-none ring-0 ${

@@ -34,16 +34,17 @@ export default async function Home() {
 
         <div className="relative z-10">
           
-          {/* PERBAIKAN: Wrapper khusus untuk mengunci ukuran mobile & desktop tanpa menarik gambar */}
-          <div className="w-full px-8 md:px-16 aspect-[2/1] md:aspect-[3/1] max-w-7xl mx-auto overflow-hidden">
+          {/* PERBAIKAN: Menghapus aspect ratio ganda. Pengaturan rasio sekarang ditangani murni oleh BannerSlideshow */}
+          <div className="w-full px-8 md:px-16 max-w-7xl mx-auto overflow-hidden">
             <BannerSlideshow banners={banners || []} />
           </div>
 
           <div className="flex flex-col gap-4 px-8 md:px-16 mt-4 text-white font-sans">
-            <h1 className="font-display text-3xl md:text-5xl lg:text-6xl font-bold text-white-100 leading-tight">
+            {/* PERBAIKAN: Memastikan text-white diterapkan penuh, mengubah text-white-100 */}
+            <h1 className="font-display text-3xl md:text-5xl lg:text-6xl font-bold text-white leading-tight">
               Produk lokal Buleleng dengan kualitas terbaik.
             </h1>
-            <p className="text-lg md:text-xl text-white mt-4 max-w-xl">
+            <p className="text-lg md:text-xl text-white mt-4 max-w-l">
               Produk-produk dari usaha kecil-menengah Buleleng
             </p>
 
