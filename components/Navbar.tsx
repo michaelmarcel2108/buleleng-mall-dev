@@ -1,66 +1,90 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function Navbar() {
-  const [search, setSearch] = useState("");
-  const router = useRouter();
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (search.trim() !== "") {
-      router.push(`/catalog?q=${encodeURIComponent(search.trim())}`);
-    }
-  };
+  const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <header className="w-full bg-white shadow-sm px-4 md:px-16 py-4 flex flex-row items-center justify-between gap-4 sticky top-0 z-50">
-      <Link href="/" className="font-display text-xl md:text-2xl font-bold tracking-tight text-[#274a6a] flex-shrink-0">
+    <nav className="w-full bg-white text-gray-800 px-4 md:px-16 py-3 md:py-4 flex items-center justify-between relative z-50 shadow-sm border-b border-gray-100 gap-2 md:gap-4">
+      {/* Logo / Judul Platform */}
+      <Link href="/" className="font-display text-lg md:text-2xl font-bold tracking-wide text-[#274a6a] shrink-0">
         Buleleng Mall
       </Link>
 
-      <form onSubmit={handleSearch} className="flex-1 max-w-xs md:max-w-xl mx-2 md:mx-4 relative flex items-center">
-        <svg 
-          xmlns="http://www.w3.org/2000/svg" 
-          fill="none" 
-          viewBox="0 0 24 24" 
-          strokeWidth={2} 
-          stroke="currentColor" 
-          className="w-5 h-5 absolute left-3 text-gray-400"
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
-        </svg>
-
+      {/* PERBAIKAN: Menghapus 'hidden' agar selalu tampil. Menggunakan flex-1 agar mengisi ruang di tengah */}
+      <div className="flex-1 max-w-md mx-2 md:mx-8 relative">
+        <div className="absolute inset-y-0 left-2.5 md:left-3 flex items-center pointer-events-none">
+          <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </div>
         <input
           type="text"
-          placeholder="Cari produk lokal..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-full bg-gray-100 text-foreground pl-10 pr-4 py-2 rounded-full text-sm outline-none focus:bg-gray-200/70 focus:ring-2 focus:ring-blue-900/20 transition-all"
+          placeholder="Cari produk..."
+          className="w-full pl-8 md:pl-10 pr-3 md:pr-4 py-1.5 md:py-2 bg-gray-50 border border-gray-200 rounded-full text-xs md:text-sm focus:outline-none focus:border-[#274a6a] focus:bg-white transition-all text-gray-700"
         />
-      </form>
+      </div>
 
-      <div className="flex-shrink-0">
-        <button className="bg-[#274a6a] text-background px-4 py-2 rounded-full text-sm font-bold hover:opacity-90 transition-all flex flex-row items-center gap-2 outline-none">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={2.5}
-            stroke="currentColor"
-            className="w-4 h-4"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
-            />
+      {/* Menu Navigasi & Tombol Hamburger */}
+      <div className="flex items-center gap-2 md:gap-4 shrink-0">
+        <div className="hidden md:flex items-center gap-6 font-medium text-gray-600">
+          <Link href="/" className="hover:text-[#274a6a] transition-colors">Home</Link>
+          <Link href="/catalog" className="hover:text-[#274a6a] transition-colors">Katalog</Link>
+        </div>
+
+        {/* Tombol Garis Tiga / Menu Box Interaktif */}
+        <button 
+          onClick={() => setIsOpen(!isOpen)} 
+          className="flex items-center gap-1.5 bg-gray-50 border border-gray-200 px-2.5 md:px-3 py-1.5 md:py-2 rounded-full hover:bg-gray-100 transition-all text-gray-700 focus:outline-none"
+        >
+          <span className="hidden md:inline text-sm font-medium text-gray-600">Menu</span>
+          <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            {isOpen ? (
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+            ) : (
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+            )}
           </svg>
-          <span className="hidden md:inline">Kategori</span>
         </button>
       </div>
-    </header>
+
+      {/* Dropdown Menu Box */}
+      {isOpen && (
+        <div className="absolute top-full right-4 md:right-16 mt-2 w-56 md:w-64 bg-white text-gray-800 rounded-xl shadow-xl border border-gray-100 overflow-hidden py-2 animate-in fade-in slide-in-from-top-2 duration-200">
+          
+          <div className="px-4 py-1 border-b border-gray-100 md:hidden text-[10px] font-semibold text-gray-400 uppercase tracking-wider">
+            Navigasi
+          </div>
+          <div className="px-4 py-1 border-b border-gray-100 md:hidden mb-1">
+            <Link href="/" onClick={() => setIsOpen(false)} className="block py-1.5 font-medium text-sm hover:text-[#274a6a]">Home</Link>
+            <Link href="/catalog" onClick={() => setIsOpen(false)} className="block py-1.5 font-medium text-sm hover:text-[#274a6a]">Katalog</Link>
+          </div>
+
+          <div className="px-4 py-1 text-[10px] font-semibold text-gray-400 uppercase tracking-wider mt-1 md:mt-0">
+            Informasi
+          </div>
+          
+          {/* Menu Pertama: Profile Koperasi */}
+          <Link 
+            href="/profile-koperasi" 
+            onClick={() => setIsOpen(false)}
+            className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-sm text-gray-700 hover:text-[#274a6a] font-medium transition-colors"
+          >
+            Profile Koperasi
+          </Link>
+          
+          {/* Menu Kedua: Profile Developer */}
+          <Link 
+            href="/profile-developer" 
+            onClick={() => setIsOpen(false)}
+            className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-sm text-gray-700 hover:text-[#274a6a] font-medium transition-colors"
+          >
+            Profile Developer
+          </Link>
+        </div>
+      )}
+    </nav>
   );
 }
