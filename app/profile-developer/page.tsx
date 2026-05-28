@@ -8,7 +8,7 @@ export default function ProfileDeveloper() {
       {/* 1. BAGIAN FOTO: Menggantikan banner batik latar biru sebelumnya */}
       <section className="max-w-5xl mx-auto px-6 md:px-16 pt-6 md:pt-10">
         {/* Rasio disamakan dengan banner utama agar pas dan konsisten */}
-        <div className="w-full relative aspect-[430/430] md:aspect-[1920/500] rounded-xl overflow-hidden shadow-sm bg-gray-200">
+        <div className="w-full relative aspect-[430/430] md:aspect-[500/500] rounded-xl overflow-hidden shadow-sm bg-gray-200">
           <Image
             src="/profile-developer.jpeg"
             alt="Foto Tim Pengembang Buleleng Mall"

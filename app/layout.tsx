@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 import NextTopLoader from "nextjs-toploader";
 
 const geistSans = Geist({
@@ -25,9 +26,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="id">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        {/* Loading bar yang muncul otomatis saat navigasi */}
+    <html lang="id" suppressHydrationWarning>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col bg-gray-50/50`}>
         <NextTopLoader 
           color="#274a6a" 
           initialPosition={0.08}
@@ -41,7 +41,13 @@ export default function RootLayout({
         />
         
         <Navbar />
-        {children}
+        
+        <div className="flex-1 w-full flex flex-col">
+          {children}
+        </div>
+        
+        <Footer />
+        
       </body>
     </html>
   );

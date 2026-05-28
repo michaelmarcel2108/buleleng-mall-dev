@@ -84,7 +84,6 @@ export default function HomeTabs({ products, businesses }: HomeTabsProps) {
           </div>
         )}
 
-        {/* PERBAIKAN: Jika belum client, tampilkan skeleton/placeholder agar tidak error */}
         {activeTab === "incaran" && (
           <div className="w-full">
             {!isClient ? (

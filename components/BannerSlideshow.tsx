@@ -1,65 +1,124 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Image from "next/image";
+import { supabase } from "@/lib/supabase"; 
 
-export default function BannerSlideshow({ banners }: { banners: any[] }) {
+export default function BannerSlideshow() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [mounted, setMounted] = useState(false);
+  
+  const [banners, setBanners] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Efek untuk memutar slide otomatis setiap 4 detik
   useEffect(() => {
-    setMounted(true); // Solve hydration error
+    setMounted(true);
     
-    if (!banners || banners.length === 0) return;
-    const interval = setInterval(() => {
-      setCurrentIndex((prevIndex) => (prevIndex + 1) % banners.length);
-    }, 4000); 
+    const fetchBanners = async () => {
+      const { data, error } = await supabase
+        .from("banners")
+        .select("*")
+        .order("id", { ascending: true }); 
+        
+      if (error) console.error("Error dari Supabase:", error);
 
-    return () => clearInterval(interval);
-  }, [banners]);
+      if (data && data.length > 0) {
+        setBanners(data);
+      }
+      setIsLoading(false);
+    };
 
-  // Hindari render di server untuk cegah hydration mismatch
+    fetchBanners();
+  }, []);
+
+  useEffect(() => {
+    if (banners.length <= 1) return;
+    
+    const timer = setInterval(() => {
+      setCurrentIndex((prev) => (prev === banners.length - 1 ? 0 : prev + 1));
+    }, 5000); 
+    
+    return () => clearInterval(timer);
+  }, [banners.length]);
+
   if (!mounted) return null;
-  if (!banners || banners.length === 0) return null;
+
+  if (isLoading) {
+    return (
+      /* PERBAIKAN: Mengganti h-[...] statis menjadi rasio presisi menggunakan aspect-[width/height] */
+      <div className="w-full aspect-[430/288] md:aspect-[1920/500] bg-gray-200 animate-pulse rounded-xl flex items-center justify-center shadow-sm">
+        <svg className="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+      </div>
+    );
+  }
+
+  if (banners.length === 0) {
+    return null;
+  }
 
   return (
-    // FIX: Gunakan rasio presisi. Mobile (Lebar 430, Tinggi 288) | Desktop (Lebar 1920, Tinggi 500)
-    <div className="w-full relative aspect-[430/288] md:aspect-[1920/500]">
-      <div className="w-full h-full relative rounded-lg overflow-hidden shadow-sm bg-gray-200 outline outline-0 outline-[#274a6a]">
-        
-        <div 
-          className="flex h-full w-full transition-transform duration-500 ease-in-out"
-          style={{ transform: `translateX(-${currentIndex * 100}%)` }}
+    <div className="relative w-full aspect-[430/288] md:aspect-[1920/500] overflow-hidden rounded-xl shadow-sm group bg-gray-100">
+      {banners.map((banner, index) => (
+        <div
+          key={banner.id}
+          className={`absolute top-0 left-0 w-full h-full transition-opacity duration-1000 ease-in-out ${
+            index === currentIndex ? "opacity-100 z-10" : "opacity-0 z-0"
+          }`}
         >
-          {banners.map((banner) => (
-            <div key={banner.id} className="w-full h-full flex-shrink-0 relative">
-              <Image
-                src={banner.image_url}
-                alt={banner.alt_text || "Promo Banner Buleleng Mall"}
-                fill
-                // FIX: Menggunakan object-contain memastikan gambar utuh tidak ditarik & tidak dipotong
-                className="object-contain" 
-                sizes="(max-width: 768px) 100vw, 100vw"
-                priority={currentIndex === 0} 
-              />
-            </div>
-          ))}
-        </div>
+          {banner.mobile_img && (
+            <img
+              src={banner.mobile_img}
+              alt={banner.alt_text || "Promo Buleleng Mall"}
+              className="w-full h-full object-cover block md:hidden"
+              loading={index === 0 ? "eager" : "lazy"}
+            />
+          )}
 
-        <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2 z-10">
+          {banner.desktop_img && (
+            <img
+              src={banner.desktop_img}
+              alt={banner.alt_text || "Promo Buleleng Mall"}
+              className="w-full h-full object-cover hidden md:block"
+              loading={index === 0 ? "eager" : "lazy"}
+            />
+          )}
+        </div>
+      ))}
+
+      {banners.length > 1 && (
+        <div className="absolute bottom-3 md:bottom-5 left-0 right-0 flex justify-center gap-1.5 md:gap-2 z-20">
           {banners.map((_, index) => (
             <button
               key={index}
               onClick={() => setCurrentIndex(index)}
-              className={`w-2 h-2 rounded-full transition-all ${
-                index === currentIndex ? "bg-[#274a6a] w-6" : "bg-white/70 hover:bg-white"
+              className={`h-1.5 md:h-2 rounded-full transition-all duration-300 ${
+                index === currentIndex
+                  ? "bg-[#274a6a] w-6 md:w-8"
+                  : "bg-white/70 hover:bg-white w-1.5 md:w-2"
               }`}
-              aria-label={`Pergi ke slide ${index + 1}`}
+              aria-label={`Go to slide ${index + 1}`}
             />
           ))}
         </div>
-      </div>
+      )}
+      
+      {banners.length > 1 && (
+        <>
+          <button 
+            onClick={() => setCurrentIndex(prev => prev === 0 ? banners.length - 1 : prev - 1)}
+            className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 z-20 bg-white/80 hover:bg-white text-[#274a6a] p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hidden md:block shadow-md"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" /></svg>
+          </button>
+          <button 
+            onClick={() => setCurrentIndex(prev => prev === banners.length - 1 ? 0 : prev + 1)}
+            className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 z-20 bg-white/80 hover:bg-white text-[#274a6a] p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hidden md:block shadow-md"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" /></svg>
+          </button>
+        </>
+      )}
     </div>
   );
 }

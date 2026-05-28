@@ -3,14 +3,13 @@ import ProductCard from "@/components/ProductCard";
 import Link from "next/link";
 
 interface CatalogPageProps {
-  // PERBAIKAN: Ubah 'q?: string' menjadi 'search?: string' agar sesuai dengan URL dari Navbar
-  searchParams: Promise<{ search?: string; category?: string }>;
+  searchParams: Promise<{ q?: string; search?: string; category?: string }>;
 }
 
 export default async function CatalogPage({ searchParams }: CatalogPageProps) {
   const resolvedSearchParams = await searchParams;
-  // PERBAIKAN: Tangkap dari .search, bukan .q
-  const queryText = resolvedSearchParams.search || "";
+  // PERBAIKAN 2: Ambil dari .search atau .q sebagai fallback
+  const queryText = resolvedSearchParams.search || resolvedSearchParams.q || "";
   const categoryParam = resolvedSearchParams.category || "";
 
   let productQuery = supabase
@@ -18,7 +17,20 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
     .select("*, businesses(name)");
 
   if (queryText) {
-    productQuery = productQuery.ilike("name", `%${queryText}%`);
+    const { data: matchedCategories } = await supabase
+      .from("categories")
+      .select("id")
+      .ilike("name", `%${queryText}%`);
+
+    const categoryIds = matchedCategories?.map((cat) => cat.id) || [];
+
+    if (categoryIds.length > 0) {
+      productQuery = productQuery.or(
+        `name.ilike.%${queryText}%,category_id.in.(${categoryIds.join(",")})`
+      );
+    } else {
+      productQuery = productQuery.ilike("name", `%${queryText}%`);
+    }
   }
 
   if (categoryParam) {
