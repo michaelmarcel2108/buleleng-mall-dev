@@ -79,7 +79,8 @@ export default function AdminDashboard() {
     if (type === "toko") {
       setEditingItem({ _type: "toko", name: "", image_url: "", logo_url: "" });
     } else if (type === "produk") {
-      setEditingItem({ _type: "produk", name: "", price: "", image_url: "", business_id: businesses[0]?.id || "" });
+      // SETTING URL SHOPEE SAAT TAMBAH PRODUK BARU
+      setEditingItem({ _type: "produk", name: "", price: "", image_url: "", shopee_url: "", business_id: businesses[0]?.id || "" });
     } else if (type === "kategori") {
       setEditingItem({ _type: "kategori", name: "" });
     }
@@ -182,10 +183,12 @@ export default function AdminDashboard() {
           finalImageUrl = urlData.publicUrl;
         }
 
+        // MENYIMPAN URL SHOPEE KE DALAM PAYLOAD SUPABASE
         const payload = { 
           name: editingItem.name, 
           price: editingItem.price, 
           image_url: finalImageUrl, 
+          shopee_url: editingItem.shopee_url || null,
           slug: generatedSlug, 
           business_id: editingItem.business_id 
         };
@@ -406,6 +409,20 @@ export default function AdminDashboard() {
                     <label className="block text-sm font-medium text-gray-700 mb-1">Harga (Rp)</label>
                     <input type="number" value={editingItem.price || ""} onChange={(e) => setEditingItem({ ...editingItem, price: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#274a6a] outline-none" required />
                   </div>
+                  
+                  {/* FORM INPUT LINK SHOPEE ADA DI SINI */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Link Shopee (Opsional)</label>
+                    <input 
+                      type="text" 
+                      value={editingItem.shopee_url || ""} 
+                      onChange={(e) => setEditingItem({ ...editingItem, shopee_url: e.target.value })} 
+                      placeholder="https://shopee.co.id/..."
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#274a6a] outline-none" 
+                    />
+                  </div>
+                  {/* AKHIR FORM INPUT LINK SHOPEE */}
+
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Foto Gambar Produk</label>
                     <input type="file" accept="image/*" onChange={handleProductFileChange} className="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-[#274a6a]/10 file:text-[#274a6a] hover:file:bg-[#274a6a]/20" required={!isEditMode && !editingItem.image_url} />

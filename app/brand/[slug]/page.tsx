@@ -86,7 +86,7 @@ export default async function BrandPage({ params }: { params: Promise<{ slug: st
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
             {products.map((product) => (
               <Link 
-                href={`/product/${product.id}`} 
+                href={`/product/${product.slug}`} 
                 key={product.id}
                 className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow group flex flex-col"
               >

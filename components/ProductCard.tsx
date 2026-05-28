@@ -14,20 +14,14 @@ interface ProductCardProps {
   };
 }
 
-const ProductCard = ({ product }: ProductCardProps) => {
-  
-  // Fungsi untuk menyimpan riwayat klik ke Local Storage
+export default function ProductCard({ product }: ProductCardProps) {
   const handleSaveToRecent = () => {
     const existing = localStorage.getItem("recent_products");
     let recentList: any[] = existing ? JSON.parse(existing) : [];
 
-    // Hapus produk dari daftar jika sudah ada (mencegah duplikat)
     recentList = recentList.filter((item) => item.id !== product.id);
-
-    // Masukkan produk yang baru diklik ke urutan paling depan
     recentList.unshift(product);
 
-    // Batasi maksimal menyimpan 8 produk agar memori tidak penuh
     if (recentList.length > 8) {
       recentList.pop();
     }
@@ -39,7 +33,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
     <Link
       href={`/product/${product.slug}`}
       onClick={handleSaveToRecent}
-      suppressHydrationWarning={true}
+      suppressHydrationWarning
       className="w-full flex flex-col gap-2 rounded-lg p-2 md:p-4 hover:bg-gray-100 transition-colors cursor-pointer bg-white outline-2 outline-[#407d99] border-none ring-0 shadow-sm block"
     >
       <div className="w-full aspect-square bg-gray-200 relative rounded-md overflow-hidden">
@@ -69,15 +63,10 @@ const ProductCard = ({ product }: ProductCardProps) => {
           </div>
         )}
         
-        <div 
-          className="font-bold mt-1 text-[#caa74a]"
-          suppressHydrationWarning
-        >
+        <div className="font-bold mt-1 text-[#caa74a]" suppressHydrationWarning>
           Rp{product.price ? product.price.toLocaleString("id-ID") : "0"}
         </div>
       </div>
     </Link>
   );
-};
-
-export default ProductCard;
+}

@@ -3,16 +3,18 @@ import Image from "next/image";
 import Link from "next/link";
 import ProductCard from "@/components/ProductCard";
 
+// Perbaikan Tipe: Dibuat lebih fleksibel agar Next.js tidak memberikan type error constraint
 interface ProductDetailProps {
-  params: Promise<{ slug: string }>;
+  params: any;
 }
 
 export default async function ProductDetailPage({ params }: ProductDetailProps) {
-  const unwrappedParams = await params;
-  const slug = unwrappedParams.slug;
+  // Perbaikan: Dukungan kompatibilitas agar aman digunakan baik itu Promise (Next 15) atau Objek (Next 14)
+  const resolvedParams = await Promise.resolve(params);
+  const slug = resolvedParams.slug;
+  
   const supabase = await createClient();
 
-  // Mengambil data produk utama termasuk kolom 'description'
   const { data } = await supabase
     .from("products")
     .select(
@@ -24,17 +26,17 @@ export default async function ProductDetailPage({ params }: ProductDetailProps) 
       description,
       image_url,
       shopee_url,
-      categories:category_id (id, name, color)
+      categories:category_id (id, name, color),
+      businesses (id, name, slug)
       `
     )
     .eq("slug", slug)
     .single();
 
-  // Mengambil 4 produk lainnya untuk katalog rekomendasi di bawah
   const { data: catalogProducts } = await supabase
     .from("products")
     .select("*, businesses(name)")
-    .neq("slug", slug) // Mengeluarkan produk yang sedang aktif dari daftar
+    .neq("slug", slug) 
     .limit(4);
 
   if (!data) {
@@ -50,10 +52,16 @@ export default async function ProductDetailPage({ params }: ProductDetailProps) 
 
   const mainProduct = data as any;
   const categoryData = mainProduct.categories;
+  const businessData = mainProduct.businesses;
+
+  // Nomor WhatsApp Statis
+  const waNumber = "6281234567890"; 
+  
+  const waMessage = `Halo ${businessData?.name || "Admin"}, saya tertarik untuk membeli produk *${mainProduct.name}* seharga Rp${mainProduct.price ? mainProduct.price.toLocaleString("id-ID") : "0"} yang saya temukan di Buleleng Mall. Apakah stoknya masih tersedia?`;
+  const waLink = `https://wa.me/${waNumber}?text=${encodeURIComponent(waMessage)}`;
 
   return (
     <main className="w-full min-h-screen bg-gray-50/50 py-8 md:py-16 px-4 md:px-8">
-      {/* AREA UTAMA DETAIL PRODUK */}
       <section className="max-w-5xl mx-auto p-4 md:p-10 grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
         
         <div className="w-full aspect-square relative shadow-sm border border-gray-100 rounded-xl overflow-hidden bg-gray-100">
@@ -74,14 +82,17 @@ export default async function ProductDetailPage({ params }: ProductDetailProps) 
         
         <div className="flex flex-col gap-5 items-start justify-start">
           <div className="flex flex-col items-start gap-3 w-full">
-            {categoryData?.name && (
-              <div
-                style={{ backgroundColor: categoryData?.color || "#1e3a8a" }}
-                className="text-xs md:text-sm px-4 py-1.5 font-medium rounded-full text-white shadow-sm inline-block"
-              >
-                {categoryData.name}
-              </div>
-            )}
+            
+            <div className="flex flex-wrap items-center gap-2">
+              {businessData?.name && (
+                <Link 
+                  href={`/brand/${businessData.slug}`} 
+                  className="text-xs md:text-sm px-4 py-1.5 font-medium rounded-full bg-blue-50 text-blue-800 hover:bg-blue-100 transition-colors border border-blue-100 shadow-sm"
+                >
+                  Toko: {businessData.name}
+                </Link>
+              )}
+            </div>
 
             <h1 className="font-display text-3xl md:text-4xl mt-2 font-bold text-gray-900">
               {mainProduct.name}
@@ -95,7 +106,6 @@ export default async function ProductDetailPage({ params }: ProductDetailProps) 
             </div>
           </div>
 
-          {/* BAGIAN DESKRIPSI PRODUK DARI SUPABASE */}
           <div className="w-full flex flex-col gap-1.5">
             <div className="font-sans font-bold text-gray-900 text-sm md:text-base uppercase tracking-wider">
               Deskripsi Produk
@@ -109,20 +119,37 @@ export default async function ProductDetailPage({ params }: ProductDetailProps) 
           </div>
           
           <div className="flex flex-col gap-3 w-full mt-auto pt-4">
-            <Link
-              href={mainProduct.shopee_url || "#"}
-              target={mainProduct.shopee_url ? "_blank" : "_self"}
-              rel="noopener noreferrer"
-              className="w-full bg-[#EE4D2D] px-8 py-3 text-white text-center rounded-xl font-medium hover:opacity-90 transition-all md:text-lg shadow-sm"
-            >
-              Beli di Shopee
-            </Link>
+            
+            {/* --- BOX KATEGORI DITAMBAHKAN DI SINI --- */}
+            {categoryData?.name && (
+              <div className="w-full bg-white border border-gray-200 rounded-xl px-5 py-3 flex items-center justify-between shadow-sm mb-2">
+                <span className="font-bold text-gray-700 text-sm md:text-base">Kategori Produk:</span>
+                <span 
+                  className="text-xs md:text-sm px-4 py-1.5 font-medium rounded-lg text-white shadow-sm"
+                  style={{ backgroundColor: categoryData?.color || "#1e3a8a" }}
+                >
+                  {categoryData.name}
+                </span>
+              </div>
+            )}
+            {/* --- END BOX KATEGORI --- */}
+
+            {mainProduct.shopee_url && (
+              <Link
+                href={mainProduct.shopee_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full bg-[#EE4D2D] px-8 py-3 text-white text-center rounded-xl font-medium hover:opacity-90 transition-all md:text-lg shadow-sm"
+              >
+                Beli di Shopee
+              </Link>
+            )}
             
             <Link
-              href={`https://wa.me/+6282341657788?text=Halo, saya tertarik dengan produk ${mainProduct.name}`}
+              href={waLink}
               target="_blank"
               rel="noopener noreferrer"
-              className="w-full bg-[#25D366] text-white px-8 py-3 rounded-xl font-medium hover:bg-[#128C7E] transition-all md:text-lg flex items-center justify-center gap-3"
+              className="w-full bg-[#25D366] text-white px-8 py-3 rounded-xl font-medium hover:bg-[#128C7E] transition-all md:text-lg flex items-center justify-center gap-3 shadow-sm"
             >
               <svg 
                 className="!w-6 !h-6 !min-w-[24px] !min-h-[24px]" 
@@ -132,13 +159,12 @@ export default async function ProductDetailPage({ params }: ProductDetailProps) 
               >
                 <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.372-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.955c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.549 4.142 1.594 5.945L.057 24l6.398-1.679a11.87 11.87 0 005.593 1.424h.005c6.556 0 11.892-5.335 11.892-11.893a11.821 11.821 0 00-3.48-8.413z" />
               </svg>
-              <span>Hubungi Penjual</span>
+              <span>Beli via WhatsApp</span>
             </Link>
           </div>
         </div>
       </section>
 
-      {/* SECTION KATALOG PRODUK REKOMENDASI */}
       <section className="max-w-5xl mx-auto mt-12 md:mt-20 w-full">
         <h3 className="text-2xl font-display font-bold text-foreground mb-6">
           Katalog Produk Lainnya
@@ -147,7 +173,6 @@ export default async function ProductDetailPage({ params }: ProductDetailProps) 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {catalogProducts && catalogProducts.length > 0 ? (
             catalogProducts.map((product) => (
-              // PERBAIKAN: Berikan casting 'as any' di sini untuk menyamakan ekspektasi relasi bisnis
               <ProductCard key={product.id} product={product as any} />
             ))
           ) : (
