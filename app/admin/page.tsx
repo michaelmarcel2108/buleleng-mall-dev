@@ -43,10 +43,14 @@ export default function AdminDashboard() {
       <main className="flex-1 w-full max-w-7xl mx-auto px-4 md:px-12 py-8">
         <div className="flex gap-4 mb-8 border-b border-gray-200 overflow-x-auto whitespace-nowrap">
           <button onClick={() => setActiveTab("toko")} className={`pb-3 px-2 font-medium text-sm md:text-base transition-colors ${activeTab === "toko" ? "border-b-2 border-[#274a6a] text-[#274a6a]" : "text-gray-500 hover:text-gray-700"}`}>Kelola Toko</button>
+          
           <button onClick={() => { setActiveTab("produk"); setProductSearchQuery(""); }} className={`pb-3 px-2 font-medium text-sm md:text-base transition-colors ${activeTab === "produk" ? "border-b-2 border-[#274a6a] text-[#274a6a]" : "text-gray-500 hover:text-gray-700"}`}>Kelola Produk</button>
+          
           <button onClick={() => setActiveTab("kategori")} className={`pb-3 px-2 font-medium text-sm md:text-base transition-colors ${activeTab === "kategori" ? "border-b-2 border-[#274a6a] text-[#274a6a]" : "text-gray-500 hover:text-gray-700"}`}>Kelola Kategori</button>
+          
           <button onClick={() => setActiveTab("banner")} className={`pb-3 px-2 font-medium text-sm md:text-base transition-colors ${activeTab === "banner" ? "border-b-2 border-[#274a6a] text-[#274a6a]" : "text-gray-500 hover:text-gray-700"}`}>Kelola Banner</button>
         </div>
+        
         {activeTab === "toko" && <TabToko onViewProducts={handleViewProducts} />}
         {activeTab === "produk" && <TabProduk prefilledSearch={productSearchQuery} onSearchChange={setProductSearchQuery} />}
         {activeTab === "kategori" && <TabKategori />}
