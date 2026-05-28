@@ -52,9 +52,49 @@ export default async function BrandPage({ params }: { params: Promise<{ slug: st
             {business.name}
           </h1>
           
-          <p className="text-white/90 text-sm md:text-base max-w-2xl drop-shadow-md mb-6 leading-relaxed">
-            {business.description || "Mitra resmi UMKM Buleleng Mall. Menghadirkan produk-produk lokal berkualitas terbaik langsung untuk Anda."}
+          <p className="text-white/90 text-sm md:text-base max-w-2xl drop-shadow-md mb-4 leading-relaxed">
+            {business.desc || "Mitra resmi UMKM Buleleng Mall. Menghadirkan produk-produk lokal berkualitas terbaik langsung untuk Anda."}
           </p>
+
+          {(business.shopee_url || business.instagram_url || business.tiktok_url) && (
+            <div className="flex flex-wrap justify-center gap-3 mb-6">
+              {business.shopee_url && (
+                <a 
+                  href={business.shopee_url} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 bg-orange-500/80 hover:bg-orange-500 text-white px-4 py-2 rounded-full text-xs md:text-sm transition-colors border border-orange-400/50 backdrop-blur-sm"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+                  Shopee
+                </a>
+              )}
+              
+              {business.instagram_url && (
+                <a 
+                  href={business.instagram_url} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 bg-pink-600/80 hover:bg-pink-600 text-white px-4 py-2 rounded-full text-xs md:text-sm transition-colors border border-pink-500/50 backdrop-blur-sm"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+                  Instagram
+                </a>
+              )}
+
+              {business.tiktok_url && (
+                <a 
+                  href={business.tiktok_url} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 bg-black/60 hover:bg-black/80 text-white px-4 py-2 rounded-full text-xs md:text-sm transition-colors border border-gray-600/50 backdrop-blur-sm"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"></path></svg>
+                  TikTok
+                </a>
+              )}
+            </div>
+          )}
 
           <div className="bg-white/20 backdrop-blur-md border border-white/30 text-white px-5 py-2 rounded-full text-xs md:text-sm flex items-center gap-2 shadow-sm font-medium">
             <span>Terverifikasi</span>

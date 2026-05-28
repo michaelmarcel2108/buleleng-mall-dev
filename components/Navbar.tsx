@@ -51,7 +51,7 @@ export default function Navbar() {
 
       const { data: products } = await supabase
         .from("products")
-        .select("id, name, image_url") 
+        .select("id, name, image_url, slug")
         .ilike("name", `%${keyword}%`)
         .limit(5);
 
@@ -82,7 +82,7 @@ export default function Navbar() {
     if (type === "category") {
       router.push(`/catalog?category=${item.slug || item.name.toLowerCase()}`);
     } else {
-      router.push(`/product/${item.slug || item.id}`); 
+      router.push(`/product/${item.slug}`);
     }
   };
 
