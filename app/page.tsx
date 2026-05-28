@@ -1,13 +1,12 @@
-import { supabase } from "@/lib/supabase";
 import HomeTabs from "@/components/HomeTabs";
 import Link from "next/link";
 import BannerSlideshow from "@/components/BannerSlideshow";
+import { createClient } from "@/lib/supabase/server";
 
 export default async function Home() {
+  const supabase = await createClient();
   // Mengambil data kategori dari Supabase
-  const { data: categories } = await supabase
-    .from("categories")
-    .select("*");
+  const { data: categories } = await supabase.from("categories").select("*");
 
   // Mengambil data toko/UMKM dari Supabase
   const { data: businesses } = await supabase
@@ -24,11 +23,9 @@ export default async function Home() {
   return (
     <main>
       <section className="relative flex flex-col gap-6 md:gap-8 bg-[#274a6a] py-8 md:py-12 overflow-hidden">
-      
         <div className="absolute inset-0 bg-pattern z-0 opacity-20 pointer-events-none"></div>
 
         <div className="relative z-10 w-full flex flex-col gap-6 md:gap-8">
-          
           {/* BANNER SECTION */}
           <div className="w-full px-4 md:px-16 mx-auto overflow-hidden">
             <div className="max-w-6xl mx-auto shadow-lg rounded-xl overflow-hidden">
@@ -38,18 +35,20 @@ export default async function Home() {
 
           {/* TEXT & CTA SECTION */}
           <div className="flex flex-col gap-4 px-4 md:px-16 text-white font-sans max-w-4xl mx-auto text-center items-center">
-            
             <h1 className="font-display text-2xl md:text-4xl lg:text-5xl font-bold text-white leading-tight drop-shadow-sm">
-              Bangga Karya Buleleng. <br className="hidden md:block" /> Kualitas Global, Pesona Lokal.
+              Bangga Karya Buleleng. <br className="hidden md:block" /> Kualitas
+              Global, Pesona Lokal.
             </h1>
-            
+
             <p className="text-sm md:text-base text-white/90 max-w-2xl leading-relaxed">
-              Temukan koleksi eksklusif dari UMKM terbaik Buleleng. Dari tangan-tangan kreatif lokal, kini hadir lebih dekat untuk kita semua. Mari dukung dan majukan ekonomi kreatif daerah!
+              Temukan koleksi eksklusif dari UMKM terbaik Buleleng. Dari
+              tangan-tangan kreatif lokal, kini hadir lebih dekat untuk kita
+              semua. Mari dukung dan majukan ekonomi kreatif daerah!
             </p>
 
             {/* TOMBOL CALL TO ACTION */}
-            <Link 
-              href="/catalog" 
+            <Link
+              href="/catalog"
               className="mt-3 bg-white px-8 py-3 text-[#274a6a] text-center rounded-full hover:bg-gray-100 hover:scale-105 transition-all inline-block w-fit font-bold shadow-lg"
             >
               Belanja Sekarang
@@ -60,7 +59,7 @@ export default async function Home() {
               <p className="font-medium text-xs md:text-sm text-white/70 uppercase tracking-wider">
                 Jelajahi Kategori
               </p>
-              
+
               <div className="flex flex-row flex-wrap justify-center gap-2 max-w-3xl">
                 {categories?.map((category) => (
                   <Link
@@ -73,7 +72,6 @@ export default async function Home() {
                 ))}
               </div>
             </div>
-
           </div>
         </div>
       </section>

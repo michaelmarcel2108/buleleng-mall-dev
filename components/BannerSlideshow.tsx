@@ -1,24 +1,31 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabase"; 
+import { createClient } from "@/lib/supabase/client";
+import Image from "next/image";
+
+type Banner = {
+  id: string;
+  mobile_img: string;
+  desktop_img: string;
+  alt_text: string;
+};
 
 export default function BannerSlideshow() {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [mounted, setMounted] = useState(false);
-  
-  const [banners, setBanners] = useState<any[]>([]);
+
+  const [banners, setBanners] = useState<Banner[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  const supabase = createClient();
+
   useEffect(() => {
-    setMounted(true);
-    
     const fetchBanners = async () => {
       const { data, error } = await supabase
         .from("banners")
         .select("*")
-        .order("id", { ascending: true }); 
-        
+        .order("id", { ascending: true });
+
       if (error) console.error("Error dari Supabase:", error);
 
       if (data && data.length > 0) {
@@ -28,26 +35,34 @@ export default function BannerSlideshow() {
     };
 
     fetchBanners();
-  }, []);
+  }, [supabase]);
 
   useEffect(() => {
     if (banners.length <= 1) return;
-    
+
     const timer = setInterval(() => {
       setCurrentIndex((prev) => (prev === banners.length - 1 ? 0 : prev + 1));
-    }, 5000); 
-    
+    }, 5000);
+
     return () => clearInterval(timer);
   }, [banners.length]);
-
-  if (!mounted) return null;
 
   if (isLoading) {
     return (
       /* PERBAIKAN: Mengganti h-[...] statis menjadi rasio presisi menggunakan aspect-[width/height] */
-      <div className="w-full aspect-[430/288] md:aspect-[1920/500] bg-gray-200 animate-pulse rounded-xl flex items-center justify-center shadow-sm">
-        <svg className="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+      <div className="w-full aspect-430/288 md:aspect-1920/500 bg-gray-200 animate-pulse rounded-xl flex items-center justify-center shadow-sm">
+        <svg
+          className="w-8 h-8 text-gray-300"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+          />
         </svg>
       </div>
     );
@@ -58,7 +73,7 @@ export default function BannerSlideshow() {
   }
 
   return (
-    <div className="relative w-full aspect-[430/288] md:aspect-[1920/500] overflow-hidden rounded-xl shadow-sm group bg-gray-100">
+    <div className="relative w-full aspect-430/288 md:aspect-1920/500 overflow-hidden rounded-xl shadow-sm group bg-gray-100">
       {banners.map((banner, index) => (
         <div
           key={banner.id}
@@ -67,7 +82,9 @@ export default function BannerSlideshow() {
           }`}
         >
           {banner.mobile_img && (
-            <img
+            <Image
+              width={430}
+              height={288}
               src={banner.mobile_img}
               alt={banner.alt_text || "Promo Buleleng Mall"}
               className="w-full h-full object-cover block md:hidden"
@@ -76,7 +93,9 @@ export default function BannerSlideshow() {
           )}
 
           {banner.desktop_img && (
-            <img
+            <Image
+              width={1920}
+              height={500}
               src={banner.desktop_img}
               alt={banner.alt_text || "Promo Buleleng Mall"}
               className="w-full h-full object-cover hidden md:block"
@@ -102,20 +121,52 @@ export default function BannerSlideshow() {
           ))}
         </div>
       )}
-      
+
       {banners.length > 1 && (
         <>
-          <button 
-            onClick={() => setCurrentIndex(prev => prev === 0 ? banners.length - 1 : prev - 1)}
+          <button
+            onClick={() =>
+              setCurrentIndex((prev) =>
+                prev === 0 ? banners.length - 1 : prev - 1,
+              )
+            }
             className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 z-20 bg-white/80 hover:bg-white text-[#274a6a] p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hidden md:block shadow-md"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" /></svg>
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M15 19l-7-7 7-7"
+              />
+            </svg>
           </button>
-          <button 
-            onClick={() => setCurrentIndex(prev => prev === banners.length - 1 ? 0 : prev + 1)}
+          <button
+            onClick={() =>
+              setCurrentIndex((prev) =>
+                prev === banners.length - 1 ? 0 : prev + 1,
+              )
+            }
             className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 z-20 bg-white/80 hover:bg-white text-[#274a6a] p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hidden md:block shadow-md"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" /></svg>
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M9 5l7 7-7 7"
+              />
+            </svg>
           </button>
         </>
       )}

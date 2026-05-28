@@ -1,5 +1,5 @@
-import { supabase } from "@/lib/supabase";
 import ProductCard from "@/components/ProductCard";
+import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 
 interface CatalogPageProps {
@@ -12,9 +12,9 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
   const queryText = resolvedSearchParams.search || resolvedSearchParams.q || "";
   const categoryParam = resolvedSearchParams.category || "";
 
-  let productQuery = supabase
-    .from("products")
-    .select("*, businesses(name)");
+  const supabase = await createClient();
+
+  let productQuery = supabase.from("products").select("*, businesses(name)");
 
   if (queryText) {
     const { data: matchedCategories } = await supabase
@@ -26,7 +26,7 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
 
     if (categoryIds.length > 0) {
       productQuery = productQuery.or(
-        `name.ilike.%${queryText}%,category_id.in.(${categoryIds.join(",")})`
+        `name.ilike.%${queryText}%,category_id.in.(${categoryIds.join(",")})`,
       );
     } else {
       productQuery = productQuery.ilike("name", `%${queryText}%`);
@@ -66,12 +66,12 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
             className={`px-4 py-2 rounded-full text-xs font-medium border transition-all duration-300 ${
               !categoryParam
                 ? "bg-[#274a6a] text-white border-[#274a6a] shadow-md"
-                : "bg-[#274a6a]/10 text-[#274a6a] border-transparent hover:bg-[#274a6a] hover:text-white cursor-pointer" 
+                : "bg-[#274a6a]/10 text-[#274a6a] border-transparent hover:bg-[#274a6a] hover:text-white cursor-pointer"
             }`}
           >
             Semua Produk
           </Link>
-          
+
           {allCategories?.map((cat) => {
             const isSelected = categoryParam === cat.slug;
             return (
@@ -102,7 +102,10 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
           <p className="text-gray-500 font-medium">
             Produk yang kamu cari tidak ditemukan.
           </p>
-          <Link href="/catalog" className="text-sm text-[#274a6a] font-bold hover:underline">
+          <Link
+            href="/catalog"
+            className="text-sm text-[#274a6a] font-bold hover:underline"
+          >
             Reset Filter
           </Link>
         </div>

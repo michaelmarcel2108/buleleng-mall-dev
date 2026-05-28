@@ -1,0 +1,12 @@
+# Ignore artifacts and directories
+node_modules
+.next
+out
+dist
+build
+
+# Ignore specific file types if needed
+*.log
+*.lock
+package-lock.json
+pnpm-lock.yaml
