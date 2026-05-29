@@ -120,7 +120,7 @@ export default function BannerSlideshow() {
               width={500}
               height={500}
               src={banner.image_url_mobile}
-              alt={banner.title || "Promo Buleleng Mall"}
+              alt={banner.alt_text || "Promo Buleleng Mall"}
               className="w-full h-full object-cover block md:hidden pointer-events-none"
               loading={index === 0 ? "eager" : "lazy"}
               draggable="false"
@@ -132,7 +132,7 @@ export default function BannerSlideshow() {
               width={500}
               height={500}
               src={banner.image_url_desktop}
-              alt={banner.title || "Promo Buleleng Mall"}
+              alt={banner.alt_text || "Promo Buleleng Mall"}
               className="w-full h-full object-cover hidden md:block pointer-events-none"
               loading={index === 0 ? "eager" : "lazy"}
               draggable="false"
