@@ -62,7 +62,7 @@ export default function AdminDashboard() {
           </button>
         </div>
         
-        {activeTab === "toko" && <TabToko onViewProducts={handleViewProducts} />}
+        {activeTab === "toko" && <TabToko />}
         {activeTab === "toko" && <TabToko />}
         {activeTab === "kategori" && <TabKategori />}
         {activeTab === "banner" && <TabBanner />}
