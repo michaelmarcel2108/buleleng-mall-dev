@@ -12,11 +12,14 @@ const generateSlug = (text: string) => {
     .replace(/-+$/, '');
 };
 
-export default function TabToko({ onViewProducts }: { onViewProducts?: (businessName: string) => void }) {
+interface TabTokoProps {
+  onViewProducts?: (businessName: string) => void;
+}
+
+export default function TabToko({ onViewProducts }: TabTokoProps) {
   const [businesses, setBusinesses] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   
-  // State Modal Form
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
   const [isEditMode, setIsEditMode] = useState(false);
@@ -39,7 +42,6 @@ export default function TabToko({ onViewProducts }: { onViewProducts?: (business
   };
 
   const fetchData = async () => {
-    // Mengambil data dari tabel businesses
     const { data } = await supabase.from("businesses").select("*").order("name");
     if (data) setBusinesses(data);
   };
@@ -84,7 +86,6 @@ export default function TabToko({ onViewProducts }: { onViewProducts?: (business
     try {
       let finalImageUrl = editingItem.image_url || "";
       
-      // Proses upload logo/gambar toko
       if (selectedFile) {
         const fileExt = selectedFile.name.split(".").pop();
         const fileName = `toko-${Date.now()}-${Math.floor(Math.random() * 1000)}.${fileExt}`;
@@ -94,7 +95,6 @@ export default function TabToko({ onViewProducts }: { onViewProducts?: (business
         finalImageUrl = supabase.storage.from("image").getPublicUrl(fileName).data.publicUrl;
       }
 
-      // Payload standar untuk Toko. Sesuaikan jika ada kolom tambahan di Supabase Anda.
       const payload = {
         name: editingItem.name,
         slug: generateSlug(editingItem.name),
@@ -254,7 +254,6 @@ export default function TabToko({ onViewProducts }: { onViewProducts?: (business
         </div>
       )}
 
-      {/* TOAST NOTIFIKASI */}
       {toast && (
         <div className={`fixed bottom-5 right-5 z-[70] flex items-center gap-3 px-5 py-3.5 rounded-xl shadow-xl text-white font-medium text-sm transition-all duration-300 ${toast.type === "success" ? "bg-green-600" : "bg-red-600"}`}>
           <span>{toast.message}</span>
