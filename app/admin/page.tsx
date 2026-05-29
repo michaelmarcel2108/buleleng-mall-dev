@@ -106,8 +106,15 @@ export default function AdminDashboard() {
           </button>
         </div>
 
-        {activeTab === "toko" && <TabToko />}
-        {activeTab === "produk" && <TabProduk />}
+        {activeTab === "toko" && (
+          <TabToko onViewProducts={handleViewProducts} />
+        )}
+        {activeTab === "produk" && (
+          <TabProduk
+            prefilledSearch={productSearchQuery}
+            onSearchChange={setProductSearchQuery}
+          />
+        )}
         {activeTab === "kategori" && <TabKategori />}
         {activeTab === "banner" && <TabBanner />}
         {activeTab === "profil" && <TabProfileKoperasi />}

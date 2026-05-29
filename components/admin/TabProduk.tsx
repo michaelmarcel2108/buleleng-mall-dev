@@ -126,11 +126,27 @@ export default function TabProduk({
   };
 
   const filteredProducts = products.filter((p) => {
-    // We safely use [0] because Supabase relationships return arrays in your types
-    const businessName = p.businesses?.[0]?.name || "";
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const bizData = p.businesses as any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const catData = p.categories as any;
+
+    const businessName = Array.isArray(bizData)
+      ? bizData[0]?.name
+      : bizData?.name;
+    const categoryName = Array.isArray(catData)
+      ? catData[0]?.name
+      : catData?.name;
+
+    const finalBusinessName = businessName || "";
+    const finalCategoryName = categoryName || "";
+
+    const query = searchQuery.toLowerCase();
+
     return (
-      p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      businessName.toLowerCase().includes(searchQuery.toLowerCase())
+      p.name.toLowerCase().includes(query) ||
+      finalBusinessName.toLowerCase().includes(query) ||
+      finalCategoryName.toLowerCase().includes(query) // Added category search as a bonus!
     );
   });
 
@@ -281,63 +297,72 @@ export default function TabProduk({
             </tr>
           </thead>
           <tbody className="text-sm divide-y divide-gray-100">
-            {filteredProducts.map((p) => (
-              <tr key={p.id} className="hover:bg-gray-50/50 transition-colors">
-                <td className="p-4 font-medium text-gray-800 flex items-center gap-3">
-                  {p.image_url ? (
-                    <Image
-                      src={p.image_url}
-                      alt={p.name}
-                      width={40}
-                      height={40}
-                      className="w-10 h-10 object-cover rounded-lg bg-gray-100 border"
-                    />
-                  ) : (
-                    <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center text-[10px] text-gray-400 border border-dashed">
-                      No Img
+            {filteredProducts.map((p) => {
+              // Safely extract names for the table columns
+              const catData = p.categories as Category[];
+              const bizData = p.businesses as Business[];
+              const categoryName = catData[0]?.name || catData?.[0]?.name || "";
+              const businessName = bizData[0]?.name || bizData?.[0]?.name || "";
+
+              return (
+                <tr
+                  key={p.id}
+                  className="hover:bg-gray-50/50 transition-colors"
+                >
+                  <td className="p-4 font-medium text-gray-800 flex items-center gap-3">
+                    {p.image_url ? (
+                      <Image
+                        src={p.image_url}
+                        alt={p.name}
+                        width={40}
+                        height={40}
+                        className="w-10 h-10 object-cover rounded-lg bg-gray-100 border"
+                      />
+                    ) : (
+                      <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center text-[10px] text-gray-400 border border-dashed">
+                        No Img
+                      </div>
+                    )}
+                    <span>{p.name}</span>
+                  </td>
+                  <td className="p-4 text-gray-500">
+                    {categoryName ? (
+                      <span className="px-2.5 py-1 bg-blue-50 text-[#274a6a] rounded-full text-xs font-medium border border-blue-100">
+                        {categoryName}
+                      </span>
+                    ) : (
+                      "-"
+                    )}
+                  </td>
+                  <td className="p-4 text-gray-500">{businessName || "-"}</td>
+                  <td className="p-4 text-gray-500 hidden md:table-cell">
+                    Rp {p.price?.toLocaleString("id-ID")}
+                  </td>
+                  <td className="p-4">
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => openEditModal(p)}
+                        className="text-[#274a6a] hover:bg-blue-50 font-medium text-xs border border-[#274a6a]/20 px-3 py-1.5 rounded transition-colors"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() =>
+                          setDeleteConfirm({
+                            isOpen: true,
+                            id: p.id,
+                            name: p.name,
+                          })
+                        }
+                        className="text-red-600 hover:bg-red-50 font-medium text-xs border border-red-200 px-3 py-1.5 rounded transition-colors"
+                      >
+                        Hapus
+                      </button>
                     </div>
-                  )}
-                  <span>{p.name}</span>
-                </td>
-                <td className="p-4 text-gray-500">
-                  {p.categories?.[0]?.name ? (
-                    <span className="px-2.5 py-1 bg-blue-50 text-[#274a6a] rounded-full text-xs font-medium border border-blue-100">
-                      {p.categories[0].name}
-                    </span>
-                  ) : (
-                    "-"
-                  )}
-                </td>
-                <td className="p-4 text-gray-500">
-                  {p.businesses?.[0]?.name || "-"}
-                </td>
-                <td className="p-4 text-gray-500 hidden md:table-cell">
-                  Rp {p.price?.toLocaleString("id-ID")}
-                </td>
-                <td className="p-4">
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => openEditModal(p)}
-                      className="text-[#274a6a] hover:bg-blue-50 font-medium text-xs border border-[#274a6a]/20 px-3 py-1.5 rounded transition-colors"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() =>
-                        setDeleteConfirm({
-                          isOpen: true,
-                          id: p.id,
-                          name: p.name,
-                        })
-                      }
-                      className="text-red-600 hover:bg-red-50 font-medium text-xs border border-red-200 px-3 py-1.5 rounded transition-colors"
-                    >
-                      Hapus
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
+                  </td>
+                </tr>
+              );
+            })}
             {filteredProducts.length === 0 && (
               <tr>
                 <td colSpan={5} className="p-8 text-center text-gray-500">
