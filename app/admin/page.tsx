@@ -8,9 +8,10 @@ import TabProduk from "@/components/admin/TabProduk";
 import TabKategori from "@/components/admin/TabKategori";
 import TabBanner from "@/components/admin/TabBanner";
 import TabProfileKoperasi from "@/components/admin/TabProfileKoperasi";
+import TabArtikel from "@/components/admin/TabArtikel";
 
 export default function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState<"toko" | "produk" | "kategori" | "banner" | "profil">("toko");
+  const [activeTab, setActiveTab] = useState<"toko" | "produk" | "kategori" | "banner" | "profil" | "artikel">("toko");
   const [productSearchQuery, setProductSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
@@ -52,6 +53,13 @@ export default function AdminDashboard() {
           <button onClick={() => setActiveTab("banner")} className={`pb-3 px-2 font-medium text-sm md:text-base transition-colors ${activeTab === "banner" ? "border-b-2 border-[#274a6a] text-[#274a6a]" : "text-gray-500 hover:text-gray-700"}`}>Kelola Banner</button>
 
           <button onClick={() => setActiveTab("profil")} className={`pb-3 px-2 font-medium text-sm md:text-base transition-colors ${activeTab === "profil" ? "border-b-2 border-[#274a6a] text-[#274a6a]" : "text-gray-500 hover:text-gray-700"}`}>Profil Koperasi</button>
+
+          <button 
+            onClick={() => setActiveTab("artikel")} 
+            className={`pb-3 px-2 font-medium text-sm md:text-base transition-colors ${activeTab === "artikel" ? "border-b-2 border-[#274a6a] text-[#274a6a]" : "text-gray-500 hover:text-gray-700"}`}
+          >
+            Kelola Artikel
+          </button>
         </div>
         
         {activeTab === "toko" && <TabToko onViewProducts={handleViewProducts} />}
@@ -59,6 +67,7 @@ export default function AdminDashboard() {
         {activeTab === "kategori" && <TabKategori />}
         {activeTab === "banner" && <TabBanner />}
         {activeTab === "profil" && <TabProfileKoperasi />}
+        {activeTab === "artikel" && <TabArtikel />}
       </main>
     </div>
   );
