@@ -3,18 +3,29 @@ import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 
 interface CatalogPageProps {
-  searchParams: Promise<{ q?: string; search?: string; category?: string }>;
+  searchParams: Promise<{
+    q?: string;
+    search?: string;
+    category?: string;
+    page?: string;
+  }>;
 }
 
 export default async function CatalogPage({ searchParams }: CatalogPageProps) {
+  const supabase = await createClient();
   const resolvedSearchParams = await searchParams;
-  // PERBAIKAN 2: Ambil dari .search atau .q sebagai fallback
+
   const queryText = resolvedSearchParams.search || resolvedSearchParams.q || "";
   const categoryParam = resolvedSearchParams.category || "";
 
-  const supabase = await createClient();
+  const ITEMS_PER_PAGE = 6;
+  const currentPage = parseInt(resolvedSearchParams.page || "1", 10);
+  const from = (currentPage - 1) * ITEMS_PER_PAGE;
+  const to = from + ITEMS_PER_PAGE - 1;
 
-  let productQuery = supabase.from("products").select("*, businesses(name)");
+  let productQuery = supabase
+    .from("products")
+    .select("*, businesses(name)", { count: "exact" });
 
   if (queryText) {
     const { data: matchedCategories } = await supabase
@@ -45,8 +56,20 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
     }
   }
 
-  const { data: products } = await productQuery;
+  productQuery = productQuery.range(from, to);
+
+  const { data: products, count } = await productQuery;
   const { data: allCategories } = await supabase.from("categories").select("*");
+
+  const totalPages = count ? Math.ceil(count / ITEMS_PER_PAGE) : 0;
+
+  const createPageUrl = (pageNumber: number) => {
+    const params = new URLSearchParams();
+    if (queryText) params.set("q", queryText);
+    if (categoryParam) params.set("category", categoryParam);
+    params.set("page", pageNumber.toString());
+    return `/catalog?${params.toString()}`;
+  };
 
   return (
     <main className="w-full min-h-screen p-8 md:p-16 flex flex-col gap-8 bg-gray-50/50">
@@ -55,7 +78,7 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
           {queryText ? `Hasil Pencarian: "${queryText}"` : "Katalog Produk"}
         </h1>
         <p className="text-gray-500 text-sm md:text-base">
-          Menampilkan produk-produk pilihan dari UMKM lokal Buleleng
+          Produk-produk pilihan dari UMKM lokal Buleleng
         </p>
       </div>
 
@@ -92,10 +115,59 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
       </div>
 
       {products && products.length > 0 ? (
-        <div className="w-full grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
-          {products.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
+        <div className="flex flex-col gap-8">
+          <div className="w-full grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            {products.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+
+          {totalPages > 1 && (
+            <div className="flex justify-center items-center gap-4 mt-8">
+              {currentPage > 1 ? (
+                <Link
+                  href={createPageUrl(currentPage - 1)}
+                  className="px-4 py-2 bg-white border border-gray-200 rounded-md shadow-sm text-sm font-medium text-[#274a6a] hover:bg-gray-50 transition-colors"
+                >
+                  Sebelumnya
+                </Link>
+              ) : (
+                <button
+                  disabled
+                  className="px-4 py-2 bg-gray-50 border border-gray-200 rounded-md text-sm font-medium text-gray-400 cursor-not-allowed"
+                >
+                  Sebelumnya
+                </button>
+              )}
+
+              <span className="text-sm text-gray-600">
+                Halaman{" "}
+                <span className="font-semibold text-foreground">
+                  {currentPage}
+                </span>{" "}
+                dari{" "}
+                <span className="font-semibold text-foreground">
+                  {totalPages}
+                </span>
+              </span>
+
+              {currentPage < totalPages ? (
+                <Link
+                  href={createPageUrl(currentPage + 1)}
+                  className="px-4 py-2 bg-white border border-gray-200 rounded-md shadow-sm text-sm font-medium text-[#274a6a] hover:bg-gray-50 transition-colors"
+                >
+                  Selanjutnya
+                </Link>
+              ) : (
+                <button
+                  disabled
+                  className="px-4 py-2 bg-gray-50 border border-gray-200 rounded-md text-sm font-medium text-gray-400 cursor-not-allowed"
+                >
+                  Selanjutnya
+                </button>
+              )}
+            </div>
+          )}
         </div>
       ) : (
         <div className="w-full text-center py-16 bg-white rounded-xl border border-gray-100 shadow-sm flex flex-col items-center justify-center gap-2">

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import ProductCard from "./ProductCard";
 import BrandCard from "./BrandCard";
+import Link from "next/link"; // Import Link dari Next.js
 
 interface HomeTabsProps {
   products: any[];
@@ -105,6 +106,15 @@ export default function HomeTabs({ products, businesses }: HomeTabsProps) {
             )}
           </div>
         )}
+      </div>
+
+      <div className="w-full flex justify-center mt-2 md:mt-4">
+        <Link 
+          href="/catalog" 
+          className="px-8 py-2.5 bg-white border-2 border-[#274a6a] text-[#274a6a] rounded-full font-bold text-sm md:text-base hover:bg-[#274a6a] hover:text-white transition-all duration-300 shadow-sm hover:shadow-md"
+        >
+          Lihat Semua Produk
+        </Link>
       </div>
     </div>
   );
