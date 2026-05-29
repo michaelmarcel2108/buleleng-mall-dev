@@ -19,7 +19,10 @@ export interface Product {
   // Change this from an array (Category[]) to a single object:
   categories: Category | null;
 }
-export interface category {
+export interface Banner {
   id: string;
-  name: string;
+  title: string;
+  image_url_mobile: string;
+  image_url_desktop: string;
+  alt_text: string;
 }
