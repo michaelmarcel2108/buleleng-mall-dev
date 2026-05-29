@@ -1,8 +1,11 @@
 "use client";
 
 import { createClient } from "@/lib/supabase/client";
-import { Banner, Category } from "@/types";
-import { useState, useEffect } from "react";
+import { Category } from "@/types"; // Removed Banner
+import { useState, useEffect, useCallback } from "react";
+
+// Local intersection type in case your global Category type is missing 'slug'
+type ExtendedCategory = Category & { slug?: string };
 
 const generateSlug = (text: string) => {
   return text
@@ -16,28 +19,42 @@ const generateSlug = (text: string) => {
 };
 
 export default function TabKategori() {
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [categories, setCategories] = useState<ExtendedCategory[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingItem, setEditingItem] = useState<Partial<Banner> | null>(null);
+
+  // FIX 1: Changed Partial<Banner> to Partial<Category>
+  const [editingItem, setEditingItem] =
+    useState<Partial<ExtendedCategory> | null>(null);
+
   const [isEditMode, setIsEditMode] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [toast, setToast] = useState<{
     message: string;
     type: "success" | "error";
   } | null>(null);
+
   const supabase = createClient();
 
+  const fetchCategoriesData = useCallback(async () => {
+    const { data } = await supabase
+      .from("categories")
+      .select("*")
+      .order("name");
+    return data;
+  }, [supabase]);
+
   useEffect(() => {
-    const fetchData = async () => {
-      const { data } = await supabase
-        .from("categories")
-        .select("*")
-        .order("name");
-      if (data) setCategories(data);
+    let isMounted = true;
+
+    fetchCategoriesData().then((data) => {
+      if (data && isMounted) setCategories(data);
+    });
+
+    return () => {
+      isMounted = false; // Cleanup to prevent memory leaks
     };
-    fetchData();
-  }, []);
+  }, [fetchCategoriesData]);
 
   const showToast = (
     message: string,
@@ -48,7 +65,7 @@ export default function TabKategori() {
   };
 
   const filteredCategories = categories.filter((c) =>
-    c.name.toLowerCase().includes(searchQuery.toLowerCase()),
+    (c.name || "").toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   const openAddModal = () => {
@@ -57,27 +74,34 @@ export default function TabKategori() {
     setIsModalOpen(true);
   };
 
-  const openEditModal = (item: Banner) => {
+  // FIX 4: Changed parameter from Banner to ExtendedCategory
+  const openEditModal = (item: ExtendedCategory) => {
     setIsEditMode(true);
     setEditingItem({ ...item });
     setIsModalOpen(true);
   };
 
-  const handleDeleteData = async (id: string) => {
+  // FIX 5: Allowed id to be string | number to match your DB types
+  const handleDeleteData = async (id: string | number) => {
     if (!window.confirm(`Apakah Anda yakin ingin menghapus kategori ini?`))
       return;
     try {
       const { error } = await supabase.from("categories").delete().eq("id", id);
       if (error) throw error;
-      fetchData();
+      fetchCategoriesData();
       showToast(`Kategori berhasil dihapus!`, "success");
-    } catch (error: any) {
-      showToast("Gagal menghapus: " + error.message, "error");
+    } catch (error: unknown) {
+      // FIX 6: Replaced 'any' with 'unknown' and typecast to Error
+      const err = error as Error;
+      showToast("Gagal menghapus: " + err.message, "error");
     }
   };
 
-  const handleSaveData = async (e: React.FormEvent) => {
+  const handleSaveData = async (e: React.SubmitEvent) => {
     e.preventDefault();
+    // Safety check to ensure editingItem is not null before proceeding
+    if (!editingItem || !editingItem.name) return;
+
     setIsSaving(true);
     try {
       const payload = {
@@ -97,13 +121,15 @@ export default function TabKategori() {
       }
 
       setIsModalOpen(false);
-      fetchData();
+      fetchCategoriesData();
       showToast(
         `Kategori berhasil ${isEditMode ? "diperbarui" : "ditambahkan"}!`,
         "success",
       );
-    } catch (error: any) {
-      showToast("Gagal menyimpan: " + error.message, "error");
+    } catch (error: unknown) {
+      // FIX 6: Replaced 'any' with 'unknown'
+      const err = error as Error;
+      showToast("Gagal menyimpan: " + err.message, "error");
     } finally {
       setIsSaving(false);
     }
@@ -170,8 +196,9 @@ export default function TabKategori() {
                     >
                       Edit
                     </button>
+                    {/* Fixed 'id' type checking issue */}
                     <button
-                      onClick={() => handleDeleteData(c.id)}
+                      onClick={() => c.id && handleDeleteData(c.id)}
                       className="text-red-600 hover:bg-red-50 font-medium text-xs border border-red-200 px-3 py-1.5 rounded transition-colors"
                     >
                       Hapus
@@ -212,7 +239,7 @@ export default function TabKategori() {
                 </label>
                 <input
                   type="text"
-                  value={editingItem.name || ""}
+                  value={editingItem?.name || ""} // FIX 7: Added optional chaining
                   onChange={(e) =>
                     setEditingItem({ ...editingItem, name: e.target.value })
                   }

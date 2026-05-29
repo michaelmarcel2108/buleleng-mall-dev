@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import TabToko from "@/components/admin/TabToko";
-import TabProduk from "@/components/admin/TabProduk";
 import TabKategori from "@/components/admin/TabKategori";
 import TabBanner from "@/components/admin/TabBanner";
 import TabProfileKoperasi from "@/components/admin/TabProfileKoperasi";
@@ -28,7 +27,7 @@ export default function AdminDashboard() {
       else setIsLoading(false);
     };
     checkAuth();
-  }, [router]);
+  }, [router, supabase.auth]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();

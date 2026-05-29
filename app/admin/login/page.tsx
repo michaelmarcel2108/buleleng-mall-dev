@@ -24,7 +24,7 @@ export default function AdminLogin() {
       }
     };
     checkSession();
-  }, [router]);
+  }, [router, supabase.auth]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
