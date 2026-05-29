@@ -10,8 +10,9 @@ export default function BannerSlideshow() {
   const [banners, setBanners] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const [touchStart, setTouchStart] = useState(0);
-  const [touchEnd, setTouchEnd] = useState(0);
+  // State untuk mendeteksi gesekan jari (diubah menggunakan null agar tap biasa tidak error)
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -43,8 +44,9 @@ export default function BannerSlideshow() {
     return () => clearInterval(timer);
   }, [banners.length]);
 
-  // --- FUNGSI DETEKSI SWIPE ---
+  // --- FUNGSI DETEKSI SWIPE YANG SUDAH DIPERBAIKI ---
   const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null); // Reset nilai akhir setiap kali mulai menyentuh
     setTouchStart(e.targetTouches[0].clientX);
   };
 
@@ -53,21 +55,18 @@ export default function BannerSlideshow() {
   };
 
   const handleTouchEnd = () => {
-    if (!touchStart || !touchEnd) return;
+    if (touchStart === null || touchEnd === null) return;
     
     const distance = touchStart - touchEnd;
-    const isLeftSwipe = distance > 50; // Geser ke kiri (Next)
-    const isRightSwipe = distance < -50; // Geser ke kanan (Prev)
+    const minSwipeDistance = 50; // Minimal jarak geser agar dianggap swipe (bukan cuma kesentuh dikit)
     
-    if (isLeftSwipe) {
+    if (distance > minSwipeDistance) {
+      // Geser jari ke kiri (Next)
       setCurrentIndex((prev) => (prev === banners.length - 1 ? 0 : prev + 1));
-    } else if (isRightSwipe) {
+    } else if (distance < -minSwipeDistance) {
+      // Geser jari ke kanan (Prev)
       setCurrentIndex((prev) => (prev === 0 ? banners.length - 1 : prev - 1));
     }
-    
-    // Reset koordinat sentuhan
-    setTouchStart(0);
-    setTouchEnd(0);
   };
 
   if (!mounted) return null;
@@ -88,7 +87,8 @@ export default function BannerSlideshow() {
 
   return (
     <div 
-      className="relative w-full aspect-[430/288] md:aspect-[1920/500] overflow-hidden rounded-xl shadow-sm group bg-gray-100"
+      // class touch-pan-y ditambahkan di sini
+      className="relative w-full aspect-[430/288] md:aspect-[1920/500] overflow-hidden rounded-xl shadow-sm group bg-gray-100 touch-pan-y"
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
@@ -96,7 +96,7 @@ export default function BannerSlideshow() {
       {banners.map((banner, index) => (
         <div
           key={banner.id}
-          className={`absolute top-0 left-0 w-full h-full transition-opacity duration-1000 ease-in-out ${
+          className={`absolute top-0 left-0 w-full h-full transition-opacity duration-700 ease-in-out ${
             index === currentIndex ? "opacity-100 z-10" : "opacity-0 z-0"
           }`}
         >
@@ -104,7 +104,7 @@ export default function BannerSlideshow() {
             <img
               src={banner.image_url_mobile}
               alt={banner.title || "Promo Buleleng Mall"}
-              className="w-full h-full object-cover block md:hidden"
+              className="w-full h-full object-cover block md:hidden pointer-events-none"
               loading={index === 0 ? "eager" : "lazy"}
               draggable="false" 
             />
@@ -114,9 +114,9 @@ export default function BannerSlideshow() {
             <img
               src={banner.image_url_desktop}
               alt={banner.title || "Promo Buleleng Mall"}
-              className="w-full h-full object-cover hidden md:block"
+              className="w-full h-full object-cover hidden md:block pointer-events-none"
               loading={index === 0 ? "eager" : "lazy"}
-              draggable="false" 
+              draggable="false"
             />
           )}
         </div>
