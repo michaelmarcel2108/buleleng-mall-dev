@@ -41,7 +41,6 @@ export default function TabArtikel() {
     type: "success" | "error";
   } | null>(null);
 
-  // 1. The reusable fetch function (Returns data, does NOT set state)
   const fetchArticlesData = useCallback(async () => {
     const { data } = await supabase
       .from("articles")
@@ -50,7 +49,6 @@ export default function TabArtikel() {
     return data;
   }, [supabase]);
 
-  // 2. The Linter-Friendly useEffect
   useEffect(() => {
     let isMounted = true;
 
@@ -59,7 +57,7 @@ export default function TabArtikel() {
     });
 
     return () => {
-      isMounted = false; // Prevents memory leaks if component unmounts quickly
+      isMounted = false;
     };
   }, [fetchArticlesData]);
 
