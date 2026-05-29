@@ -63,7 +63,7 @@ export default function AdminDashboard() {
         </div>
         
         {activeTab === "toko" && <TabToko onViewProducts={handleViewProducts} />}
-        {activeTab === "produk" && <TabProduk prefilledSearch={productSearchQuery} onSearchChange={setProductSearchQuery} />}
+        {activeTab === "toko" && <TabToko />}
         {activeTab === "kategori" && <TabKategori />}
         {activeTab === "banner" && <TabBanner />}
         {activeTab === "profil" && <TabProfileKoperasi />}
