@@ -3,21 +3,18 @@
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import Image from "next/image";
-
-type Banner = {
-  id: string;
-  mobile_img: string;
-  desktop_img: string;
-  alt_text: string;
-};
+import { Banner } from "@/types";
 
 export default function BannerSlideshow() {
+  const supabase = createClient();
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const [banners, setBanners] = useState<Banner[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const supabase = createClient();
+  // State untuk mendeteksi gesekan jari (diubah menggunakan null agar tap biasa tidak error)
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchBanners = async () => {
@@ -47,22 +44,53 @@ export default function BannerSlideshow() {
     return () => clearInterval(timer);
   }, [banners.length]);
 
+  // --- FUNGSI DETEKSI SWIPE YANG SUDAH DIPERBAIKI ---
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null); // Reset nilai akhir setiap kali mulai menyentuh
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (touchStart === null || touchEnd === null) return;
+
+    const distance = touchStart - touchEnd;
+    const minSwipeDistance = 50; // Minimal jarak geser agar dianggap swipe (bukan cuma kesentuh dikit)
+
+    if (distance > minSwipeDistance) {
+      // Geser jari ke kiri (Next)
+      setCurrentIndex((prev) => (prev === banners.length - 1 ? 0 : prev + 1));
+    } else if (distance < -minSwipeDistance) {
+      // Geser jari ke kanan (Prev)
+      setCurrentIndex((prev) => (prev === 0 ? banners.length - 1 : prev - 1));
+    }
+  };
+
   if (isLoading) {
     return (
-      /* PERBAIKAN: Mengganti h-[...] statis menjadi rasio presisi menggunakan aspect-[width/height] */
-      <div className="w-full aspect-430/288 md:aspect-1920/500 bg-gray-200 animate-pulse rounded-xl flex items-center justify-center shadow-sm">
+      <div className="w-full aspect-[430/288] md:aspect-[1920/500] bg-white/5 animate-pulse rounded-xl flex items-center justify-center shadow-sm border border-white/10">
+        {/* Animasi Bulatan Loading */}
         <svg
-          className="w-8 h-8 text-gray-300"
+          className="animate-spin h-8 w-8 text-white/50"
           fill="none"
-          stroke="currentColor"
           viewBox="0 0 24 24"
         >
+          <circle
+            className="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            strokeWidth="4"
+          ></circle>
           <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-          />
+            className="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+          ></path>
         </svg>
       </div>
     );
@@ -73,33 +101,37 @@ export default function BannerSlideshow() {
   }
 
   return (
-    <div className="relative w-full aspect-430/288 md:aspect-1920/500 overflow-hidden rounded-xl shadow-sm group bg-gray-100">
+    <div
+      // class touch-pan-y ditambahkan di sini
+      className="relative w-full aspect-[430/288] md:aspect-[1920/500] overflow-hidden rounded-xl shadow-sm group bg-gray-100 touch-pan-y"
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+    >
       {banners.map((banner, index) => (
         <div
           key={banner.id}
-          className={`absolute top-0 left-0 w-full h-full transition-opacity duration-1000 ease-in-out ${
+          className={`absolute top-0 left-0 w-full h-full transition-opacity duration-700 ease-in-out ${
             index === currentIndex ? "opacity-100 z-10" : "opacity-0 z-0"
           }`}
         >
-          {banner.mobile_img && (
+          {banner.image_url_mobile && (
             <Image
-              width={430}
-              height={288}
-              src={banner.mobile_img}
-              alt={banner.alt_text || "Promo Buleleng Mall"}
-              className="w-full h-full object-cover block md:hidden"
+              src={banner.image_url_mobile}
+              alt={banner.title || "Promo Buleleng Mall"}
+              className="w-full h-full object-cover block md:hidden pointer-events-none"
               loading={index === 0 ? "eager" : "lazy"}
+              draggable="false"
             />
           )}
 
-          {banner.desktop_img && (
+          {banner.image_url_desktop && (
             <Image
-              width={1920}
-              height={500}
-              src={banner.desktop_img}
-              alt={banner.alt_text || "Promo Buleleng Mall"}
-              className="w-full h-full object-cover hidden md:block"
+              src={banner.image_url_desktop}
+              alt={banner.title || "Promo Buleleng Mall"}
+              className="w-full h-full object-cover hidden md:block pointer-events-none"
               loading={index === 0 ? "eager" : "lazy"}
+              draggable="false"
             />
           )}
         </div>

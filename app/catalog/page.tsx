@@ -18,7 +18,7 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
   const queryText = resolvedSearchParams.search || resolvedSearchParams.q || "";
   const categoryParam = resolvedSearchParams.category || "";
 
-  const ITEMS_PER_PAGE = 6;
+  const ITEMS_PER_PAGE = 10;
   const currentPage = parseInt(resolvedSearchParams.page || "1", 10);
   const from = (currentPage - 1) * ITEMS_PER_PAGE;
   const to = from + ITEMS_PER_PAGE - 1;
