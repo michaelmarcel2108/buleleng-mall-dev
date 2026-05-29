@@ -12,7 +12,7 @@ const generateSlug = (text: string) => {
     .replace(/-+$/, '');
 };
 
-export default function TabToko() {
+export default function TabToko({ onViewProducts }: { onViewProducts?: (businessName: string) => void }) {
   const [businesses, setBusinesses] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   
