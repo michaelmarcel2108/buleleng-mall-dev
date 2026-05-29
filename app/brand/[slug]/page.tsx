@@ -1,15 +1,21 @@
-import { supabase } from "@/lib/supabase";
+import { createClient } from "@/lib/supabase/server";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-export default async function BrandPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function BrandPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
   const resolvedParams = await params;
   const currentSlug = resolvedParams.slug;
+  const supabase = await createClient();
 
   const { data: business } = await supabase
     .from("businesses")
     .select("*")
-    .eq("slug", currentSlug) 
+    .eq("slug", currentSlug)
     .single();
 
   if (!business) {
@@ -24,11 +30,13 @@ export default async function BrandPage({ params }: { params: Promise<{ slug: st
 
   return (
     <main className="min-h-screen bg-gray-50 flex flex-col">
-      <section className="relative w-full min-h-[300px] md:min-h-[400px] bg-[#274a6a] flex flex-col items-center justify-center text-center px-4 py-12 overflow-hidden">
+      <section className="relative w-full min-h-75 md:min-h-100 bg-[#274a6a] flex flex-col items-center justify-center text-center px-4 py-12 overflow-hidden">
         {business.image_url && (
-          <img 
-            src={business.image_url} 
-            alt={`Foto ${business.name}`} 
+          <Image
+            width={500}
+            height={500}
+            src={business.image_url}
+            alt={`Foto ${business.name}`}
             className="absolute inset-0 w-full h-full object-cover z-0"
           />
         )}
@@ -37,59 +45,111 @@ export default async function BrandPage({ params }: { params: Promise<{ slug: st
 
         <div className="relative z-10 flex flex-col items-center mt-8">
           {business.logo_url ? (
-            <img 
-              src={business.logo_url} 
-              alt={`Logo ${business.name}`} 
-              className="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-white object-cover mb-4 shadow-lg bg-white" 
+            <Image
+              width={500}
+              height={500}
+              src={business.logo_url}
+              alt={`Logo ${business.name}`}
+              className="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-white object-cover mb-4 shadow-lg bg-white"
             />
           ) : (
             <div className="w-24 h-24 md:w-32 md:h-32 rounded-full bg-white text-[#274a6a] flex items-center justify-center text-xl md:text-2xl font-bold mb-4 shadow-lg border-4 border-white">
               {business.name.charAt(0).toUpperCase()}
             </div>
           )}
-          
+
           <h1 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-white mb-3 drop-shadow-md">
             {business.name}
           </h1>
-          
+
           <p className="text-white/90 text-sm md:text-base max-w-2xl drop-shadow-md mb-4 leading-relaxed">
-            {business.desc || "Mitra resmi UMKM Buleleng Mall. Menghadirkan produk-produk lokal berkualitas terbaik langsung untuk Anda."}
+            {business.desc ||
+              "Mitra resmi UMKM Buleleng Mall. Menghadirkan produk-produk lokal berkualitas terbaik langsung untuk Anda."}
           </p>
 
-          {(business.shopee_url || business.instagram_url || business.tiktok_url) && (
+          {(business.shopee_url ||
+            business.instagram_url ||
+            business.tiktok_url) && (
             <div className="flex flex-wrap justify-center gap-3 mb-6">
               {business.shopee_url && (
-                <a 
-                  href={business.shopee_url} 
-                  target="_blank" 
+                <a
+                  href={business.shopee_url}
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 bg-orange-500/80 hover:bg-orange-500 text-white px-4 py-2 rounded-full text-xs md:text-sm transition-colors border border-orange-400/50 backdrop-blur-sm"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <path d="M16 10a4 4 0 0 1-8 0"></path>
+                  </svg>
                   Shopee
                 </a>
               )}
-              
+
               {business.instagram_url && (
-                <a 
-                  href={business.instagram_url} 
-                  target="_blank" 
+                <a
+                  href={business.instagram_url}
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 bg-pink-600/80 hover:bg-pink-600 text-white px-4 py-2 rounded-full text-xs md:text-sm transition-colors border border-pink-500/50 backdrop-blur-sm"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <rect
+                      x="2"
+                      y="2"
+                      width="20"
+                      height="20"
+                      rx="5"
+                      ry="5"
+                    ></rect>
+                    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                    <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                  </svg>
                   Instagram
                 </a>
               )}
 
               {business.tiktok_url && (
-                <a 
-                  href={business.tiktok_url} 
-                  target="_blank" 
+                <a
+                  href={business.tiktok_url}
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 bg-black/60 hover:bg-black/80 text-white px-4 py-2 rounded-full text-xs md:text-sm transition-colors border border-gray-600/50 backdrop-blur-sm"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"></path></svg>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"></path>
+                  </svg>
                   TikTok
                 </a>
               )}
@@ -117,34 +177,64 @@ export default async function BrandPage({ params }: { params: Promise<{ slug: st
         {!products || products.length === 0 ? (
           <div className="w-full bg-white rounded-xl p-12 text-center shadow-sm border border-gray-100 flex flex-col items-center">
             <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-4">
-              <svg className="w-10 h-10 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
+              <svg
+                className="w-10 h-10 text-gray-300"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+                />
+              </svg>
             </div>
-            <h3 className="text-lg font-bold text-gray-700">Belum Ada Produk</h3>
-            <p className="text-sm text-gray-500 mt-2">Toko ini belum menambahkan produk ke dalam katalog.</p>
+            <h3 className="text-lg font-bold text-gray-700">
+              Belum Ada Produk
+            </h3>
+            <p className="text-sm text-gray-500 mt-2">
+              Toko ini belum menambahkan produk ke dalam katalog.
+            </p>
           </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
             {products.map((product) => (
-              <Link 
-                href={`/product/${product.slug}`} 
+              <Link
+                href={`/product/${product.slug}`}
                 key={product.id}
                 className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow group flex flex-col"
               >
                 <div className="relative w-full aspect-square bg-gray-100 overflow-hidden">
                   {product.image_url ? (
-                    <img 
-                      src={product.image_url} 
-                      alt={product.name} 
+                    <Image
+                      width={500}
+                      height={500}
+                      src={product.image_url}
+                      alt={product.name}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-gray-400">
-                      <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                      <svg
+                        className="w-8 h-8"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                        />
+                      </svg>
                     </div>
                   )}
                 </div>
 
-                <div className="p-4 flex flex-col flex-grow">
+                <div className="p-4 flex flex-col grow">
                   <h3 className="font-semibold text-gray-800 text-sm md:text-base line-clamp-2 group-hover:text-[#274a6a] transition-colors">
                     {product.name}
                   </h3>

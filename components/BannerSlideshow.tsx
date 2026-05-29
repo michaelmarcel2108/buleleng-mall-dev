@@ -1,13 +1,15 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabase"; 
+import { createClient } from "@/lib/supabase/client";
+import Image from "next/image";
+import { Banner } from "@/types";
 
 export default function BannerSlideshow() {
+  const supabase = createClient();
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [mounted, setMounted] = useState(false);
-  
-  const [banners, setBanners] = useState<any[]>([]);
+
+  const [banners, setBanners] = useState<Banner[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   // State untuk mendeteksi gesekan jari (diubah menggunakan null agar tap biasa tidak error)
@@ -15,14 +17,12 @@ export default function BannerSlideshow() {
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
 
   useEffect(() => {
-    setMounted(true);
-    
     const fetchBanners = async () => {
       const { data, error } = await supabase
         .from("banners")
         .select("*")
-        .order("id", { ascending: true }); 
-        
+        .order("id", { ascending: true });
+
       if (error) console.error("Error dari Supabase:", error);
 
       if (data && data.length > 0) {
@@ -32,15 +32,15 @@ export default function BannerSlideshow() {
     };
 
     fetchBanners();
-  }, []);
+  }, [supabase]);
 
   useEffect(() => {
     if (banners.length <= 1) return;
-    
+
     const timer = setInterval(() => {
       setCurrentIndex((prev) => (prev === banners.length - 1 ? 0 : prev + 1));
-    }, 5000); 
-    
+    }, 5000);
+
     return () => clearInterval(timer);
   }, [banners.length]);
 
@@ -56,10 +56,10 @@ export default function BannerSlideshow() {
 
   const handleTouchEnd = () => {
     if (touchStart === null || touchEnd === null) return;
-    
+
     const distance = touchStart - touchEnd;
     const minSwipeDistance = 50; // Minimal jarak geser agar dianggap swipe (bukan cuma kesentuh dikit)
-    
+
     if (distance > minSwipeDistance) {
       // Geser jari ke kiri (Next)
       setCurrentIndex((prev) => (prev === banners.length - 1 ? 0 : prev + 1));
@@ -69,15 +69,28 @@ export default function BannerSlideshow() {
     }
   };
 
-  if (!mounted) return null;
-
   if (isLoading) {
     return (
-      <div className="w-full aspect-[430/288] md:aspect-[1920/500] bg-white/5 animate-pulse rounded-xl flex items-center justify-center shadow-sm border border-white/10">
+      <div className="w-full aspect-430/288 md:aspect-1920/500 bg-white/5 animate-pulse rounded-xl flex items-center justify-center shadow-sm border border-white/10">
         {/* Animasi Bulatan Loading */}
-        <svg className="animate-spin h-8 w-8 text-white/50" fill="none" viewBox="0 0 24 24">
-          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        <svg
+          className="animate-spin h-8 w-8 text-white/50"
+          fill="none"
+          viewBox="0 0 24 24"
+        >
+          <circle
+            className="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            strokeWidth="4"
+          ></circle>
+          <path
+            className="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+          ></path>
         </svg>
       </div>
     );
@@ -88,9 +101,9 @@ export default function BannerSlideshow() {
   }
 
   return (
-    <div 
+    <div
       // class touch-pan-y ditambahkan di sini
-      className="relative w-full aspect-[430/288] md:aspect-[1920/500] overflow-hidden rounded-xl shadow-sm group bg-gray-100 touch-pan-y"
+      className="relative w-full aspect-430/288 md:aspect-1920/500 overflow-hidden rounded-xl shadow-sm group bg-gray-100 touch-pan-y"
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
@@ -103,17 +116,21 @@ export default function BannerSlideshow() {
           }`}
         >
           {banner.image_url_mobile && (
-            <img
+            <Image
+              width={500}
+              height={500}
               src={banner.image_url_mobile}
               alt={banner.title || "Promo Buleleng Mall"}
               className="w-full h-full object-cover block md:hidden pointer-events-none"
               loading={index === 0 ? "eager" : "lazy"}
-              draggable="false" 
+              draggable="false"
             />
           )}
 
           {banner.image_url_desktop && (
-            <img
+            <Image
+              width={500}
+              height={500}
               src={banner.image_url_desktop}
               alt={banner.title || "Promo Buleleng Mall"}
               className="w-full h-full object-cover hidden md:block pointer-events-none"
@@ -140,20 +157,52 @@ export default function BannerSlideshow() {
           ))}
         </div>
       )}
-      
+
       {banners.length > 1 && (
         <>
-          <button 
-            onClick={() => setCurrentIndex(prev => prev === 0 ? banners.length - 1 : prev - 1)}
+          <button
+            onClick={() =>
+              setCurrentIndex((prev) =>
+                prev === 0 ? banners.length - 1 : prev - 1,
+              )
+            }
             className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 z-20 bg-white/80 hover:bg-white text-[#274a6a] p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hidden md:block shadow-md"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" /></svg>
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M15 19l-7-7 7-7"
+              />
+            </svg>
           </button>
-          <button 
-            onClick={() => setCurrentIndex(prev => prev === banners.length - 1 ? 0 : prev + 1)}
+          <button
+            onClick={() =>
+              setCurrentIndex((prev) =>
+                prev === banners.length - 1 ? 0 : prev + 1,
+              )
+            }
             className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 z-20 bg-white/80 hover:bg-white text-[#274a6a] p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hidden md:block shadow-md"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" /></svg>
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M9 5l7 7-7 7"
+              />
+            </svg>
           </button>
         </>
       )}

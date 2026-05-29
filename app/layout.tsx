@@ -26,10 +26,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="id" suppressHydrationWarning>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col bg-gray-50/50`}>
-        <NextTopLoader 
-          color="#274a6a" 
+    <html lang="id">
+      <body
+        suppressHydrationWarning
+        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col bg-gray-50/50`}
+      >
+        <NextTopLoader
+          color="#274a6a"
           initialPosition={0.08}
           crawlSpeed={200}
           height={3}
@@ -39,15 +42,12 @@ export default function RootLayout({
           speed={200}
           shadow="0 0 10px #274a6a, 0 0 5px #274a6a"
         />
-        
+
         <Navbar />
-        
-        <div className="flex-1 w-full flex flex-col">
-          {children}
-        </div>
-        
+
+        <div className="flex-1 w-full flex flex-col">{children}</div>
+
         <Footer />
-        
       </body>
     </html>
   );

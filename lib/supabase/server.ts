@@ -1,7 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
-const COOKIE_NAME = "rdcourt-session";
+const COOKIE_NAME = "buleleng-mall-session";
 
 export async function createClient() {
   const cookieStore = await cookies();
