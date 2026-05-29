@@ -8,6 +8,7 @@ import TabBanner from "@/components/admin/TabBanner";
 import TabProfileKoperasi from "@/components/admin/TabProfileKoperasi";
 import TabArtikel from "@/components/admin/TabArtikel";
 import { createClient } from "@/lib/supabase/client";
+import TabProduk from "@/components/admin/TabProduk";
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<
@@ -106,7 +107,7 @@ export default function AdminDashboard() {
         </div>
 
         {activeTab === "toko" && <TabToko />}
-        {activeTab === "toko" && <TabToko />}
+        {activeTab === "produk" && <TabProduk />}
         {activeTab === "kategori" && <TabKategori />}
         {activeTab === "banner" && <TabBanner />}
         {activeTab === "profil" && <TabProfileKoperasi />}
