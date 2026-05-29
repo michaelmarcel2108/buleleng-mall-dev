@@ -224,6 +224,8 @@ export default function TabArtikel() {
                 <td className="p-4 font-medium text-gray-800 flex items-center gap-3">
                   {a.image_url ? (
                     <Image
+                      width={500}
+                      height={500}
                       src={a.image_url}
                       alt={a.title}
                       className="w-12 h-10 object-cover rounded-lg bg-gray-100 border"
@@ -338,6 +340,8 @@ export default function TabArtikel() {
                   </label>
                   {isEditMode && editingItem?.image_url && !selectedFile && (
                     <Image
+                      width={500}
+                      height={500}
                       src={editingItem.image_url}
                       alt="Preview"
                       className="w-full h-24 object-cover rounded-lg border border-gray-200 mb-2 shadow-sm"

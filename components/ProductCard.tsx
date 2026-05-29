@@ -49,7 +49,7 @@ export default function ProductCard({ product }: ProductCardProps) {
         </div>
         {product.businesses && (
           <div className="text-sm text-gray-500 line-clamp-1">
-            {product.businesses[0].name}
+            {product.businesses[0]?.name}
           </div>
         )}
         <div className="font-bold mt-1 text-[#caa74a]" suppressHydrationWarning>

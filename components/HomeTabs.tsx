@@ -4,24 +4,32 @@ import { useState, useEffect } from "react";
 import ProductCard from "./ProductCard";
 import BrandCard from "./BrandCard";
 import Link from "next/link"; // Import Link dari Next.js
+import { Business, Product } from "@/types";
 
 interface HomeTabsProps {
-  products: any[];
-  businesses: any[];
+  products: Product[];
+  businesses: Business[];
 }
 
 export default function HomeTabs({ products, businesses }: HomeTabsProps) {
   const [activeTab, setActiveTab] = useState("terlaris");
-  const [recentProducts, setRecentProducts] = useState<any[]>([]);
+  const [recentProducts, setRecentProducts] = useState<Product[]>([]);
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    setIsClient(true);
+    Promise.resolve().then(() => {
+      setIsClient(true);
+    });
+  }, []);
+
+  useEffect(() => {
     if (activeTab === "incaran") {
-      const existing = localStorage.getItem("recent_products");
-      if (existing) {
-        setRecentProducts(JSON.parse(existing));
-      }
+      Promise.resolve().then(() => {
+        const existing = localStorage.getItem("recent_products");
+        if (existing) {
+          setRecentProducts(JSON.parse(existing));
+        }
+      });
     }
   }, [activeTab]);
 
@@ -39,9 +47,9 @@ export default function HomeTabs({ products, businesses }: HomeTabsProps) {
         >
           Produk Terlaris
         </button>
-        
+
         <span className="text-[#274a6a]/30 font-light">|</span>
-        
+
         <button
           onClick={() => setActiveTab("brand")}
           className={`px-3 py-1 transition-all outline-none focus:outline-none whitespace-nowrap border-none ring-0 ${
@@ -52,9 +60,9 @@ export default function HomeTabs({ products, businesses }: HomeTabsProps) {
         >
           Brand Lokal
         </button>
-        
+
         <span className="text-[#274a6a]/30 font-light">|</span>
-        
+
         <button
           onClick={() => setActiveTab("incaran")}
           className={`px-3 py-1 transition-all outline-none focus:outline-none whitespace-nowrap border-none ring-0 ${
@@ -80,7 +88,11 @@ export default function HomeTabs({ products, businesses }: HomeTabsProps) {
         {activeTab === "brand" && (
           <div className="w-full grid grid-cols-2 md:grid-cols-4 gap-4">
             {businesses.map((business) => (
-              <BrandCard key={business.id} business={business} />
+              <BrandCard
+                key={business.id}
+                // Inline fix to guarantee 'desc' is always a string, satisfying BrandCardProps
+                business={{ ...business, desc: business.desc || "" }}
+              />
             ))}
           </div>
         )}
@@ -96,7 +108,10 @@ export default function HomeTabs({ products, businesses }: HomeTabsProps) {
             ) : recentProducts.length > 0 ? (
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {recentProducts.map((product, index) => (
-                  <ProductCard key={`recent-${product.id}-${index}`} product={product} />
+                  <ProductCard
+                    key={`recent-${product.id}-${index}`}
+                    product={product}
+                  />
                 ))}
               </div>
             ) : (
@@ -109,8 +124,8 @@ export default function HomeTabs({ products, businesses }: HomeTabsProps) {
       </div>
 
       <div className="w-full flex justify-center mt-2 md:mt-4">
-        <Link 
-          href="/catalog" 
+        <Link
+          href="/catalog"
           className="px-8 py-2.5 bg-white border-2 border-[#274a6a] text-[#274a6a] rounded-full font-bold text-sm md:text-base hover:bg-[#274a6a] hover:text-white transition-all duration-300 shadow-sm hover:shadow-md"
         >
           Lihat Semua Produk

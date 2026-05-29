@@ -72,6 +72,8 @@ export default async function ProductDetailPage({
         <div className="w-full aspect-square relative shadow-sm border border-gray-100 rounded-xl overflow-hidden bg-gray-100">
           {mainProduct.image_url ? (
             <Image
+              width={500}
+              height={500}
               src={mainProduct.image_url}
               alt={`Gambar ${mainProduct.name}`}
               fill
@@ -156,7 +158,7 @@ export default async function ProductDetailPage({
               className="w-full bg-[#25D366] text-white px-8 py-3 rounded-xl font-medium hover:bg-[#128C7E] transition-all md:text-lg flex items-center justify-center gap-3 shadow-sm"
             >
               <svg
-                className="!w-6 !h-6 !min-w-[24px] !min-h-[24px]"
+                className="w-6! h-6! min-w-6! min-h-6!"
                 fill="currentColor"
                 viewBox="0 0 24 24"
               >

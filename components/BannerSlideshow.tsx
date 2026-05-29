@@ -71,7 +71,7 @@ export default function BannerSlideshow() {
 
   if (isLoading) {
     return (
-      <div className="w-full aspect-[430/288] md:aspect-[1920/500] bg-white/5 animate-pulse rounded-xl flex items-center justify-center shadow-sm border border-white/10">
+      <div className="w-full aspect-430/288 md:aspect-1920/500 bg-white/5 animate-pulse rounded-xl flex items-center justify-center shadow-sm border border-white/10">
         {/* Animasi Bulatan Loading */}
         <svg
           className="animate-spin h-8 w-8 text-white/50"
@@ -103,7 +103,7 @@ export default function BannerSlideshow() {
   return (
     <div
       // class touch-pan-y ditambahkan di sini
-      className="relative w-full aspect-[430/288] md:aspect-[1920/500] overflow-hidden rounded-xl shadow-sm group bg-gray-100 touch-pan-y"
+      className="relative w-full aspect-430/288 md:aspect-1920/500 overflow-hidden rounded-xl shadow-sm group bg-gray-100 touch-pan-y"
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
@@ -117,6 +117,8 @@ export default function BannerSlideshow() {
         >
           {banner.image_url_mobile && (
             <Image
+              width={500}
+              height={500}
               src={banner.image_url_mobile}
               alt={banner.title || "Promo Buleleng Mall"}
               className="w-full h-full object-cover block md:hidden pointer-events-none"
@@ -127,6 +129,8 @@ export default function BannerSlideshow() {
 
           {banner.image_url_desktop && (
             <Image
+              width={500}
+              height={500}
               src={banner.image_url_desktop}
               alt={banner.title || "Promo Buleleng Mall"}
               className="w-full h-full object-cover hidden md:block pointer-events-none"

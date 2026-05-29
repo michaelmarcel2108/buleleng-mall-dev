@@ -33,6 +33,8 @@ export default async function BrandPage({
       <section className="relative w-full min-h-75 md:min-h-100 bg-[#274a6a] flex flex-col items-center justify-center text-center px-4 py-12 overflow-hidden">
         {business.image_url && (
           <Image
+            width={500}
+            height={500}
             src={business.image_url}
             alt={`Foto ${business.name}`}
             className="absolute inset-0 w-full h-full object-cover z-0"
@@ -44,6 +46,8 @@ export default async function BrandPage({
         <div className="relative z-10 flex flex-col items-center mt-8">
           {business.logo_url ? (
             <Image
+              width={500}
+              height={500}
               src={business.logo_url}
               alt={`Logo ${business.name}`}
               className="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-white object-cover mb-4 shadow-lg bg-white"
@@ -205,6 +209,8 @@ export default async function BrandPage({
                 <div className="relative w-full aspect-square bg-gray-100 overflow-hidden">
                   {product.image_url ? (
                     <Image
+                      width={500}
+                      height={500}
                       src={product.image_url}
                       alt={product.name}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"

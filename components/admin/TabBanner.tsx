@@ -203,6 +203,8 @@ export default function TabBanner() {
                 <td className="p-4 font-medium text-gray-800">
                   {b.image_url ? (
                     <Image
+                      width={500}
+                      height={500}
                       src={b.image_url}
                       alt={b.title}
                       className="w-24 h-12 object-cover rounded-lg bg-gray-100 border shadow-sm"
@@ -326,6 +328,8 @@ export default function TabBanner() {
                   </label>
                   {isEditMode && editingItem.image_url && !selectedFile && (
                     <Image
+                      width={500}
+                      height={500}
                       src={editingItem.image_url}
                       alt="Preview"
                       className="w-full h-32 object-cover rounded-lg border border-gray-200 mb-2 shadow-sm"
