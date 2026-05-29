@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import Image from "next/image";
 import Link from "next/link";
 import ProductCard from "@/components/ProductCard";
+import { Product } from "@/types";
 
 interface ProductDetailProps {
   params: {
@@ -57,9 +58,9 @@ export default async function ProductDetailPage({
     );
   }
 
-  const mainProduct = data as any;
-  const categoryData = mainProduct.categories;
-  const businessData = mainProduct.businesses;
+  const mainProduct = data as Product;
+  const categoryData = mainProduct.categories[0];
+  const businessData = mainProduct.businesses[0];
 
   const waNumber = "6281234567890";
   const waMessage = `Halo ${businessData?.name || "Admin"}, saya tertarik untuk membeli produk *${mainProduct.name}* seharga Rp${mainProduct.price ? mainProduct.price.toLocaleString("id-ID") : "0"} yang saya temukan di Buleleng Mall. Apakah stoknya masih tersedia?`;
@@ -175,7 +176,7 @@ export default async function ProductDetailPage({
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {catalogProducts && catalogProducts.length > 0 ? (
             catalogProducts.map((product) => (
-              <ProductCard key={product.id} product={product as any} />
+              <ProductCard key={product.id} product={product as Product} />
             ))
           ) : (
             <p className="text-gray-500 col-span-full py-4 text-center">

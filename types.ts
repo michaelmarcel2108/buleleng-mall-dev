@@ -1,7 +1,8 @@
 export interface Business {
   id: string;
   name: string;
-  desc: string;
+  slug: string;
+  desc?: string;
 }
 
 export interface Category {
@@ -14,11 +15,14 @@ export interface Product {
   id: string;
   slug: string;
   name: string;
+  description: string;
+  price: number;
+  shopee_url?: string;
   image_url: string;
-
-  // Change this from an array (Category[]) to a single object:
-  categories: Category | null;
+  categories: Category[];
+  businesses: Business[];
 }
+
 export interface Banner {
   id: string;
   title: string;
