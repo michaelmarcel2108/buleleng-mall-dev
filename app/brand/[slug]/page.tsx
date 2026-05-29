@@ -30,7 +30,7 @@ export default async function BrandPage({
 
   return (
     <main className="min-h-screen bg-gray-50 flex flex-col">
-      <section className="relative w-full min-h-[300px] md:min-h-[400px] bg-[#274a6a] flex flex-col items-center justify-center text-center px-4 py-12 overflow-hidden">
+      <section className="relative w-full min-h-75 md:min-h-100 bg-[#274a6a] flex flex-col items-center justify-center text-center px-4 py-12 overflow-hidden">
         {business.image_url && (
           <Image
             src={business.image_url}
@@ -228,7 +228,7 @@ export default async function BrandPage({
                   )}
                 </div>
 
-                <div className="p-4 flex flex-col flex-grow">
+                <div className="p-4 flex flex-col grow">
                   <h3 className="font-semibold text-gray-800 text-sm md:text-base line-clamp-2 group-hover:text-[#274a6a] transition-colors">
                     {product.name}
                   </h3>

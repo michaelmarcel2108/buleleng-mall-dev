@@ -30,3 +30,13 @@ export interface Banner {
   image_url_desktop: string;
   alt_text: string;
 }
+
+export interface Article {
+  id: string;
+  title: string;
+  slug: string;
+  content: string;
+  author: string;
+  image_url: string;
+  created_at: string;
+}
