@@ -10,6 +10,9 @@ export default function BannerSlideshow() {
   const [banners, setBanners] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  const [touchStart, setTouchStart] = useState(0);
+  const [touchEnd, setTouchEnd] = useState(0);
+
   useEffect(() => {
     setMounted(true);
     
@@ -40,6 +43,33 @@ export default function BannerSlideshow() {
     return () => clearInterval(timer);
   }, [banners.length]);
 
+  // --- FUNGSI DETEKSI SWIPE ---
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > 50; // Geser ke kiri (Next)
+    const isRightSwipe = distance < -50; // Geser ke kanan (Prev)
+    
+    if (isLeftSwipe) {
+      setCurrentIndex((prev) => (prev === banners.length - 1 ? 0 : prev + 1));
+    } else if (isRightSwipe) {
+      setCurrentIndex((prev) => (prev === 0 ? banners.length - 1 : prev - 1));
+    }
+    
+    // Reset koordinat sentuhan
+    setTouchStart(0);
+    setTouchEnd(0);
+  };
+
   if (!mounted) return null;
 
   if (isLoading) {
@@ -57,7 +87,12 @@ export default function BannerSlideshow() {
   }
 
   return (
-    <div className="relative w-full aspect-[430/288] md:aspect-[1920/500] overflow-hidden rounded-xl shadow-sm group bg-gray-100">
+    <div 
+      className="relative w-full aspect-[430/288] md:aspect-[1920/500] overflow-hidden rounded-xl shadow-sm group bg-gray-100"
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+    >
       {banners.map((banner, index) => (
         <div
           key={banner.id}
@@ -71,6 +106,7 @@ export default function BannerSlideshow() {
               alt={banner.title || "Promo Buleleng Mall"}
               className="w-full h-full object-cover block md:hidden"
               loading={index === 0 ? "eager" : "lazy"}
+              draggable="false" 
             />
           )}
 
@@ -80,6 +116,7 @@ export default function BannerSlideshow() {
               alt={banner.title || "Promo Buleleng Mall"}
               className="w-full h-full object-cover hidden md:block"
               loading={index === 0 ? "eager" : "lazy"}
+              draggable="false" 
             />
           )}
         </div>

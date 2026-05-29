@@ -15,11 +15,18 @@ const generateSlug = (text: string) => {
 export default function TabArtikel() {
   const [articles, setArticles] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  
+  // State Modal Form
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
   const [isEditMode, setIsEditMode] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  
+  // State Modal Hapus Custom
+  const [deleteConfirm, setDeleteConfirm] = useState({ isOpen: false, id: "", title: "" });
+  const [isDeleting, setIsDeleting] = useState(false);
+
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
   useEffect(() => {
@@ -54,15 +61,19 @@ export default function TabArtikel() {
     setIsModalOpen(true);
   };
 
-  const handleDeleteData = async (id: string) => {
-    if (!window.confirm(`Apakah Anda yakin ingin menghapus artikel ini?`)) return;
+  // FUNGSI EKSEKUSI HAPUS CUSTOM
+  const confirmDelete = async () => {
+    setIsDeleting(true);
     try {
-      const { error } = await supabase.from("articles").delete().eq("id", id);
+      const { error } = await supabase.from("articles").delete().eq("id", deleteConfirm.id);
       if (error) throw error;
       fetchData();
-      showToast(`Data artikel berhasil dihapus!`, "success");
+      showToast(`Artikel berhasil dihapus!`, "success");
     } catch (error: any) {
       showToast("Gagal menghapus: " + error.message, "error");
+    } finally {
+      setIsDeleting(false);
+      setDeleteConfirm({ isOpen: false, id: "", title: "" }); // Tutup modal hapus
     }
   };
 
@@ -72,7 +83,6 @@ export default function TabArtikel() {
     try {
       let finalImageUrl = editingItem.image_url || "";
       
-      // Proses upload gambar jika ada file baru
       if (selectedFile) {
         const fileExt = selectedFile.name.split(".").pop();
         const fileName = `article-${Date.now()}-${Math.floor(Math.random() * 1000)}.${fileExt}`;
@@ -149,7 +159,13 @@ export default function TabArtikel() {
                 <td className="p-4">
                   <div className="flex gap-2">
                     <button onClick={() => openEditModal(a)} className="text-[#274a6a] hover:bg-blue-50 font-medium text-xs border border-[#274a6a]/20 px-3 py-1.5 rounded transition-colors">Edit</button>
-                    <button onClick={() => handleDeleteData(a.id)} className="text-red-600 hover:bg-red-50 font-medium text-xs border border-red-200 px-3 py-1.5 rounded transition-colors">Hapus</button>
+                    {/* TOMBOL HAPUS MEMBUKA MODAL CUSTOM */}
+                    <button 
+                      onClick={() => setDeleteConfirm({ isOpen: true, id: a.id, title: a.title })} 
+                      className="text-red-600 hover:bg-red-50 font-medium text-xs border border-red-200 px-3 py-1.5 rounded transition-colors"
+                    >
+                      Hapus
+                    </button>
                   </div>
                 </td>
               </tr>
@@ -159,6 +175,7 @@ export default function TabArtikel() {
         </table>
       </div>
 
+      {/* POP-UP MODAL FORM TAMBAH/EDIT */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-3xl overflow-hidden flex flex-col max-h-[90vh]">
@@ -202,7 +219,54 @@ export default function TabArtikel() {
         </div>
       )}
 
-      {toast && <div className="fixed bottom-5 right-5 z-50 flex items-center gap-3 px-5 py-3.5 rounded-xl shadow-xl text-white font-medium text-sm bg-gray-800"><span>{toast.message}</span></div>}
+      {/* POP-UP KONFIRMASI HAPUS MODERN */}
+      {deleteConfirm.isOpen && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center transform transition-all">
+            <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 border-[6px] border-red-50/50">
+              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+            <h3 className="font-bold text-gray-900 text-lg mb-2">Hapus Artikel?</h3>
+            <p className="text-gray-500 text-sm mb-6 leading-relaxed">
+              Apakah Anda yakin ingin menghapus <span className="font-semibold text-gray-700">"{deleteConfirm.title}"</span>? Tindakan ini tidak dapat dibatalkan.
+            </p>
+            <div className="flex gap-3 justify-center w-full">
+              <button 
+                onClick={() => setDeleteConfirm({ isOpen: false, id: "", title: "" })} 
+                className="flex-1 px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-sm font-semibold transition-colors"
+              >
+                Batal
+              </button>
+              <button 
+                onClick={confirmDelete} 
+                disabled={isDeleting}
+                className="flex-1 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl text-sm font-semibold transition-colors disabled:opacity-70 flex justify-center items-center gap-2"
+              >
+                {isDeleting ? (
+                  <>
+                    <svg className="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Menghapus...
+                  </>
+                ) : (
+                  "Ya, Hapus"
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* TOAST NOTIFIKASI */}
+      {toast && (
+        <div className={`fixed bottom-5 right-5 z-[70] flex items-center gap-3 px-5 py-3.5 rounded-xl shadow-xl text-white font-medium text-sm transition-all duration-300 ${toast.type === "success" ? "bg-green-600" : "bg-red-600"}`}>
+          <span>{toast.message}</span>
+        </div>
+      )}
     </div>
   );
 }
