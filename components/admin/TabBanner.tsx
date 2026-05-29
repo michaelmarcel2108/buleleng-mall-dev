@@ -139,7 +139,8 @@ export default function TabBanner() {
                   {b.image_url_desktop ? <img src={b.image_url_desktop} alt={b.title} className="w-32 h-12 object-cover rounded-md bg-gray-100 border shadow-sm" /> : <div className="w-32 h-12 bg-gray-100 rounded-md flex items-center justify-center text-[10px] text-gray-400 border border-dashed">No Desktop</div>}
                 </td>
                 <td className="p-4 hidden sm:table-cell">
-                  {b.image_url_mobile ? <img src={b.image_url_mobile} alt={b.title} className="w-12 h-20 object-cover rounded-md bg-gray-100 border shadow-sm" /> : <div className="w-12 h-20 bg-gray-100 rounded-md flex items-center justify-center text-[10px] text-gray-400 border border-dashed text-center">No Mobile</div>}
+                  {/* PERBAIKAN PREVIEW: w-24 h-12 untuk rasio landscape */}
+                  {b.image_url_mobile ? <img src={b.image_url_mobile} alt={b.title} className="w-24 h-12 object-cover rounded-md bg-gray-100 border shadow-sm" /> : <div className="w-24 h-12 bg-gray-100 rounded-md flex items-center justify-center text-[10px] text-gray-400 border border-dashed text-center">No Mobile</div>}
                 </td>
                 <td className="p-4 font-medium text-gray-800">{b.title || "-"}</td>
                 <td className="p-4">
@@ -166,9 +167,25 @@ export default function TabBanner() {
             </div>
             <form onSubmit={handleSaveData} className="p-5 flex flex-col gap-5 overflow-y-auto max-h-[80vh]">
               <div><label className="block text-sm font-medium text-gray-700 mb-1">Judul/Deskripsi Banner</label><input type="text" value={editingItem.title || ""} onChange={(e) => setEditingItem({ ...editingItem, title: e.target.value })} placeholder="Misal: Promo Akhir Tahun" className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#274a6a] outline-none" required /></div>
-              <div className="p-4 border border-gray-200 rounded-xl bg-gray-50/50"><label className="block text-sm font-bold text-gray-700 mb-1">Versi Desktop (1920 x 500 px)</label>{isEditMode && editingItem.image_url_desktop && !selectedFileDesktop && <img src={editingItem.image_url_desktop} alt="Desktop Preview" className="w-full h-24 object-cover rounded-lg border border-gray-200 mb-3 shadow-sm bg-white" />}<input type="file" accept="image/*" onChange={(e) => e.target.files && setSelectedFileDesktop(e.target.files[0])} className="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:font-semibold file:bg-[#274a6a]/10 file:text-[#274a6a]" required={!isEditMode && !editingItem.image_url_desktop} /></div>
-              <div className="p-4 border border-gray-200 rounded-xl bg-gray-50/50"><label className="block text-sm font-bold text-gray-700 mb-1">Versi Mobile (288 x 430 px)</label>{isEditMode && editingItem.image_url_mobile && !selectedFileMobile && <img src={editingItem.image_url_mobile} alt="Mobile Preview" className="w-32 h-48 object-cover rounded-lg border border-gray-200 mb-3 shadow-sm bg-white" />}<input type="file" accept="image/*" onChange={(e) => e.target.files && setSelectedFileMobile(e.target.files[0])} className="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:font-semibold file:bg-[#274a6a]/10 file:text-[#274a6a]" required={!isEditMode && !editingItem.image_url_mobile} /></div>
-              <div className="flex justify-end gap-3 mt-2 pt-4 border-t border-gray-100"><button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">Batal</button><button type="submit" disabled={isSaving} className="px-4 py-2 text-sm font-medium text-white bg-[#274a6a] hover:bg-[#1f3b54] rounded-lg transition-colors disabled:opacity-50">{isSaving ? "Menyimpan..." : "Simpan"}</button></div>
+              
+              <div className="p-4 border border-gray-200 rounded-xl bg-gray-50/50">
+                <label className="block text-sm font-bold text-gray-700 mb-1">Versi Desktop (1920 x 500 px)</label>
+                {isEditMode && editingItem.image_url_desktop && !selectedFileDesktop && <img src={editingItem.image_url_desktop} alt="Desktop Preview" className="w-full h-24 object-cover rounded-lg border border-gray-200 mb-3 shadow-sm bg-white" />}
+                <input type="file" accept="image/*" onChange={(e) => e.target.files && setSelectedFileDesktop(e.target.files[0])} className="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:font-semibold file:bg-[#274a6a]/10 file:text-[#274a6a]" required={!isEditMode && !editingItem.image_url_desktop} />
+              </div>
+
+              <div className="p-4 border border-gray-200 rounded-xl bg-gray-50/50">
+                {/* PERBAIKAN: Label menyesuaikan ke arah landscape */}
+                <label className="block text-sm font-bold text-gray-700 mb-1">Versi Mobile (Landscape, misal: 430 x 288 px)</label>
+                {/* PERBAIKAN PREVIEW MODAL: Class diubah agar memanjang (w-full h-auto aspect-[430/288]) */}
+                {isEditMode && editingItem.image_url_mobile && !selectedFileMobile && <img src={editingItem.image_url_mobile} alt="Mobile Preview" className="w-full sm:w-64 h-auto aspect-[430/288] object-cover rounded-lg border border-gray-200 mb-3 shadow-sm bg-white" />}
+                <input type="file" accept="image/*" onChange={(e) => e.target.files && setSelectedFileMobile(e.target.files[0])} className="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:font-semibold file:bg-[#274a6a]/10 file:text-[#274a6a]" required={!isEditMode && !editingItem.image_url_mobile} />
+              </div>
+
+              <div className="flex justify-end gap-3 mt-2 pt-4 border-t border-gray-100">
+                <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">Batal</button>
+                <button type="submit" disabled={isSaving} className="px-4 py-2 text-sm font-medium text-white bg-[#274a6a] hover:bg-[#1f3b54] rounded-lg transition-colors disabled:opacity-50">{isSaving ? "Menyimpan..." : "Simpan"}</button>
+              </div>
             </form>
           </div>
         </div>

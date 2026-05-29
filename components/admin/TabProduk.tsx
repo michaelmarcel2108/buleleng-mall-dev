@@ -10,6 +10,7 @@ const generateSlug = (text: string) => {
 export default function TabProduk({ prefilledSearch = "", onSearchChange }: { prefilledSearch?: string, onSearchChange?: (val: string) => void }) {
   const [products, setProducts] = useState<any[]>([]);
   const [businesses, setBusinesses] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>([]); // State untuk daftar kategori
   const [searchQuery, setSearchQuery] = useState(prefilledSearch);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
@@ -21,6 +22,7 @@ export default function TabProduk({ prefilledSearch = "", onSearchChange }: { pr
   useEffect(() => {
     fetchData();
     fetchBusinesses();
+    fetchCategories(); 
   }, []);
 
   useEffect(() => {
@@ -38,13 +40,18 @@ export default function TabProduk({ prefilledSearch = "", onSearchChange }: { pr
   };
 
   const fetchData = async () => {
-    const { data } = await supabase.from("products").select("*, businesses(name)").order("name");
+    const { data } = await supabase.from("products").select("*, businesses(name), categories(name)").order("name");
     if (data) setProducts(data);
   };
 
   const fetchBusinesses = async () => {
     const { data } = await supabase.from("businesses").select("id, name");
     if (data) setBusinesses(data);
+  };
+
+  const fetchCategories = async () => {
+    const { data } = await supabase.from("categories").select("id, name");
+    if (data) setCategories(data);
   };
 
   const filteredProducts = products.filter(p => 
@@ -55,7 +62,7 @@ export default function TabProduk({ prefilledSearch = "", onSearchChange }: { pr
   const openAddModal = () => {
     setIsEditMode(false);
     setSelectedFileProduct(null);
-    setEditingItem({ name: "", price: "", image_url: "", shopee_url: "", business_id: businesses[0]?.id || "" });
+    setEditingItem({ name: "", price: "", image_url: "", shopee_url: "", business_id: businesses[0]?.id || "", category_id: categories[0]?.id || "" });
     setIsModalOpen(true);
   };
 
@@ -97,6 +104,7 @@ export default function TabProduk({ prefilledSearch = "", onSearchChange }: { pr
         image_url: finalImageUrl,
         shopee_url: editingItem.shopee_url || null,
         business_id: editingItem.business_id,
+        category_id: editingItem.category_id, 
       };
 
       if (isEditMode) {
@@ -134,6 +142,7 @@ export default function TabProduk({ prefilledSearch = "", onSearchChange }: { pr
           <thead>
             <tr className="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
               <th className="p-4 font-medium">Nama Produk</th>
+              <th className="p-4 font-medium">Kategori</th>
               <th className="p-4 font-medium">Toko Owner</th>
               <th className="p-4 font-medium hidden md:table-cell">Harga</th>
               <th className="p-4 font-medium">Aksi</th>
@@ -146,6 +155,11 @@ export default function TabProduk({ prefilledSearch = "", onSearchChange }: { pr
                   {p.image_url ? <img src={p.image_url} alt={p.name} className="w-10 h-10 object-cover rounded-lg bg-gray-100 border" /> : <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center text-[10px] text-gray-400 border border-dashed">No Img</div>}
                   <span>{p.name}</span>
                 </td>
+                <td className="p-4 text-gray-500">
+                  {p.categories?.name ? (
+                    <span className="px-2.5 py-1 bg-blue-50 text-[#274a6a] rounded-full text-xs font-medium border border-blue-100">{p.categories.name}</span>
+                  ) : "-"}
+                </td>
                 <td className="p-4 text-gray-500">{p.businesses?.name || "-"}</td>
                 <td className="p-4 text-gray-500 hidden md:table-cell">Rp {p.price?.toLocaleString("id-ID")}</td>
                 <td className="p-4">
@@ -156,25 +170,53 @@ export default function TabProduk({ prefilledSearch = "", onSearchChange }: { pr
                 </td>
               </tr>
             ))}
-            {filteredProducts.length === 0 && <tr><td colSpan={4} className="p-8 text-center text-gray-500">Produk tidak ditemukan.</td></tr>}
+            {filteredProducts.length === 0 && <tr><td colSpan={5} className="p-8 text-center text-gray-500">Produk tidak ditemukan.</td></tr>}
           </tbody>
         </table>
       </div>
 
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm overflow-y-auto">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[85vh]">
             <div className="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
               <h3 className="font-bold text-[#274a6a] text-lg">{isEditMode ? "Edit" : "Tambah"} Produk</h3>
               <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-700 font-bold text-xl">&times;</button>
             </div>
-            <form onSubmit={handleSaveData} className="p-5 flex flex-col gap-4">
-              <div><label className="block text-sm font-medium text-gray-700 mb-1">Pilih Toko Pemilik</label><select value={editingItem.business_id || ""} onChange={(e) => setEditingItem({ ...editingItem, business_id: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg" required>{businesses.map((b) => (<option key={b.id} value={b.id}>{b.name}</option>))}</select></div>
-              <div><label className="block text-sm font-medium text-gray-700 mb-1">Nama Produk</label><input type="text" value={editingItem.name || ""} onChange={(e) => setEditingItem({ ...editingItem, name: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg" required /></div>
-              <div><label className="block text-sm font-medium text-gray-700 mb-1">Harga (Rp)</label><input type="number" value={editingItem.price || ""} onChange={(e) => setEditingItem({ ...editingItem, price: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg" required /></div>
-              <div><label className="block text-sm font-medium text-gray-700 mb-1">Link Shopee</label><input type="url" value={editingItem.shopee_url || ""} onChange={(e) => setEditingItem({ ...editingItem, shopee_url: e.target.value })} placeholder="https://shopee.co.id/..." className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div>
-              <div><label className="block text-sm font-medium text-gray-700 mb-1">Foto Gambar Produk</label><input type="file" accept="image/*" onChange={(e) => e.target.files && setSelectedFileProduct(e.target.files[0])} className="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-[#274a6a]/10 file:text-[#274a6a]" required={!isEditMode && !editingItem.image_url} /></div>
-              <div className="flex justify-end gap-3 mt-4 pt-4 border-t"><button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg">Batal</button><button type="submit" disabled={isSaving} className="px-4 py-2 text-sm font-medium text-white bg-[#274a6a] hover:bg-[#1f3b54] rounded-lg">{isSaving ? "Menyimpan..." : "Simpan"}</button></div>
+            
+            <form onSubmit={handleSaveData} className="p-5 flex flex-col gap-5 overflow-y-auto">
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Pilih Toko Pemilik</label>
+                  <select value={editingItem.business_id || ""} onChange={(e) => setEditingItem({ ...editingItem, business_id: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg" required>
+                    <option value="" disabled>Pilih Toko</option>
+                    {businesses.map((b) => (<option key={b.id} value={b.id}>{b.name}</option>))}
+                  </select>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Pilih Kategori Produk</label>
+                  <select value={editingItem.category_id || ""} onChange={(e) => setEditingItem({ ...editingItem, category_id: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg" required>
+                    <option value="" disabled>Pilih Kategori</option>
+                    {categories.map((c) => (<option key={c.id} value={c.id}>{c.name}</option>))}
+                  </select>
+                </div>
+
+                <div><label className="block text-sm font-medium text-gray-700 mb-1">Nama Produk</label><input type="text" value={editingItem.name || ""} onChange={(e) => setEditingItem({ ...editingItem, name: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg" required /></div>
+                <div><label className="block text-sm font-medium text-gray-700 mb-1">Harga (Rp)</label><input type="number" value={editingItem.price || ""} onChange={(e) => setEditingItem({ ...editingItem, price: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg" required /></div>
+                <div><label className="block text-sm font-medium text-gray-700 mb-1">Link Shopee (Opsional)</label><input type="url" value={editingItem.shopee_url || ""} onChange={(e) => setEditingItem({ ...editingItem, shopee_url: e.target.value })} placeholder="https://shopee.co.id/..." className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Foto Gambar Produk</label>
+                {isEditMode && editingItem.image_url && !selectedFileProduct && <img src={editingItem.image_url} alt="Preview" className="w-24 h-24 object-cover rounded-lg border border-gray-200 mb-2 shadow-sm" />}
+                <input type="file" accept="image/*" onChange={(e) => e.target.files && setSelectedFileProduct(e.target.files[0])} className="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-[#274a6a]/10 file:text-[#274a6a]" required={!isEditMode && !editingItem.image_url} />
+              </div>
+
+              <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
+                <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg">Batal</button>
+                <button type="submit" disabled={isSaving} className="px-4 py-2 text-sm font-medium text-white bg-[#274a6a] hover:bg-[#1f3b54] rounded-lg">{isSaving ? "Menyimpan..." : "Simpan"}</button>
+              </div>
             </form>
           </div>
         </div>

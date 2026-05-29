@@ -2,20 +2,18 @@ import { supabase } from "@/lib/supabase";
 import HomeTabs from "@/components/HomeTabs";
 import Link from "next/link";
 import BannerSlideshow from "@/components/BannerSlideshow";
+import ScrollHint from "@/components/ScrollHint";
 
 export default async function Home() {
-  // Mengambil data kategori dari Supabase
   const { data: categories } = await supabase
     .from("categories")
     .select("*");
 
-  // Mengambil data toko/UMKM dari Supabase
   const { data: businesses } = await supabase
     .from("businesses")
     .select("*, products(image_url)")
     .limit(4);
 
-  // Mengambil data produk dari Supabase
   const { data: products } = await supabase
     .from("products")
     .select("*, businesses(name)")
@@ -29,14 +27,12 @@ export default async function Home() {
 
         <div className="relative z-10 w-full flex flex-col gap-6 md:gap-8">
           
-          {/* BANNER SECTION */}
           <div className="w-full px-4 md:px-16 mx-auto overflow-hidden">
             <div className="max-w-6xl mx-auto shadow-lg rounded-xl overflow-hidden">
               <BannerSlideshow />
             </div>
           </div>
 
-          {/* TEXT & CTA SECTION */}
           <div className="flex flex-col gap-4 px-4 md:px-16 text-white font-sans max-w-4xl mx-auto text-center items-center">
             
             <h1 className="font-display text-2xl md:text-4xl lg:text-5xl font-bold text-white leading-tight drop-shadow-sm">
@@ -47,7 +43,6 @@ export default async function Home() {
               Temukan koleksi eksklusif dari UMKM terbaik Buleleng. Dari tangan-tangan kreatif lokal, kini hadir lebih dekat untuk kita semua. Mari dukung dan majukan ekonomi kreatif daerah!
             </p>
 
-            {/* TOMBOL CALL TO ACTION */}
             <Link 
               href="/catalog" 
               className="mt-3 bg-white px-8 py-3 text-[#274a6a] text-center rounded-full hover:bg-gray-100 hover:scale-105 transition-all inline-block w-fit font-bold shadow-lg"
@@ -55,8 +50,7 @@ export default async function Home() {
               Belanja Sekarang
             </Link>
 
-            {/* KATEGORI SECTION */}
-            <div className="mt-8 md:mt-10 flex flex-col items-center gap-3 w-full">
+            <div className="mt-5 md:mt-6 flex flex-col items-center gap-3 w-full">
               <p className="font-medium text-xs md:text-sm text-white/70 uppercase tracking-wider">
                 Jelajahi Kategori
               </p>
@@ -73,12 +67,12 @@ export default async function Home() {
                 ))}
               </div>
             </div>
+            <ScrollHint />
 
           </div>
         </div>
       </section>
 
-      {/* Konten HomeTabs di bawah Hero Section */}
       <section className="p-4 md:p-16 max-w-7xl mx-auto">
         <HomeTabs products={products || []} businesses={businesses || []} />
       </section>

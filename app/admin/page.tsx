@@ -7,9 +7,10 @@ import TabToko from "@/components/admin/TabToko";
 import TabProduk from "@/components/admin/TabProduk";
 import TabKategori from "@/components/admin/TabKategori";
 import TabBanner from "@/components/admin/TabBanner";
+import TabProfileKoperasi from "@/components/admin/TabProfileKoperasi";
 
 export default function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState<"toko" | "produk" | "kategori" | "banner">("toko");
+  const [activeTab, setActiveTab] = useState<"toko" | "produk" | "kategori" | "banner" | "profil">("toko");
   const [productSearchQuery, setProductSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
@@ -49,12 +50,15 @@ export default function AdminDashboard() {
           <button onClick={() => setActiveTab("kategori")} className={`pb-3 px-2 font-medium text-sm md:text-base transition-colors ${activeTab === "kategori" ? "border-b-2 border-[#274a6a] text-[#274a6a]" : "text-gray-500 hover:text-gray-700"}`}>Kelola Kategori</button>
           
           <button onClick={() => setActiveTab("banner")} className={`pb-3 px-2 font-medium text-sm md:text-base transition-colors ${activeTab === "banner" ? "border-b-2 border-[#274a6a] text-[#274a6a]" : "text-gray-500 hover:text-gray-700"}`}>Kelola Banner</button>
+
+          <button onClick={() => setActiveTab("profil")} className={`pb-3 px-2 font-medium text-sm md:text-base transition-colors ${activeTab === "profil" ? "border-b-2 border-[#274a6a] text-[#274a6a]" : "text-gray-500 hover:text-gray-700"}`}>Profil Koperasi</button>
         </div>
         
         {activeTab === "toko" && <TabToko onViewProducts={handleViewProducts} />}
         {activeTab === "produk" && <TabProduk prefilledSearch={productSearchQuery} onSearchChange={setProductSearchQuery} />}
         {activeTab === "kategori" && <TabKategori />}
         {activeTab === "banner" && <TabBanner />}
+        {activeTab === "profil" && <TabProfileKoperasi />}
       </main>
     </div>
   );
