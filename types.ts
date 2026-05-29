@@ -2,6 +2,7 @@ export interface Business {
   id: string;
   name: string;
   slug: string;
+  image_url: string;
   desc?: string;
 }
 
