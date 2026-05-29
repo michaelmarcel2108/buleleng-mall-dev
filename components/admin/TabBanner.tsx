@@ -10,18 +10,16 @@ export default function TabBanner() {
   const [banners, setBanners] = useState<Banner[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // State Modal Form
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<Partial<Banner> | null>(null);
   const [isEditMode, setIsEditMode] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
-  // State Modal Hapus Custom
   const [deleteConfirm, setDeleteConfirm] = useState({
     isOpen: false,
     id: "",
-    title: "",
+    alt_text: "",
   });
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -31,10 +29,16 @@ export default function TabBanner() {
   } | null>(null);
 
   const fetchBannerData = useCallback(async () => {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("banners")
       .select("*")
       .order("created_at", { ascending: false });
+
+    console.log("Data Banners dari Supabase:", data);
+
+    if (error) {
+      console.error("Supabase error fetching banners:", error.message);
+    }
     return data;
   }, [supabase]);
 
@@ -59,13 +63,13 @@ export default function TabBanner() {
   };
 
   const filteredBanners = banners.filter((b) =>
-    b.title?.toLowerCase().includes(searchQuery.toLowerCase()),
+    (b.alt_text || "").toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   const openAddModal = () => {
     setIsEditMode(false);
     setSelectedFile(null);
-    setEditingItem({ title: "", link_url: "", image_url: "" });
+    setEditingItem({ alt_text: "", link_url: "", image_url_desktop: "" });
     setIsModalOpen(true);
   };
 
@@ -92,16 +96,16 @@ export default function TabBanner() {
       showToast("Gagal menghapus: " + error.message, "error");
     } finally {
       setIsDeleting(false);
-      setDeleteConfirm({ isOpen: false, id: "", title: "" }); // Tutup modal hapus
+      setDeleteConfirm({ isOpen: false, id: "", alt_text: "" }); // Tutup modal hapus
     }
   };
 
-  const handleSaveData = async (e: React.FormEvent) => {
+  const handleSaveData = async (e: React.SubmitEvent) => {
     e.preventDefault();
     if (editingItem === null) return;
     setIsSaving(true);
     try {
-      let finalImageUrl = editingItem.image_url || "";
+      let finalImageUrl = editingItem.image_url_desktop || "";
 
       // Proses upload gambar banner
       if (selectedFile) {
@@ -117,9 +121,9 @@ export default function TabBanner() {
       }
 
       const payload = {
-        title: editingItem.title,
+        alt_text: editingItem.alt_text,
         link_url: editingItem.link_url || null,
-        image_url: finalImageUrl,
+        image_url_desktop: finalImageUrl,
       };
 
       if (isEditMode) {
@@ -191,22 +195,20 @@ export default function TabBanner() {
             <tr className="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
               <th className="p-4 font-medium">Gambar Banner</th>
               <th className="p-4 font-medium">Judul</th>
-              <th className="p-4 font-medium hidden md:table-cell">
-                Link Tujuan
-              </th>
+
               <th className="p-4 font-medium">Aksi</th>
             </tr>
           </thead>
           <tbody className="text-sm divide-y divide-gray-100">
-            {filteredBanners.map((b) => (
+            {filteredBanners.map((b: Banner) => (
               <tr key={b.id} className="hover:bg-gray-50/50 transition-colors">
                 <td className="p-4 font-medium text-gray-800">
-                  {b.image_url ? (
+                  {b.image_url_desktop ? (
                     <Image
                       width={500}
                       height={500}
-                      src={b.image_url}
-                      alt={b.title}
+                      src={b.image_url_desktop}
+                      alt={b.alt_text}
                       className="w-24 h-12 object-cover rounded-lg bg-gray-100 border shadow-sm"
                     />
                   ) : (
@@ -216,22 +218,9 @@ export default function TabBanner() {
                   )}
                 </td>
                 <td className="p-4 text-gray-800 font-medium">
-                  {b.title || "-"}
+                  {b.alt_text || "-"}
                 </td>
-                <td className="p-4 text-gray-500 hidden md:table-cell">
-                  {b.link_url ? (
-                    <a
-                      href={b.link_url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-blue-500 hover:underline truncate max-w-xs inline-block"
-                    >
-                      {b.link_url}
-                    </a>
-                  ) : (
-                    "-"
-                  )}
-                </td>
+
                 <td className="p-4">
                   <div className="flex gap-2">
                     <button
@@ -246,7 +235,7 @@ export default function TabBanner() {
                         setDeleteConfirm({
                           isOpen: true,
                           id: b.id,
-                          title: b.title || "Banner ini",
+                          alt_text: b.alt_text || "Banner ini",
                         })
                       }
                       className="text-red-600 hover:bg-red-50 font-medium text-xs border border-red-200 px-3 py-1.5 rounded transition-colors"
@@ -295,9 +284,12 @@ export default function TabBanner() {
                   </label>
                   <input
                     type="text"
-                    value={editingItem.title || ""}
+                    value={editingItem.alt_text || ""}
                     onChange={(e) =>
-                      setEditingItem({ ...editingItem, title: e.target.value })
+                      setEditingItem({
+                        ...editingItem,
+                        alt_text: e.target.value,
+                      })
                     }
                     placeholder="Opsional: Promo Spesial Buleleng..."
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-[#274a6a]"
@@ -306,35 +298,19 @@ export default function TabBanner() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Link Tujuan (Saat Diklik)
-                  </label>
-                  <input
-                    type="url"
-                    value={editingItem.link_url || ""}
-                    onChange={(e) =>
-                      setEditingItem({
-                        ...editingItem,
-                        link_url: e.target.value,
-                      })
-                    }
-                    placeholder="Opsional: https://..."
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-[#274a6a]"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
                     Gambar Banner (Landscape)
                   </label>
-                  {isEditMode && editingItem.image_url && !selectedFile && (
-                    <Image
-                      width={500}
-                      height={500}
-                      src={editingItem.image_url}
-                      alt="Preview"
-                      className="w-full h-32 object-cover rounded-lg border border-gray-200 mb-2 shadow-sm"
-                    />
-                  )}
+                  {isEditMode &&
+                    editingItem.image_url_desktop &&
+                    !selectedFile && (
+                      <Image
+                        width={500}
+                        height={500}
+                        src={editingItem.image_url_desktop}
+                        alt="Preview"
+                        className="w-full h-32 object-cover rounded-lg border border-gray-200 mb-2 shadow-sm"
+                      />
+                    )}
                   <input
                     type="file"
                     accept="image/*"
@@ -342,7 +318,7 @@ export default function TabBanner() {
                       e.target.files && setSelectedFile(e.target.files[0])
                     }
                     className="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-[#274a6a]/10 file:text-[#274a6a]"
-                    required={!isEditMode && !editingItem.image_url}
+                    required={!isEditMode && !editingItem.image_url_desktop}
                   />
                 </div>
 
@@ -393,14 +369,14 @@ export default function TabBanner() {
             <p className="text-gray-500 text-sm mb-6 leading-relaxed">
               Apakah Anda yakin ingin menghapus{" "}
               <span className="font-semibold text-gray-700">
-                &quot;{deleteConfirm.title}&quot;
+                &quot;{deleteConfirm.alt_text}&quot;
               </span>
               ? Gambar ini tidak akan muncul lagi di halaman depan.
             </p>
             <div className="flex gap-3 justify-center w-full">
               <button
                 onClick={() =>
-                  setDeleteConfirm({ isOpen: false, id: "", title: "" })
+                  setDeleteConfirm({ isOpen: false, id: "", alt_text: "" })
                 }
                 className="flex-1 px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-sm font-semibold transition-colors"
               >

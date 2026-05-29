@@ -26,9 +26,7 @@ export interface Product {
 
 export interface Banner {
   id: string;
-  title: string;
   link_url: string;
-  image_url: string;
   image_url_mobile: string;
   image_url_desktop: string;
   alt_text: string;
