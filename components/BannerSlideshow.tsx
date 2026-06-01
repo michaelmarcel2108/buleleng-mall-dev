@@ -89,7 +89,6 @@ export default function BannerSlideshow() {
 
   return (
     <div 
-      // class touch-pan-y ditambahkan di sini
       className="relative w-full aspect-[430/288] md:aspect-[1920/500] overflow-hidden rounded-xl shadow-sm group bg-gray-100 touch-pan-y"
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
