@@ -42,6 +42,7 @@ export default async function BrandPage({
         )}
 
         <div className="absolute inset-0 bg-black/40 z-0 pointer-events-none"></div>
+        
         <div className="relative z-10 flex flex-col items-center mt-8">
           {business.logo_url ? (
             <Image

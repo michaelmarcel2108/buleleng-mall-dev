@@ -5,6 +5,16 @@ import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import { Business } from "@/types";
 
+// Menambahkan properti baru ke tipe Business agar Vercel (TypeScript) tidak error
+type ExtendedBusiness = Business & {
+  desc?: string | null;
+  logo_url?: string | null;
+  image_url?: string | null;
+  shopee_url?: string | null;
+  instagram_url?: string | null;
+  tiktok_url?: string | null;
+};
+
 const generateSlug = (text: string) => {
   return text
     .toString()
@@ -22,21 +32,19 @@ interface TabTokoProps {
 
 export default function TabToko({ onViewProducts }: TabTokoProps) {
   const supabase = createClient();
-  const [businesses, setBusinesses] = useState<Business[]>([]);
+  const [businesses, setBusinesses] = useState<ExtendedBusiness[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingItem, setEditingItem] = useState<Partial<Business> | null>(
+  const [editingItem, setEditingItem] = useState<Partial<ExtendedBusiness> | null>(
     null,
   );
   const [isEditMode, setIsEditMode] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   
-  // State untuk file uploads
   const [selectedLogoFile, setSelectedLogoFile] = useState<File | null>(null);
   const [selectedBannerFile, setSelectedBannerFile] = useState<File | null>(null);
 
-  // State Modal Hapus Custom
   const [deleteConfirm, setDeleteConfirm] = useState({
     isOpen: false,
     id: "",
@@ -62,7 +70,7 @@ export default function TabToko({ onViewProducts }: TabTokoProps) {
 
     fetchBusinessesData().then((data) => {
       if (isMounted && data) {
-        setBusinesses(data as Business[]);
+        setBusinesses(data as ExtendedBusiness[]);
       }
     });
 
@@ -99,7 +107,7 @@ export default function TabToko({ onViewProducts }: TabTokoProps) {
     setIsModalOpen(true);
   };
 
-  const openEditModal = (item: Business) => {
+  const openEditModal = (item: ExtendedBusiness) => {
     setIsEditMode(true);
     setSelectedLogoFile(null);
     setSelectedBannerFile(null);
@@ -117,7 +125,7 @@ export default function TabToko({ onViewProducts }: TabTokoProps) {
       if (error) throw error;
 
       fetchBusinessesData().then((data) => {
-        if (data) setBusinesses(data as Business[]);
+        if (data) setBusinesses(data as ExtendedBusiness[]);
       });
 
       showToast(`Data toko berhasil dihapus!`, "success");
@@ -152,7 +160,6 @@ export default function TabToko({ onViewProducts }: TabTokoProps) {
           .data.publicUrl;
       }
 
-      // Upload Banner (image_url)
       if (selectedBannerFile) {
         const fileExt = selectedBannerFile.name.split(".").pop();
         const fileName = `banner-${Date.now()}-${Math.floor(Math.random() * 1000)}.${fileExt}`;
@@ -190,7 +197,7 @@ export default function TabToko({ onViewProducts }: TabTokoProps) {
       setIsModalOpen(false);
 
       fetchBusinessesData().then((data) => {
-        if (data) setBusinesses(data as Business[]);
+        if (data) setBusinesses(data as ExtendedBusiness[]);
       });
 
       showToast(
