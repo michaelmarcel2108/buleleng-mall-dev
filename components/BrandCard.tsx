@@ -7,7 +7,7 @@ interface BrandCardProps {
     name: string;
     desc: string;
     slug: string;
-    products?: { image_url: string | null }[]; 
+    products?: { image_url: string | null }[];
   };
 }
 
@@ -15,9 +15,9 @@ const BrandCard = ({ business }: BrandCardProps) => {
   const storeProducts = business.products || [];
 
   return (
-    <Link 
+    <Link
       href={`/brand/${business.slug}`}
-      className="w-full flex flex-col gap-2 rounded-lg p-2 md:p-4 hover:bg-gray-100 transition-colors cursor-pointer bg-white outline-2 outline-[#407d99] border-none ring-0 shadow-sm block"
+      className="w-full flex flex-col gap-2 rounded-lg p-2 md:p-4 hover:bg-gray-100 transition-colors cursor-pointer bg-white outline-2 outline-[#407d99] border-none ring-0 shadow-sm"
     >
       <div className="grid grid-cols-2 aspect-square gap-2 rounded-md overflow-hidden bg-gray-100 p-1 outline-none border-none">
         {[0, 1, 2, 3].map((index) => {
@@ -29,6 +29,8 @@ const BrandCard = ({ business }: BrandCardProps) => {
             >
               {product?.image_url ? (
                 <Image
+                  width={500}
+                  height={500}
                   src={product.image_url}
                   alt={`Produk dari ${business.name}`}
                   fill
@@ -53,7 +55,7 @@ const BrandCard = ({ business }: BrandCardProps) => {
 
         <div className="flex flex-row gap-1 items-center text-yellow-500">
           <span className="flex flex-row tracking-widest text-lg">★★★★★</span>
-          <p className="text-foreground/75 text-sm ml-1 text-black font-semibold">(99+)</p>
+          <p className="text-foreground/75 text-sm ml-1 font-semibold">(99+)</p>
         </div>
       </div>
     </Link>
