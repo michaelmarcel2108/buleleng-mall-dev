@@ -71,7 +71,7 @@ export default function BannerSlideshow() {
 
   if (isLoading) {
     return (
-      <div className="w-full aspect-430/288 md:aspect-1920/500 bg-white/5 animate-pulse rounded-xl flex items-center justify-center shadow-sm border border-white/10">
+      <div className="w-full aspect-[430/288] md:aspect-[1920/500] bg-white/5 animate-pulse rounded-xl flex items-center justify-center shadow-sm border border-white/10">
         {/* Animasi Bulatan Loading */}
         <svg
           className="animate-spin h-8 w-8 text-white/50"
@@ -101,14 +101,9 @@ export default function BannerSlideshow() {
   }
 
   return (
-<<<<<<< HEAD
-    <div 
-      className="relative w-full aspect-[430/288] md:aspect-[1920/500] overflow-hidden rounded-xl shadow-sm group bg-gray-100 touch-pan-y"
-=======
     <div
       // class touch-pan-y ditambahkan di sini
-      className="relative w-full aspect-430/288 md:aspect-1920/500 overflow-hidden rounded-xl shadow-sm group bg-gray-100 touch-pan-y"
->>>>>>> 7c1acfb07445a34cde4b671cd7851916d3e97db4
+      className="relative w-full aspect-[430/288] md:aspect-[1920/500] overflow-hidden rounded-xl shadow-sm group bg-gray-100 touch-pan-y"
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}

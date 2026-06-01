@@ -3,7 +3,7 @@
 import { createClient } from "@/lib/supabase/client";
 import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
-import { Business } from "@/types"; // Importing the type to remove 'any'
+import { Business } from "@/types";
 
 const generateSlug = (text: string) => {
   return text
@@ -31,7 +31,10 @@ export default function TabToko({ onViewProducts }: TabTokoProps) {
   );
   const [isEditMode, setIsEditMode] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  
+  // State untuk file uploads
+  const [selectedLogoFile, setSelectedLogoFile] = useState<File | null>(null);
+  const [selectedBannerFile, setSelectedBannerFile] = useState<File | null>(null);
 
   // State Modal Hapus Custom
   const [deleteConfirm, setDeleteConfirm] = useState({
@@ -82,14 +85,24 @@ export default function TabToko({ onViewProducts }: TabTokoProps) {
 
   const openAddModal = () => {
     setIsEditMode(false);
-    setSelectedFile(null);
-    setEditingItem({ name: "", desc: "", image_url: "" }); // Make sure desc/description matches your DB columns
+    setSelectedLogoFile(null);
+    setSelectedBannerFile(null);
+    setEditingItem({ 
+      name: "", 
+      desc: "", 
+      logo_url: "", 
+      image_url: "",
+      shopee_url: "",
+      instagram_url: "",
+      tiktok_url: ""
+    });
     setIsModalOpen(true);
   };
 
   const openEditModal = (item: Business) => {
     setIsEditMode(true);
-    setSelectedFile(null);
+    setSelectedLogoFile(null);
+    setSelectedBannerFile(null);
     setEditingItem({ ...item });
     setIsModalOpen(true);
   };
@@ -103,7 +116,6 @@ export default function TabToko({ onViewProducts }: TabTokoProps) {
         .eq("id", deleteConfirm.id);
       if (error) throw error;
 
-      // Refresh data
       fetchBusinessesData().then((data) => {
         if (data) setBusinesses(data as Business[]);
       });
@@ -120,29 +132,48 @@ export default function TabToko({ onViewProducts }: TabTokoProps) {
 
   const handleSaveData = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editingItem || !editingItem.name) return; // Type safety check
+    if (!editingItem || !editingItem.name) return;
 
     setIsSaving(true);
     try {
-      let finalImageUrl = editingItem.image_url || "";
+      let finalLogoUrl = editingItem.logo_url || "";
+      let finalBannerUrl = editingItem.image_url || "";
 
-      if (selectedFile) {
-        const fileExt = selectedFile.name.split(".").pop();
-        const fileName = `toko-${Date.now()}-${Math.floor(Math.random() * 1000)}.${fileExt}`;
+      // Upload Logo
+      if (selectedLogoFile) {
+        const fileExt = selectedLogoFile.name.split(".").pop();
+        const fileName = `logo-${Date.now()}-${Math.floor(Math.random() * 1000)}.${fileExt}`;
         const { error: uploadError } = await supabase.storage
           .from("image")
-          .upload(fileName, selectedFile);
+          .upload(fileName, selectedLogoFile);
         if (uploadError) throw uploadError;
 
-        finalImageUrl = supabase.storage.from("image").getPublicUrl(fileName)
+        finalLogoUrl = supabase.storage.from("image").getPublicUrl(fileName)
+          .data.publicUrl;
+      }
+
+      // Upload Banner (image_url)
+      if (selectedBannerFile) {
+        const fileExt = selectedBannerFile.name.split(".").pop();
+        const fileName = `banner-${Date.now()}-${Math.floor(Math.random() * 1000)}.${fileExt}`;
+        const { error: uploadError } = await supabase.storage
+          .from("image")
+          .upload(fileName, selectedBannerFile);
+        if (uploadError) throw uploadError;
+
+        finalBannerUrl = supabase.storage.from("image").getPublicUrl(fileName)
           .data.publicUrl;
       }
 
       const payload = {
         name: editingItem.name,
         slug: generateSlug(editingItem.name),
-        description: editingItem.desc || null, // Ensure this maps to your actual DB column correctly
-        image_url: finalImageUrl,
+        desc: editingItem.desc || null, 
+        logo_url: finalLogoUrl,
+        image_url: finalBannerUrl,
+        shopee_url: editingItem.shopee_url || null,
+        instagram_url: editingItem.instagram_url || null,
+        tiktok_url: editingItem.tiktok_url || null,
       };
 
       if (isEditMode && editingItem.id) {
@@ -158,7 +189,6 @@ export default function TabToko({ onViewProducts }: TabTokoProps) {
 
       setIsModalOpen(false);
 
-      // Refresh data
       fetchBusinessesData().then((data) => {
         if (data) setBusinesses(data as Business[]);
       });
@@ -216,9 +246,7 @@ export default function TabToko({ onViewProducts }: TabTokoProps) {
           <thead>
             <tr className="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
               <th className="p-4 font-medium">Nama Toko / Brand</th>
-              <th className="p-4 font-medium hidden md:table-cell">
-                Deskripsi
-              </th>
+              <th className="p-4 font-medium hidden md:table-cell">Deskripsi</th>
               <th className="p-4 font-medium">Aksi</th>
             </tr>
           </thead>
@@ -226,9 +254,9 @@ export default function TabToko({ onViewProducts }: TabTokoProps) {
             {filteredBusinesses.map((b) => (
               <tr key={b.id} className="hover:bg-gray-50/50 transition-colors">
                 <td className="p-4 font-medium text-gray-800 flex items-center gap-3">
-                  {b.image_url ? (
+                  {b.logo_url ? (
                     <Image
-                      src={b.image_url}
+                      src={b.logo_url}
                       alt={b.name}
                       width={40}
                       height={40}
@@ -236,7 +264,7 @@ export default function TabToko({ onViewProducts }: TabTokoProps) {
                     />
                   ) : (
                     <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center text-[10px] text-gray-400 border border-dashed">
-                      No Img
+                      No Logo
                     </div>
                   )}
                   <span>{b.name}</span>
@@ -246,7 +274,6 @@ export default function TabToko({ onViewProducts }: TabTokoProps) {
                 </td>
                 <td className="p-4">
                   <div className="flex gap-2">
-                    {/* UTILIZING THE UNUSED PROP */}
                     {onViewProducts && (
                       <button
                         onClick={() => onViewProducts(b.name)}
@@ -291,7 +318,7 @@ export default function TabToko({ onViewProducts }: TabTokoProps) {
       {/* POP-UP MODAL FORM TAMBAH/EDIT */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
             <div className="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
               <h3 className="font-bold text-[#274a6a] text-lg">
                 {isEditMode ? "Edit" : "Tambah"} Toko
@@ -308,6 +335,7 @@ export default function TabToko({ onViewProducts }: TabTokoProps) {
               onSubmit={handleSaveData}
               className="p-5 flex flex-col gap-4 overflow-y-auto"
             >
+              {/* NAMA TOKO */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Nama Toko / Brand
@@ -323,36 +351,65 @@ export default function TabToko({ onViewProducts }: TabTokoProps) {
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Logo / Gambar Toko
-                </label>
-                {isEditMode && editingItem?.image_url && !selectedFile && (
-                  <Image
-                    src={editingItem.image_url}
-                    alt="Preview"
-                    width={80}
-                    height={80}
-                    className="w-20 h-20 object-cover rounded-full border border-gray-200 mb-2 shadow-sm"
+              {/* GRID UNTUK UPLOAD GAMBAR */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* UPLOAD LOGO */}
+                <div className="p-3 border border-gray-200 rounded-lg bg-gray-50/50">
+                  <label className="block text-xs font-medium text-gray-700 mb-1">
+                    Logo Toko (logo_url)
+                  </label>
+                  {isEditMode && editingItem?.logo_url && !selectedLogoFile && (
+                    <Image
+                      src={editingItem.logo_url}
+                      alt="Preview Logo"
+                      width={60}
+                      height={60}
+                      className="w-16 h-16 object-cover rounded-full border border-gray-200 mb-2 shadow-sm"
+                    />
+                  )}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) =>
+                      e.target.files && setSelectedLogoFile(e.target.files[0])
+                    }
+                    className="w-full text-xs text-gray-500 file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-0 file:bg-[#274a6a]/10 file:text-[#274a6a]"
+                    required={!isEditMode && !editingItem?.logo_url}
                   />
-                )}
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) =>
-                    e.target.files && setSelectedFile(e.target.files[0])
-                  }
-                  className="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-[#274a6a]/10 file:text-[#274a6a]"
-                  required={!isEditMode && !editingItem?.image_url}
-                />
+                </div>
+
+                {/* UPLOAD BANNER */}
+                <div className="p-3 border border-gray-200 rounded-lg bg-gray-50/50">
+                  <label className="block text-xs font-medium text-gray-700 mb-1">
+                    Banner Toko (image_url)
+                  </label>
+                  {isEditMode && editingItem?.image_url && !selectedBannerFile && (
+                    <Image
+                      src={editingItem.image_url}
+                      alt="Preview Banner"
+                      width={100}
+                      height={60}
+                      className="w-full h-16 object-cover rounded border border-gray-200 mb-2 shadow-sm"
+                    />
+                  )}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) =>
+                      e.target.files && setSelectedBannerFile(e.target.files[0])
+                    }
+                    className="w-full text-xs text-gray-500 file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-0 file:bg-[#274a6a]/10 file:text-[#274a6a]"
+                  />
+                </div>
               </div>
 
+              {/* DESKRIPSI */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Deskripsi Singkat (Opsional)
                 </label>
                 <textarea
-                  rows={3}
+                  rows={2}
                   value={editingItem?.desc || ""}
                   onChange={(e) =>
                     setEditingItem({
@@ -361,8 +418,45 @@ export default function TabToko({ onViewProducts }: TabTokoProps) {
                     })
                   }
                   placeholder="Jelaskan sedikit tentang toko ini..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-[#274a6a] resize-none"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-[#274a6a] resize-none text-sm"
                 />
+              </div>
+
+              {/* TAUTAN / URL SECTION */}
+              <div className="border border-gray-200 rounded-lg p-3 bg-gray-50/30">
+                <h4 className="text-xs font-bold text-gray-700 mb-3 border-b border-gray-200 pb-1">Tautan / Sosial Media</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">Shopee URL</label>
+                    <input
+                      type="url"
+                      value={editingItem?.shopee_url || ""}
+                      onChange={(e) => setEditingItem({ ...editingItem, shopee_url: e.target.value })}
+                      className="w-full px-3 py-1.5 border border-gray-300 rounded text-sm outline-none focus:border-[#EE4D2D]"
+                      placeholder="https://shopee.co.id/..."
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">Instagram URL</label>
+                    <input
+                      type="url"
+                      value={editingItem?.instagram_url || ""}
+                      onChange={(e) => setEditingItem({ ...editingItem, instagram_url: e.target.value })}
+                      className="w-full px-3 py-1.5 border border-gray-300 rounded text-sm outline-none focus:border-pink-500"
+                      placeholder="https://instagram.com/..."
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">TikTok URL</label>
+                    <input
+                      type="url"
+                      value={editingItem?.tiktok_url || ""}
+                      onChange={(e) => setEditingItem({ ...editingItem, tiktok_url: e.target.value })}
+                      className="w-full px-3 py-1.5 border border-gray-300 rounded text-sm outline-none focus:border-black"
+                      placeholder="https://tiktok.com/@..."
+                    />
+                  </div>
+                </div>
               </div>
 
               <div className="flex justify-end gap-3 pt-4 border-t border-gray-100 mt-2">
@@ -388,7 +482,7 @@ export default function TabToko({ onViewProducts }: TabTokoProps) {
 
       {/* POP-UP KONFIRMASI HAPUS MODERN */}
       {deleteConfirm.isOpen && (
-        <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center transform transition-all">
             <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 border-[6px] border-red-50/50">
               <svg
@@ -464,7 +558,7 @@ export default function TabToko({ onViewProducts }: TabTokoProps) {
 
       {toast && (
         <div
-          className={`fixed bottom-5 right-5 z-70 flex items-center gap-3 px-5 py-3.5 rounded-xl shadow-xl text-white font-medium text-sm transition-all duration-300 ${toast.type === "success" ? "bg-green-600" : "bg-red-600"}`}
+          className={`fixed bottom-5 right-5 z-[70] flex items-center gap-3 px-5 py-3.5 rounded-xl shadow-xl text-white font-medium text-sm transition-all duration-300 ${toast.type === "success" ? "bg-green-600" : "bg-red-600"}`}
         >
           <span>{toast.message}</span>
         </div>

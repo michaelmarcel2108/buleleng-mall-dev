@@ -2,7 +2,7 @@
 
 import { createClient } from "@/lib/supabase/client";
 import { useState, useEffect, useCallback } from "react";
-import Image from "next/image"; // Added for Next.js image optimization
+import Image from "next/image";
 
 export default function TabProfileKoperasi() {
   const supabase = createClient();
@@ -15,11 +15,15 @@ export default function TabProfileKoperasi() {
   } | null>(null);
 
   // State untuk Data
+  const [about, setAbout] = useState("");
   const [vision, setVision] = useState("");
   const [mission, setMission] = useState("");
-  const [boxes, setBoxes] = useState<{ title: string; description: string }[]>(
-    [],
-  );
+  const [boxes, setBoxes] = useState<{ title: string; description: string }[]>([]);
+  
+  // State Sosial Media
+  const [instagram, setInstagram] = useState("");
+  const [tiktok, setTiktok] = useState("");
+  const [youtube, setYoutube] = useState("");
 
   const [bgUrl, setBgUrl] = useState("");
   const [logoUrl, setLogoUrl] = useState("");
@@ -27,7 +31,6 @@ export default function TabProfileKoperasi() {
   const [bgFile, setBgFile] = useState<File | null>(null);
   const [logoFile, setLogoFile] = useState<File | null>(null);
 
-  // --- THE FETCHER PATTERN ---
   const fetchProfileData = useCallback(async () => {
     const { data, error } = await supabase
       .from("koperasi_profile")
@@ -48,9 +51,13 @@ export default function TabProfileKoperasi() {
     fetchProfileData().then((data) => {
       if (isMounted) {
         if (data) {
+          setAbout(data.about || "");
           setVision(data.vision || "");
           setMission(data.mission || "");
           setBoxes(data.extra_boxes || []);
+          setInstagram(data.instagram_url || "");
+          setTiktok(data.tiktok_url || "");
+          setYoutube(data.youtube_url || "");
           setBgUrl(data.hero_bg_url || "");
           setLogoUrl(data.logo_url || "");
         }
@@ -63,17 +70,12 @@ export default function TabProfileKoperasi() {
     };
   }, [fetchProfileData]);
 
-  const showToast = (
-    message: string,
-    type: "success" | "error" = "success",
-  ) => {
+  const showToast = (message: string, type: "success" | "error" = "success") => {
     setToast({ message, type });
     setTimeout(() => setToast(null), 3000);
   };
 
-  // Fungsi Manajemen Box
-  const handleAddBox = () =>
-    setBoxes([...boxes, { title: "", description: "" }]);
+  const handleAddBox = () => setBoxes([...boxes, { title: "", description: "" }]);
 
   const handleRemoveBox = (index: number) => {
     const newBoxes = [...boxes];
@@ -81,17 +83,12 @@ export default function TabProfileKoperasi() {
     setBoxes(newBoxes);
   };
 
-  const handleBoxChange = (
-    index: number,
-    field: "title" | "description",
-    value: string,
-  ) => {
+  const handleBoxChange = (index: number, field: "title" | "description", value: string) => {
     const newBoxes = [...boxes];
     newBoxes[index][field] = value;
     setBoxes(newBoxes);
   };
 
-  // Simpan Data
   const handleSaveData = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
@@ -127,28 +124,24 @@ export default function TabProfileKoperasi() {
         id: 1,
         hero_bg_url: finalBgUrl,
         logo_url: finalLogoUrl,
+        about,
         vision,
         mission,
+        instagram_url: instagram,
+        tiktok_url: tiktok,
+        youtube_url: youtube,
         extra_boxes: boxes,
       };
 
-      const { data: existingData } = await supabase
+      const { data: updatedData, error } = await supabase
         .from("koperasi_profile")
-        .select("id")
-        .eq("id", 1)
-        .maybeSingle();
+        .upsert(payload)
+        .select();
 
-      if (existingData) {
-        const { error } = await supabase
-          .from("koperasi_profile")
-          .update(payload)
-          .eq("id", 1);
-        if (error) throw error;
-      } else {
-        const { error } = await supabase
-          .from("koperasi_profile")
-          .insert([payload]);
-        if (error) throw error;
+      if (error) throw error;
+
+      if (!updatedData || updatedData.length === 0) {
+        throw new Error("Data gagal disimpan ke database. Mohon periksa RLS.");
       }
 
       setBgUrl(finalBgUrl);
@@ -158,7 +151,6 @@ export default function TabProfileKoperasi() {
 
       showToast("Profil Koperasi berhasil diperbarui!", "success");
     } catch (error: unknown) {
-      // Changed 'any' to 'unknown'
       const err = error as Error;
       showToast("Gagal menyimpan: " + err.message, "error");
     } finally {
@@ -175,26 +167,20 @@ export default function TabProfileKoperasi() {
       {isLoading ? (
         <div className="p-8 text-center text-gray-500">Memuat data...</div>
       ) : (
-        <form
-          onSubmit={handleSaveData}
-          className="p-4 md:p-6 flex flex-col gap-6"
-        >
-          {/* FOTO & LOGO SECTION */}
+        <form onSubmit={handleSaveData} className="p-4 md:p-6 flex flex-col gap-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="p-4 border border-gray-200 rounded-xl bg-gray-50/50">
               <label className="block text-sm font-bold text-gray-700 mb-1">
                 Background Halaman (Hero)
               </label>
-              <p className="text-xs text-gray-500 mb-3">
-                Rekomendasi rasio landscape memanjang (contoh: 1920x500).
-              </p>
+              <p className="text-xs text-gray-500 mb-3">Rekomendasi rasio landscape (1920x500).</p>
               {(bgUrl || bgFile) && (
                 <Image
                   src={bgFile ? URL.createObjectURL(bgFile) : bgUrl}
                   alt="Background Preview"
                   width={800}
                   height={300}
-                  unoptimized // Crucial for blob URLs
+                  unoptimized
                   className="w-full h-32 object-cover rounded-lg border border-gray-200 mb-3 shadow-sm bg-white"
                 />
               )}
@@ -210,36 +196,41 @@ export default function TabProfileKoperasi() {
               <label className="block text-sm font-bold text-gray-700 mb-1">
                 Logo Koperasi (Bulat)
               </label>
-              <p className="text-xs text-gray-500 mb-3">
-                Disarankan rasio kotak 1:1 (contoh: 500x500).
-              </p>
+              <p className="text-xs text-gray-500 mb-3">Disarankan rasio kotak 1:1 (500x500).</p>
               {(logoUrl || logoFile) && (
                 <Image
                   src={logoFile ? URL.createObjectURL(logoFile) : logoUrl}
                   alt="Logo Preview"
                   width={96}
                   height={96}
-                  unoptimized // Crucial for blob URLs
+                  unoptimized
                   className="w-24 h-24 object-cover rounded-full border-4 border-white mb-3 shadow-md bg-white mx-auto"
                 />
               )}
               <input
                 type="file"
                 accept="image/*"
-                onChange={(e) =>
-                  e.target.files && setLogoFile(e.target.files[0])
-                }
+                onChange={(e) => e.target.files && setLogoFile(e.target.files[0])}
                 className="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:font-semibold file:bg-[#274a6a]/10 file:text-[#274a6a]"
               />
             </div>
           </div>
 
-          {/* VISI & MISI SECTION */}
+          <div>
+            <label className="block text-sm font-bold text-gray-700 mb-1">Tentang Koperasi</label>
+            <textarea
+              rows={4}
+              value={about}
+              onChange={(e) => setAbout(e.target.value)}
+              placeholder="Tuliskan deskripsi utama tentang koperasi di sini..."
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#274a6a] outline-none resize-none"
+              required
+            />
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-1">
-                Visi Koperasi
-              </label>
+              <label className="block text-sm font-bold text-gray-700 mb-1">Visi Koperasi</label>
               <textarea
                 rows={4}
                 value={vision}
@@ -250,9 +241,7 @@ export default function TabProfileKoperasi() {
               />
             </div>
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-1">
-                Misi Koperasi
-              </label>
+              <label className="block text-sm font-bold text-gray-700 mb-1">Misi Koperasi</label>
               <textarea
                 rows={4}
                 value={mission}
@@ -264,16 +253,48 @@ export default function TabProfileKoperasi() {
             </div>
           </div>
 
-          {/* BOX TAMBAHAN SECTION */}
+          {/* BAGIAN SOSIAL MEDIA BARU */}
+          <div className="border border-gray-200 rounded-xl overflow-hidden p-4 bg-gray-50/50">
+             <h3 className="font-bold text-gray-800 text-sm mb-4">Tautan Sosial Media (Opsional)</h3>
+             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Link Instagram</label>
+                  <input
+                    type="url"
+                    value={instagram}
+                    onChange={(e) => setInstagram(e.target.value)}
+                    placeholder="https://instagram.com/..."
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#274a6a] outline-none text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Link TikTok</label>
+                  <input
+                    type="url"
+                    value={tiktok}
+                    onChange={(e) => setTiktok(e.target.value)}
+                    placeholder="https://tiktok.com/@..."
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#274a6a] outline-none text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Link YouTube</label>
+                  <input
+                    type="url"
+                    value={youtube}
+                    onChange={(e) => setYoutube(e.target.value)}
+                    placeholder="https://youtube.com/..."
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#274a6a] outline-none text-sm"
+                  />
+                </div>
+             </div>
+          </div>
+
           <div className="border border-gray-200 rounded-xl overflow-hidden">
             <div className="p-4 bg-gray-50/50 border-b border-gray-200 flex justify-between items-center">
               <div>
-                <h3 className="font-bold text-gray-800 text-sm">
-                  Box Informasi Tambahan
-                </h3>
-                <p className="text-xs text-gray-500 mt-0.5">
-                  Opsi tambahan (misal: Nilai Inti, Tujuan, dll)
-                </p>
+                <h3 className="font-bold text-gray-800 text-sm">Box Informasi Tambahan</h3>
+                <p className="text-xs text-gray-500 mt-0.5">Opsi tambahan (misal: Nilai Inti, Tujuan, dll)</p>
               </div>
               <button
                 type="button"
@@ -286,45 +307,28 @@ export default function TabProfileKoperasi() {
 
             <div className="p-4 flex flex-col gap-4">
               {boxes.length === 0 ? (
-                <p className="text-sm text-center text-gray-400 py-4">
-                  Belum ada box informasi tambahan.
-                </p>
+                <p className="text-sm text-center text-gray-400 py-4">Belum ada box informasi tambahan.</p>
               ) : (
                 boxes.map((box, index) => (
-                  <div
-                    key={index}
-                    className="flex gap-4 items-start p-4 bg-white border border-gray-100 shadow-sm rounded-lg relative group"
-                  >
+                  <div key={index} className="flex gap-4 items-start p-4 bg-white border border-gray-100 shadow-sm rounded-lg relative group">
                     <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div className="md:col-span-1">
-                        <label className="block text-xs font-medium text-gray-500 mb-1">
-                          Judul Box
-                        </label>
+                        <label className="block text-xs font-medium text-gray-500 mb-1">Judul Box</label>
                         <input
                           type="text"
                           value={box.title}
-                          onChange={(e) =>
-                            handleBoxChange(index, "title", e.target.value)
-                          }
+                          onChange={(e) => handleBoxChange(index, "title", e.target.value)}
                           placeholder="Misal: Tujuan Kami"
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#274a6a] outline-none text-sm"
                           required
                         />
                       </div>
                       <div className="md:col-span-2">
-                        <label className="block text-xs font-medium text-gray-500 mb-1">
-                          Deskripsi Box
-                        </label>
+                        <label className="block text-xs font-medium text-gray-500 mb-1">Deskripsi Box</label>
                         <textarea
                           rows={2}
                           value={box.description}
-                          onChange={(e) =>
-                            handleBoxChange(
-                              index,
-                              "description",
-                              e.target.value,
-                            )
-                          }
+                          onChange={(e) => handleBoxChange(index, "description", e.target.value)}
                           placeholder="Isi penjelasan di sini..."
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#274a6a] outline-none text-sm resize-none"
                           required
@@ -337,18 +341,8 @@ export default function TabProfileKoperasi() {
                       className="text-red-500 hover:text-red-700 p-2 rounded-lg hover:bg-red-50 transition-colors mt-5"
                       title="Hapus Box"
                     >
-                      <svg
-                        className="w-5 h-5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                        />
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                       </svg>
                     </button>
                   </div>

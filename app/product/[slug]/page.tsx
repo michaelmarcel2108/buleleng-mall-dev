@@ -72,8 +72,6 @@ export default async function ProductDetailPage({
         <div className="w-full aspect-square relative shadow-sm border border-gray-100 rounded-xl overflow-hidden bg-gray-100">
           {mainProduct.image_url ? (
             <Image
-              width={500}
-              height={500}
               src={mainProduct.image_url}
               alt={`Gambar ${mainProduct.name}`}
               fill

@@ -29,8 +29,6 @@ const BrandCard = ({ business }: BrandCardProps) => {
             >
               {product?.image_url ? (
                 <Image
-                  width={500}
-                  height={500}
                   src={product.image_url}
                   alt={`Produk dari ${business.name}`}
                   fill
