@@ -17,7 +17,6 @@ export default async function ProfileKoperasi() {
     console.error("Gagal mengambil data:", error.message);
   }
 
-  // Data default (fallback)
   const defaultAbout =
     "Koperasi Pemasaran Bersama Buleleng didirikan sebagai wadah kolaborasi strategis bagi para pelaku usaha kecil, mikro, dan menengah (UMKM) di wilayah Kabupaten Buleleng. Kami berkomitmen untuk memperkuat ekosistem usaha lokal, mengelola standarisasi kualitas, serta membuka akses pasar yang lebih luas demi kemajuan perajin dan produsen lokal Bali.";
   const defaultVision =
@@ -44,8 +43,8 @@ export default async function ProfileKoperasi() {
           <div className="absolute inset-0 bg-pattern opacity-10 z-0"></div>
         )}
 
-        <div className="relative z-10 max-w-5xl mx-auto px-8 md:px-16 w-full flex flex-col items-center text-center gap-4">
-          <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-sm mb-2 overflow-hidden">
+        <div className="relative z-15 max-w-7xl mx-auto px-10 md:px-16 w-full flex flex-col items-center text-center gap-4">
+          <div className="w-24 h-24 md:w-32 md:h-32 bg-white rounded-full flex items-center justify-center shadow-md mb-2 overflow-hidden border-4 border-white/20">
             {profile?.logo_url ? (
               <img
                 src={profile.logo_url}
@@ -54,7 +53,7 @@ export default async function ProfileKoperasi() {
               />
             ) : (
               <svg
-                className="w-10 h-10 text-[#274a6a]"
+                className="w-12 h-12 md:w-16 md:h-16 text-[#274a6a]"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -63,9 +62,10 @@ export default async function ProfileKoperasi() {
               </svg>
             )}
           </div>
-          <h1 className="font-display text-3xl md:text-5xl font-bold leading-tight">
-            Koperasi Pemasaran Bersama Buleleng
+          <h1 className="font-display text-3xl md:text-5xl font-bold leading-tight mt-2">
+            Koperasi Pemasaran Wirausaha Singaraja
           </h1>
+
           <p className="text-sm md:text-lg text-white/90 max-w-2xl font-sans">
             Mendorong pertumbuhan ekonomi daerah dengan menghubungkan produk UMKM
             unggulan Buleleng ke ekosistem pasar digital.

@@ -13,6 +13,7 @@ type ExtendedBusiness = Business & {
   shopee_url?: string | null;
   instagram_url?: string | null;
   tiktok_url?: string | null;
+  rating?: number; // <-- TAMBAHAN: Menyimpan nilai rating
 };
 
 const generateSlug = (text: string) => {
@@ -102,7 +103,8 @@ export default function TabToko({ onViewProducts }: TabTokoProps) {
       image_url: "",
       shopee_url: "",
       instagram_url: "",
-      tiktok_url: ""
+      tiktok_url: "",
+      rating: 5.0, // <-- TAMBAHAN: Nilai default rating 5.0
     });
     setIsModalOpen(true);
   };
@@ -111,7 +113,8 @@ export default function TabToko({ onViewProducts }: TabTokoProps) {
     setIsEditMode(true);
     setSelectedLogoFile(null);
     setSelectedBannerFile(null);
-    setEditingItem({ ...item });
+    // Memastikan rating lama termuat, jika kosong diatur ke 5.0
+    setEditingItem({ ...item, rating: item.rating || 5.0 });
     setIsModalOpen(true);
   };
 
@@ -181,6 +184,7 @@ export default function TabToko({ onViewProducts }: TabTokoProps) {
         shopee_url: editingItem.shopee_url || null,
         instagram_url: editingItem.instagram_url || null,
         tiktok_url: editingItem.tiktok_url || null,
+        rating: editingItem.rating || 5.0, // <-- TAMBAHAN: Menyimpan rating ke database
       };
 
       if (isEditMode && editingItem.id) {
@@ -342,20 +346,39 @@ export default function TabToko({ onViewProducts }: TabTokoProps) {
               onSubmit={handleSaveData}
               className="p-5 flex flex-col gap-4 overflow-y-auto"
             >
-              {/* NAMA TOKO */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Nama Toko / Brand
-                </label>
-                <input
-                  type="text"
-                  value={editingItem?.name || ""}
-                  onChange={(e) =>
-                    setEditingItem({ ...editingItem, name: e.target.value })
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-[#274a6a]"
-                  required
-                />
+              {/* --- BARIS: NAMA TOKO & RATING --- */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="md:col-span-3">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Nama Toko / Brand
+                  </label>
+                  <input
+                    type="text"
+                    value={editingItem?.name || ""}
+                    onChange={(e) =>
+                      setEditingItem({ ...editingItem, name: e.target.value })
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-[#274a6a]"
+                    required
+                  />
+                </div>
+                <div className="md:col-span-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Rating (1-5)
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="5"
+                    step="0.1"
+                    value={editingItem?.rating || ""}
+                    onChange={(e) =>
+                      setEditingItem({ ...editingItem, rating: Number(e.target.value) })
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-[#amber-400]"
+                    required
+                  />
+                </div>
               </div>
 
               {/* GRID UNTUK UPLOAD GAMBAR */}

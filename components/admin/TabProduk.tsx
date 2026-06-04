@@ -3,13 +3,13 @@
 import { createClient } from "@/lib/supabase/client";
 import { Business, Category, Product } from "@/types";
 import { useState, useEffect, useCallback } from "react";
-import Image from "next/image"; // Added for Next.js image optimization
+import Image from "next/image";
 
-// We extend the Product type locally just for the form,
-// since the database expects these foreign keys when saving!
+// Extended state to include tokopedia_url explicitly just in case it's not in the base Product type yet
 type ProductFormState = Partial<Product> & {
   category_id?: string;
   business_id?: string;
+  tokopedia_url?: string;
 };
 
 const generateSlug = (text: string) => {
@@ -68,7 +68,6 @@ export default function TabProduk({
 
   // --- THE FETCHER PATTERN ---
   const fetchProductsData = useCallback(async () => {
-    // Fetching * for relationships so they perfectly match your types.ts
     const { data } = await supabase
       .from("products")
       .select("*, businesses(*), categories(*)")
@@ -77,13 +76,11 @@ export default function TabProduk({
   }, [supabase]);
 
   const fetchBusinessesData = useCallback(async () => {
-    // Added 'slug' to satisfy the Business type
     const { data } = await supabase.from("businesses").select("id, name, slug");
     return data;
   }, [supabase]);
 
   const fetchCategoriesData = useCallback(async () => {
-    // Added 'color' to satisfy the Category type
     const { data } = await supabase
       .from("categories")
       .select("id, name, color");
@@ -94,7 +91,6 @@ export default function TabProduk({
   useEffect(() => {
     let isMounted = true;
 
-    // Fetch all three datasets simultaneously for better performance
     Promise.all([
       fetchProductsData(),
       fetchBusinessesData(),
@@ -146,7 +142,7 @@ export default function TabProduk({
     return (
       p.name.toLowerCase().includes(query) ||
       finalBusinessName.toLowerCase().includes(query) ||
-      finalCategoryName.toLowerCase().includes(query) // Added category search as a bonus!
+      finalCategoryName.toLowerCase().includes(query) 
     );
   });
 
@@ -155,9 +151,11 @@ export default function TabProduk({
     setSelectedFileProduct(null);
     setEditingItem({
       name: "",
+      description: "", // Reset deskripsi saat tambah baru
       price: 0,
       image_url: "",
       shopee_url: "",
+      tokopedia_url: "",
       business_id: businesses[0]?.id || "",
       category_id: String(categories[0]?.id || ""),
     });
@@ -167,7 +165,8 @@ export default function TabProduk({
   const openEditModal = (item: Product) => {
     setIsEditMode(true);
     setSelectedFileProduct(null);
-    setEditingItem({ ...item });
+    const itemData = item as any;
+    setEditingItem({ ...item, tokopedia_url: itemData.tokopedia_url || "" });
     setIsModalOpen(true);
   };
 
@@ -214,9 +213,11 @@ export default function TabProduk({
       const payload = {
         name: editingItem.name,
         slug: generateSlug(editingItem.name || ""),
+        description: editingItem.description || null, // Menambahkan Deskripsi ke payload
         price: editingItem.price,
         image_url: finalImageUrl,
         shopee_url: editingItem.shopee_url || null,
+        tokopedia_url: editingItem.tokopedia_url || null,
         business_id: editingItem.business_id,
         category_id: editingItem.category_id,
       };
@@ -298,7 +299,6 @@ export default function TabProduk({
           </thead>
           <tbody className="text-sm divide-y divide-gray-100">
             {filteredProducts.map((p) => {
-              // Safely extract names for the table columns
               const catData = p.categories as Category[];
               const bizData = p.businesses as Business[];
               const categoryName = catData[0]?.name || catData?.[0]?.name || "";
@@ -479,7 +479,27 @@ export default function TabProduk({
                   />
                 </div>
 
+                {/* --- TAMBAHAN: TEXTAREA DESKRIPSI PRODUK --- */}
                 <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Deskripsi Produk (Opsional)
+                  </label>
+                  <textarea
+                    value={editingItem?.description || ""}
+                    onChange={(e) =>
+                      setEditingItem({
+                        ...editingItem,
+                        description: e.target.value,
+                      })
+                    }
+                    rows={4}
+                    placeholder="Tuliskan deskripsi lengkap mengenai produk ini..."
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#274a6a] outline-none resize-y"
+                  />
+                </div>
+                {/* --- END TEXTAREA DESKRIPSI PRODUK --- */}
+
+                <div className="md:col-span-1">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Link Shopee (Opsional)
                   </label>
@@ -493,7 +513,25 @@ export default function TabProduk({
                       })
                     }
                     placeholder="https://shopee.co.id/..."
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#EE4D2D] outline-none"
+                  />
+                </div>
+
+                <div className="md:col-span-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Link Tokopedia (Opsional)
+                  </label>
+                  <input
+                    type="url"
+                    value={editingItem?.tokopedia_url || ""}
+                    onChange={(e) =>
+                      setEditingItem({
+                        ...editingItem,
+                        tokopedia_url: e.target.value,
+                      })
+                    }
+                    placeholder="https://tokopedia.com/..."
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00AA5B] outline-none"
                   />
                 </div>
               </div>

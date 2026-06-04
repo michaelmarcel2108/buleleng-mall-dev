@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 import NextTopLoader from "nextjs-toploader";
+import LayoutWrapper from "@/components/LayoutWrapper";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -26,7 +25,6 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    // PERBAIKANNYA ADA DI BARIS BAWAH INI
     <html lang="id" suppressHydrationWarning>
       <body
         suppressHydrationWarning
@@ -44,11 +42,11 @@ export default function RootLayout({
           shadow="0 0 10px #274a6a, 0 0 5px #274a6a"
         />
 
-        <Navbar />
+        {/* Hanya panggil LayoutWrapper di sini, JANGAN ADA <Navbar /> lagi */}
+        <LayoutWrapper>
+          {children}
+        </LayoutWrapper>
 
-        <div className="flex-1 w-full flex flex-col">{children}</div>
-
-        <Footer />
       </body>
     </html>
   );
