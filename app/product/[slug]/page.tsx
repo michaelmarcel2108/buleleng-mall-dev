@@ -131,8 +131,34 @@ export default async function ProductDetailPage({
   const waMessage = `Halo ${businessData?.name || "Admin"}, saya tertarik untuk membeli produk *${mainProduct.name}* seharga Rp${mainProduct.price ? mainProduct.price.toLocaleString("id-ID") : "0"} yang saya temukan di Buleleng Mall. Apakah stoknya masih tersedia?`;
   const waLink = `https://wa.me/${waNumber}?text=${encodeURIComponent(waMessage)}`;
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: mainProduct.name,
+    description:
+      mainProduct.description || `Beli ${mainProduct.name} di Buleleng Mall`,
+    image: mainProduct.image_url ? [mainProduct.image_url] : [],
+    offers: {
+      "@type": "Offer",
+      // Assuming your store uses Indonesian Rupiah
+      priceCurrency: "IDR",
+      price: mainProduct.price,
+      // Hardcoded to InStock, but you can make this dynamic if you track inventory in Supabase
+      availability: "https://schema.org/InStock",
+      url: `https://bulelengmall.com/product/${mainProduct.slug}`,
+      seller: {
+        "@type": "Organization",
+        name: businessData?.name || "Buleleng Mall",
+      },
+    },
+  };
+
   return (
     <main className="w-full min-h-screen bg-gray-50/50 py-8 md:py-16 px-4 md:px-8 relative overflow-hidden">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <section className="max-w-5xl mx-auto p-4 md:p-10 grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 relative z-10">
         <div className="w-full aspect-square relative shadow-sm border border-gray-100 rounded-xl overflow-hidden bg-gray-100">
           {mainProduct.image_url ? (
