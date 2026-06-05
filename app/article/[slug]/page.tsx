@@ -1,9 +1,79 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { Metadata, ResolvingMetadata } from "next";
 
 interface ArticlePageProps {
   params: Promise<{ slug: string }> | { slug: string };
+}
+
+// Helper function to create a plain text snippet from the article content
+function getExcerpt(text: string, length: number = 150) {
+  if (!text) return "";
+  // Remove potential markdown/HTML tags if present, and truncate
+  return text.replace(/(<([^>]+)>)/gi, "").substring(0, length) + "...";
+}
+
+export async function generateMetadata(
+  { params }: ArticlePageProps,
+  parent: ResolvingMetadata,
+): Promise<Metadata> {
+  const resolvedParams = await Promise.resolve(params);
+  const { slug } = resolvedParams;
+
+  const supabase = await createClient();
+
+  // Fetch only what's needed for SEO
+  const { data: article } = await supabase
+    .from("articles")
+    .select("title, content, image_url, author, created_at, slug")
+    .eq("slug", slug)
+    .maybeSingle();
+
+  const siteName = "Buleleng Mall";
+
+  if (!article) {
+    return {
+      title: `Artikel Tidak Ditemukan | ${siteName}`,
+    };
+  }
+
+  const excerpt = getExcerpt(article.content);
+  const previousImages = (await parent).openGraph?.images || [];
+
+  return {
+    title: `${article.title} | ${siteName}`,
+    description: excerpt,
+    alternates: {
+      canonical: `/article/${article.slug}`,
+    },
+    openGraph: {
+      title: article.title,
+      description: excerpt,
+      url: `/article/${article.slug}`,
+      siteName: siteName,
+      type: "article", // Crucial for blog posts
+      publishedTime: article.created_at,
+      authors: article.author ? [article.author] : [],
+      images: article.image_url
+        ? [
+            {
+              url: article.image_url,
+              width: 1200,
+              height: 630, // Standard article image ratio
+              alt: article.title,
+            },
+            ...previousImages,
+          ]
+        : previousImages,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: article.title,
+      description: excerpt,
+      images: article.image_url ? [article.image_url] : [],
+    },
+  };
 }
 
 export default async function ArticleDetailPage({ params }: ArticlePageProps) {
