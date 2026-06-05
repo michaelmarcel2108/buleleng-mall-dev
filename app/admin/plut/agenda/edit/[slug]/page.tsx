@@ -1,114 +1,218 @@
-"use client";
-
-import { useState, useEffect, use } from "react";
-import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
+import Image from "next/image";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/client";
+import ProductCard from "@/components/ProductCard";
+import ProductDescription from "@/components/ProductDescription";
+import { Product } from "@/types";
 
-export default function EditAgendaPage({ params }: { params: Promise<{ slug: string }> | { slug: string } }) {
-  const router = useRouter();
-  const supabase = createClient();
-  const resolvedParams = params instanceof Promise ? use(params) : params;
-  const isNew = resolvedParams.slug === "new";
+// Interface untuk Next.js 15 (params adalah Promise)
+interface ProductDetailProps {
+  params: Promise<{
+    slug: string;
+  }>;
+}
 
-  const [isLoading, setIsLoading] = useState(!isNew);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+export default async function ProductDetailPage({
+  params,
+}: ProductDetailProps) {
+  // 1. Await params
+  const resolvedParams = await params;
+  const slug = resolvedParams.slug;
+
+  const supabase = await createClient();
+
+  // 2. Ambil data produk berserta relasi Kategori dan Toko (Businesses)
+  const { data, error } = await supabase
+    .from("products")
+    .select(
+      `
+      id,
+      slug,
+      name,
+      price,
+      description,
+      image_url,
+      shopee_url,
+      tokopedia_url, 
+      categories:category_id (id, name, color),
+      businesses (id, name, slug)
+      `,
+    )
+    .eq("slug", slug)
+    .single();
+
+  // 3. Handling jika data tidak ditemukan (Error 404)
+  if (error || !data) {
+    return (
+      <div className="p-16 text-center min-h-[60vh] flex flex-col items-center justify-center gap-4 bg-gray-50/50">
+        <h1 className="text-2xl font-bold font-display text-gray-900">
+          Produk tidak ditemukan
+        </h1>
+        <p className="text-gray-500 mb-2">Produk yang Anda cari mungkin sudah dihapus atau URL-nya salah.</p>
+        <Link
+          href="/catalog"
+          className="bg-blue-900 px-6 py-2 rounded-full hover:opacity-90 transition-all font-medium text-white"
+        >
+          Kembali ke Katalog
+        </Link>
+      </div>
+    );
+  }
+
+  // 4. Ambil data produk lainnya untuk katalog
+  const { data: catalogProducts } = await supabase
+    .from("products")
+    .select("*, businesses(name)")
+    .neq("slug", slug)
+    .limit(4);
+
+  const mainProduct = data as unknown as Product;
+  const productData = mainProduct as any; 
   
-  const [formData, setFormData] = useState({
-    judul_kegiatan: "",
-    slug: "",
-    deskripsi: "",
-    tanggal_mulai: "",
-    lokasi: "",
-    link_pendaftaran: "",
-  });
+  // 5. Gunakan Optional Chaining untuk mencegah error jika relasi kosong
+  const categoryData = mainProduct.categories?.[0];
+  const businessData = mainProduct.businesses?.[0];
 
-  useEffect(() => {
-    if (!isNew) {
-      supabase.from("plut_agendas").select("*").eq("slug", resolvedParams.slug).single()
-        .then(({ data }) => { 
-          if (data) setFormData({
-            ...data,
-            tanggal_mulai: data.tanggal_mulai ? data.tanggal_mulai.split('T')[0] : "" 
-          }); 
-          setIsLoading(false);
-        });
-    }
-  }, [isNew, resolvedParams.slug, supabase]);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => {
-      const updated = { ...prev, [name]: value };
-      
-      // Auto-generate Slug khusus saat buat baru
-      if (isNew && name === "judul_kegiatan") {
-        updated.slug = value
-          .toLowerCase()
-          .replace(/[^a-z0-9]+/g, "-") 
-          .replace(/(^-|-$)+/g, "");   
-      }
-      return updated;
-    });
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    
-    if (isNew) {
-      await supabase.from("plut_agendas").insert([formData]);
-    } else {
-      await supabase.from("plut_agendas").update(formData).eq("slug", resolvedParams.slug);
-    }
-    
-    router.push("/admin/plut/agenda-regulasi");
-    router.refresh();
-  };
-
-  if (isLoading) return <div className="p-8 text-neutral-500 font-bold">Memuat form...</div>;
+  const waNumber = "6282341657788";
+  const waMessage = `Halo ${businessData?.name || "Admin"}, saya tertarik untuk membeli produk *${mainProduct.name}* seharga Rp${mainProduct.price ? mainProduct.price.toLocaleString("id-ID") : "0"} yang saya temukan di Buleleng Mall. Apakah stoknya masih tersedia?`;
+  const waLink = `https://wa.me/${waNumber}?text=${encodeURIComponent(waMessage)}`;
 
   return (
-    <div className="p-8 max-w-3xl mx-auto font-sans">
-      <h1 className="text-2xl font-extrabold mb-6">{isNew ? "Tambah Agenda Kegiatan" : "Edit Agenda"}</h1>
-      
-      <form onSubmit={handleSubmit} className="space-y-6 bg-white p-8 rounded-xl shadow-sm border border-neutral-100">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="md:col-span-2">
-            <label className="block text-sm font-bold mb-2">Judul Kegiatan *</label>
-            <input type="text" name="judul_kegiatan" required value={formData.judul_kegiatan} onChange={handleChange} className="w-full px-4 py-3 rounded-lg border bg-neutral-50 focus:ring-2 focus:ring-[#FF3C00] outline-none" />
-          </div>
-          
-          <div className="md:col-span-2">
-            <label className="block text-sm font-bold mb-2">URL Slug *</label>
-            <input type="text" name="slug" required value={formData.slug} onChange={handleChange} placeholder="judul-kegiatan" className="w-full px-4 py-3 rounded-lg border bg-neutral-50 focus:ring-2 focus:ring-[#FF3C00] outline-none font-mono text-sm" />
-          </div>
-
-          <div>
-            <label className="block text-sm font-bold mb-2">Tanggal Pelaksanaan *</label>
-            <input type="date" name="tanggal_mulai" required value={formData.tanggal_mulai} onChange={handleChange} className="w-full px-4 py-3 rounded-lg border bg-neutral-50 focus:ring-2 focus:ring-[#FF3C00] outline-none" />
-          </div>
-          <div>
-            <label className="block text-sm font-bold mb-2">Lokasi</label>
-            <input type="text" name="lokasi" value={formData.lokasi} onChange={handleChange} placeholder="Contoh: Gedung PLUT Lantai 2" className="w-full px-4 py-3 rounded-lg border bg-neutral-50 focus:ring-2 focus:ring-[#FF3C00] outline-none" />
-          </div>
+    <main className="w-full min-h-screen bg-gray-50/50 py-8 md:py-16 px-4 md:px-8 relative overflow-hidden">
+      <section className="max-w-5xl mx-auto p-4 md:p-10 grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 relative z-10">
+        
+        <div className="w-full aspect-square relative shadow-sm border border-gray-100 rounded-xl overflow-hidden bg-gray-100">
+          {mainProduct.image_url ? (
+            <Image
+              src={mainProduct.image_url}
+              alt={`Gambar ${mainProduct.name}`}
+              fill
+              className="object-cover"
+              sizes="(max-width: 768px) 100vw, 50vw"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-gray-400">
+              No Image
+            </div>
+          )}
         </div>
 
-        <div>
-          <label className="block text-sm font-bold mb-2">Deskripsi Singkat</label>
-          <textarea rows={3} name="deskripsi" value={formData.deskripsi} onChange={handleChange} className="w-full px-4 py-3 rounded-lg border bg-neutral-50 focus:ring-2 focus:ring-[#FF3C00] outline-none resize-none" />
+        <div className="flex flex-col gap-5 items-start justify-start h-full">
+          <div className="flex flex-col items-start gap-3 w-full">
+            <div className="flex flex-wrap items-center gap-2">
+              {/* BADGE TOKO */}
+              {businessData?.name && (
+                <Link
+                  href={`/brand/${businessData.slug}`}
+                  className="text-xs md:text-sm px-4 py-1.5 font-medium rounded-full bg-blue-50 text-blue-800 hover:bg-blue-100 transition-colors border border-blue-100 shadow-sm"
+                >
+                  Toko: {businessData.name}
+                </Link>
+              )}
+            </div>
+
+            <h1 className="font-display text-3xl md:text-4xl mt-2 font-bold text-gray-900">
+              {mainProduct.name}
+            </h1>
+
+            <div
+              className="text-3xl md:text-4xl font-bold mt-2 text-foreground border-b border-gray-100 pb-4 w-full"
+              suppressHydrationWarning
+            >
+              Rp{mainProduct.price ? mainProduct.price.toLocaleString("id-ID") : "0"}
+            </div>
+          </div>
+
+          <div className="w-full flex flex-col mt-2">
+            <div className="font-sans font-bold text-gray-900 text-sm md:text-base uppercase tracking-wider">
+              Deskripsi Produk
+            </div>
+            <ProductDescription text={mainProduct.description || ""} />
+          </div>
+
+          <div className="flex flex-col gap-3 w-full mt-auto pt-6">
+            {/* BADGE KATEGORI */}
+            {categoryData?.name && (
+              <div
+                className="inline-block px-4 py-1.5 rounded-lg text-white font-medium text-sm shadow-sm w-fit mb-2"
+                style={{ backgroundColor: categoryData?.color || "#274a6a" }}
+              >
+                {categoryData.name}
+              </div>
+            )}
+
+            {/* TOMBOL SHOPEE */}
+            {mainProduct.shopee_url && (
+              <Link
+                href={mainProduct.shopee_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full bg-[#EE4D2D] px-8 py-3 text-white text-center rounded-xl font-medium hover:opacity-90 transition-all md:text-lg shadow-sm"
+              >
+                Beli di Shopee
+              </Link>
+            )}
+
+            {/* TOMBOL TOKOPEDIA */}
+            {productData.tokopedia_url && (
+              <Link
+                href={productData.tokopedia_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full bg-[#00AA5B] px-8 py-3 text-white text-center rounded-xl font-medium hover:opacity-90 transition-all md:text-lg shadow-sm"
+              >
+                Beli di Tokopedia
+              </Link>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* KATALOG PRODUK LAINNYA */}
+      <section className="max-w-5xl mx-auto mt-12 md:mt-20 w-full relative z-10">
+        <h3 className="text-2xl font-display font-bold text-foreground mb-6">
+          Katalog Produk Lainnya
+        </h3>
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {catalogProducts && catalogProducts.length > 0 ? (
+            catalogProducts.map((product) => (
+              <ProductCard key={product.id} product={product as Product} />
+            ))
+          ) : (
+            <p className="text-gray-500 col-span-full py-4 text-center">
+              Belum ada produk lain saat ini.
+            </p>
+          )}
         </div>
 
-        <div>
-          <label className="block text-sm font-bold mb-2">Link Pendaftaran (Opsional)</label>
-          <input type="url" name="link_pendaftaran" value={formData.link_pendaftaran} onChange={handleChange} placeholder="https://forms.gle/..." className="w-full px-4 py-3 rounded-lg border bg-neutral-50 focus:ring-2 focus:ring-[#FF3C00] outline-none" />
+        <div className="mt-8 text-center">
+          <Link
+            href="/catalog"
+            className="inline-block px-6 py-2 border border-foreground text-foreground rounded-full hover:bg-foreground hover:text-white transition-all font-medium text-sm md:text-base shadow-sm"
+          >
+            Lihat Semua Katalog
+          </Link>
         </div>
+      </section>
 
-        <div className="pt-4 flex gap-4">
-          <Link href="/admin/plut/agenda-regulasi" className="px-6 py-3 font-bold text-neutral-500 hover:bg-neutral-100 rounded-lg transition-colors">Batal</Link>
-          <button type="submit" disabled={isSubmitting} className="px-6 py-3 font-bold text-white bg-[#FF3C00] hover:bg-[#e03500] rounded-lg transition-colors">{isSubmitting ? "Menyimpan..." : "Simpan Agenda"}</button>
-        </div>
-      </form>
-    </div>
+      {/* TOMBOL WHATSAPP */}
+      <a
+        href={waLink}
+        target="_blank"
+        rel="noopener noreferrer"
+        title="Chat via WhatsApp"
+        className="fixed bottom-6 right-6 md:bottom-10 md:right-10 z-50 bg-green-600 text-white p-4 rounded-full shadow-[0_4px_14px_0_rgba(37,211,102,0.39)] hover:bg-green-400 hover:-translate-y-1 hover:scale-110 transition-all duration-300 flex items-center justify-center group"
+      >
+        <svg
+          className="w-8 h-8 md:w-10 md:h-10"
+          fill="currentColor"
+          viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.372-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.955c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.549 4.142 1.594 5.945L.057 24l6.398-1.679a11.87 11.87 0 005.593 1.424h.005c6.556 0 11.892-5.335 11.892-11.893a11.821 11.821 0 00-3.48-8.413z" />
+        </svg>
+      </a>
+    </main>
   );
 }

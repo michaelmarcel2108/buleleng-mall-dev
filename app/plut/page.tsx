@@ -16,7 +16,17 @@ const formatDate = (dateString: string) => {
 export default async function PlutBerandaPage() {
   const supabase = await createClient();
 
-  // 1. Ambil 3 Berita Terkini
+  // 1. Tarik URL Banner Dinamis dari Settings
+  const { data: settings } = await supabase
+    .from("plut_settings")
+    .select("hero_image_url")
+    .eq("id", 1)
+    .single();
+
+  // Jika URL dari database kosong, gunakan gambar default "/hero-image.jpeg"
+  const heroImage = settings?.hero_image_url || "/hero-image.jpeg"; 
+
+  // 2. Ambil 3 Berita Terkini
   const { data: latestNews } = await supabase
     .from("plut_posts")
     .select("*")
@@ -24,7 +34,7 @@ export default async function PlutBerandaPage() {
     .order("created_at", { ascending: false })
     .limit(3);
 
-  // 2. Ambil 3 Pengumuman Terbaru
+  // 3. Ambil 3 Pengumuman Terbaru
   const { data: latestAnnouncements } = await supabase
     .from("plut_posts")
     .select("*")
@@ -32,7 +42,7 @@ export default async function PlutBerandaPage() {
     .order("created_at", { ascending: false })
     .limit(3);
 
-  // 3. Ambil 2 Infografis Banner Terbaru
+  // 4. Ambil 2 Infografis Banner Terbaru
   const { data: latestInfographics } = await supabase
     .from("plut_posts")
     .select("*")
@@ -43,16 +53,14 @@ export default async function PlutBerandaPage() {
   return (
     <div className="min-h-screen bg-neutral-50 text-neutral-800 font-sans flex flex-col">
       
-      {/* 1. BANNER SLIDE SHOW (Murni Gambar Tanpa Teks) */}
-      <section className="relative w-full aspect-[16/9] md:aspect-[21/9] lg:aspect-[3/1] bg-neutral-200 overflow-hidden">
-        {/* Jika Anda ingin menggunakan komponen BannerSlideshow.tsx buatan Anda,
-            Anda bisa mengganti tag <Image> di bawah ini dengan komponen tersebut. */}
+      {/* 1. BANNER SLIDE SHOW (Anti-Kepotong & Anti-Kegedean) */}
+      <section className="relative w-full h-[250px] sm:h-[350px] md:h-[450px] lg:h-[500px] bg-[#0c353e] overflow-hidden">
         <Image 
-          src="/hero-image.jpeg" 
+          src={heroImage} 
           alt="Banner PLUT Buleleng" 
-          fill 
+          fill
           priority
-          className="object-cover object-center"
+          className="object-contain object-center"
         />
       </section>
 

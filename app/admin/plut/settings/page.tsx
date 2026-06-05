@@ -30,7 +30,7 @@ export default function PlutSettingsPage() {
       }
     };
     fetchSettings();
-  }, []);
+  }, [supabase]);
 
   const handleUploadAndSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -95,82 +95,82 @@ export default function PlutSettingsPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto py-10 px-6">
+    <div className="max-w-4xl mx-auto py-10 px-6 font-sans">
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-neutral-900">Pengaturan Tampilan PLUT</h1>
-          <p className="text-neutral-500">Ubah gambar banner utama dan profil di halaman portal PLUT.</p>
+          <h1 className="text-2xl font-extrabold text-neutral-900">Pengaturan Tampilan PLUT</h1>
+          <p className="text-neutral-500 text-sm">Ubah gambar banner utama dan profil di halaman portal publik PLUT.</p>
         </div>
-        <Link href="/admin/plut/manage" className="text-sm font-medium text-neutral-500 hover:text-[#FF3C00]">
-          &larr; Kembali Kelola Berita
+        <Link href="/admin/plut" className="text-sm font-bold text-neutral-500 hover:text-[#FF3C00] transition-colors">
+          &larr; Kembali ke Dashboard
         </Link>
       </div>
 
-      <form onSubmit={handleUploadAndSave} className="space-y-8 bg-white p-8 rounded-2xl shadow-sm border border-neutral-200">
+      <form onSubmit={handleUploadAndSave} className="space-y-8 bg-white p-8 rounded-2xl shadow-sm border border-neutral-100">
         
         {/* HERO IMAGE SETTING */}
         <div>
-          <h2 className="text-lg font-bold text-neutral-900 mb-4">Gambar Banner Atas (Hero)</h2>
+          <h2 className="text-lg font-bold text-neutral-900 mb-4 border-b pb-2">Gambar Banner Atas (Hero)</h2>
           <div className="flex flex-col md:flex-row gap-6 items-start">
             <div className="w-full md:w-1/2">
-              <label className="block text-sm font-medium text-neutral-700 mb-2">Upload Gambar Baru</label>
+              <label className="block text-sm font-bold text-neutral-700 mb-2">Upload Gambar Baru</label>
               <input
                 type="file"
                 accept="image/*"
                 onChange={(e) => setHeroFile(e.target.files?.[0] || null)}
-                className="w-full px-4 py-2 border border-neutral-300 rounded-lg"
+                className="w-full px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl focus:outline-none focus:border-[#FF3C00]"
               />
             </div>
             <div className="w-full md:w-1/2">
-              <p className="block text-sm font-medium text-neutral-700 mb-2">Gambar Saat Ini:</p>
-              <div className="relative w-full h-32 bg-neutral-100 rounded-xl overflow-hidden border border-neutral-200">
+              <p className="block text-sm font-bold text-neutral-700 mb-2">Gambar Saat Ini:</p>
+              <div className="relative w-full aspect-[21/9] bg-neutral-100 rounded-xl overflow-hidden border border-neutral-200 shadow-inner">
                 {heroUrl ? (
                   <Image src={heroUrl} alt="Hero" fill className="object-cover" />
                 ) : (
-                  <span className="flex items-center justify-center h-full text-neutral-400 text-sm">Belum ada foto</span>
+                  <span className="flex items-center justify-center h-full text-neutral-400 text-sm font-semibold">Belum ada banner</span>
                 )}
               </div>
             </div>
           </div>
         </div>
 
-        <hr className="border-neutral-100" />
-
         {/* PROFILE IMAGE SETTING */}
-        <div>
-          <h2 className="text-lg font-bold text-neutral-900 mb-4">Gambar Tentang Kita (Profil)</h2>
+        <div className="pt-4">
+          <h2 className="text-lg font-bold text-neutral-900 mb-4 border-b pb-2">Gambar Profil Instansi</h2>
           <div className="flex flex-col md:flex-row gap-6 items-start">
             <div className="w-full md:w-1/2">
-              <label className="block text-sm font-medium text-neutral-700 mb-2">Upload Gambar Baru</label>
+              <label className="block text-sm font-bold text-neutral-700 mb-2">Upload Gambar Baru</label>
               <input
                 type="file"
                 accept="image/*"
                 onChange={(e) => setProfileFile(e.target.files?.[0] || null)}
-                className="w-full px-4 py-2 border border-neutral-300 rounded-lg"
+                className="w-full px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl focus:outline-none focus:border-[#FF3C00]"
               />
             </div>
             <div className="w-full md:w-1/2">
-              <p className="block text-sm font-medium text-neutral-700 mb-2">Gambar Saat Ini:</p>
-              <div className="relative w-full h-40 bg-neutral-100 rounded-xl overflow-hidden border border-neutral-200">
+              <p className="block text-sm font-bold text-neutral-700 mb-2">Gambar Saat Ini:</p>
+              <div className="relative w-48 h-64 bg-neutral-100 rounded-xl overflow-hidden border border-neutral-200 shadow-inner">
                 {profileUrl ? (
                   <Image src={profileUrl} alt="Profile" fill className="object-cover" />
                 ) : (
-                  <span className="flex items-center justify-center h-full text-neutral-400 text-sm">Belum ada foto</span>
+                  <span className="flex items-center justify-center h-full text-neutral-400 text-sm font-semibold text-center px-4">Belum ada foto profil</span>
                 )}
               </div>
             </div>
           </div>
         </div>
 
-        <button
-          type="submit"
-          disabled={loading}
-          className={`w-full py-3 px-4 rounded-lg text-white font-bold text-lg transition-all ${
-            loading ? "bg-neutral-400 cursor-not-allowed" : "bg-[#FF3C00] hover:bg-[#d63200]"
-          }`}
-        >
-          {loading ? "Menyimpan Perubahan..." : "Simpan Semua Gambar"}
-        </button>
+        <div className="pt-6 border-t border-neutral-100">
+          <button
+            type="submit"
+            disabled={loading}
+            className={`w-full py-4 px-4 rounded-xl text-white font-bold text-lg transition-all shadow-md ${
+              loading ? "bg-neutral-400 cursor-not-allowed" : "bg-[#FF3C00] hover:bg-[#d63200] transform hover:-translate-y-1"
+            }`}
+          >
+            {loading ? "Menyimpan Perubahan..." : "Simpan Semua Gambar"}
+          </button>
+        </div>
       </form>
     </div>
   );

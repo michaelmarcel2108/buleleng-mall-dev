@@ -1,255 +1,217 @@
-import Image from "next/image";
 import Link from "next/link";
+import { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 
+export const metadata: Metadata = {
+  title: "Dashboard Admin PLUT - Buleleng",
+  description: "Panel kendali admin untuk mengelola data operasional PLUT Kabupaten Buleleng.",
+};
+
+// Fungsi format tanggal
 const formatDate = (dateString: string) => {
-  if (!dateString) return "";
+  if (!dateString) return "-";
   const date = new Date(dateString);
   return date.toLocaleDateString("id-ID", {
     day: "numeric",
-    month: "long",
+    month: "short",
     year: "numeric",
   });
 };
 
-export default async function PlutBerandaPage() {
+export default async function AdminPlutDashboard() {
   const supabase = await createClient();
 
-  const { data: latestNews } = await supabase
-    .from("plut_posts")
-    .select("*")
-    .eq("post_type", "berita")
-    .order("created_at", { ascending: false })
-    .limit(3);
+  // Mengambil total data untuk kartu statistik
+  const { count: countPosts } = await supabase.from("plut_posts").select("*", { count: "exact", head: true });
+  const { count: countUmkm } = await supabase.from("plut_umkm").select("*", { count: "exact", head: true });
+  const { count: countBankData } = await supabase.from("plut_bank_data").select("*", { count: "exact", head: true });
+  const { count: countAgenda } = await supabase.from("plut_agendas").select("*", { count: "exact", head: true });
 
-  const { data: latestAnnouncements } = await supabase
+  // Mengambil 5 postingan (artikel/berita/pengumuman) terbaru
+  const { data: recentPosts } = await supabase
     .from("plut_posts")
-    .select("*")
-    .eq("post_type", "pengumuman")
+    .select("id, title, post_type, published_date, created_at, slug")
     .order("created_at", { ascending: false })
-    .limit(3);
-
-  const { data: latestInfographics } = await supabase
-    .from("plut_posts")
-    .select("*")
-    .eq("post_type", "infografis")
-    .order("created_at", { ascending: false })
-    .limit(2);
+    .limit(5);
 
   return (
-    <div className="min-h-screen bg-neutral-50 text-neutral-800 font-sans flex flex-col">
+    <div className="min-h-screen bg-neutral-50 flex flex-col md:flex-row font-sans">
       
-      <section className="relative h-[450px] md:h-[550px] bg-neutral-900 text-white overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-neutral-950 via-neutral-900/80 to-transparent z-10" />
-        <Image 
-          src="/hero-image.jpeg" 
-          alt="Gedung PLUT Buleleng" 
-          fill 
-          priority
-          className="object-cover object-center opacity-40 animate-fade-in"
-        />
-        <div className="max-w-7xl mx-auto px-6 h-full flex flex-col justify-center relative z-20">
-          <span className="inline-block px-4 py-1 rounded-full bg-[#FF3C00]/20 text-[#FF3C00] font-bold text-xs uppercase tracking-wider mb-4 border border-[#FF3C00]/30 w-fit">
-            Pusat Layanan Usaha Terpadu
-          </span>
-          <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight max-w-3xl leading-tight mb-4">
-            Akselerasi Kemajuan <span className="text-[#FF3C00]">KUMKM</span> Kabupaten Buleleng
-          </h1>
-          <p className="text-base md:text-lg text-neutral-300 max-w-xl mb-8 leading-relaxed">
-            Membangun ekosistem usaha daerah yang tangguh, mandiri, dan berdaya saing tinggi melalui pendampingan konsultasi terpadu.
-          </p>
-          <div className="flex flex-wrap gap-4">
-            <Link href="/plut/layanan" className="px-6 py-3 bg-[#FF3C00] hover:bg-[#e03500] text-white font-bold rounded-xl shadow-md transition-all">
-              Daftar Klinik KUMKM
-            </Link>
-            <Link href="/plut/profil" className="px-6 py-3 bg-neutral-800 hover:bg-neutral-700 text-white font-semibold rounded-xl border border-neutral-700 transition-all">
-              Pelajari Profil Kita
-            </Link>
-          </div>
+      {/* SIDEBAR ADMIN LENGKAP */}
+      <aside className="w-full md:w-64 bg-neutral-900 text-white flex flex-col shrink-0">
+        <div className="p-6 border-b border-neutral-800">
+          <Link href="/admin/plut" className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-[#FF3C00] rounded-lg flex items-center justify-center text-white font-bold shadow-md">
+              P
+            </div>
+            <span className="font-bold text-lg tracking-wide">Admin PLUT</span>
+          </Link>
         </div>
-      </section>
+        <nav className="flex-1 p-4 space-y-2">
+          <Link href="/admin/plut" className="flex items-center gap-3 px-4 py-3 bg-[#FF3C00] text-white rounded-xl font-medium shadow-md">
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
+            Dashboard
+          </Link>
+          <Link href="/admin/plut/manage" className="flex items-center gap-3 px-4 py-3 text-neutral-400 hover:text-white hover:bg-neutral-800 rounded-xl font-medium transition-colors">
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" /></svg>
+            Kelola Postingan
+          </Link>
+          <Link href="/admin/plut/umkm" className="flex items-center gap-3 px-4 py-3 text-neutral-400 hover:text-white hover:bg-neutral-800 rounded-xl font-medium transition-colors">
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+            Database UMKM
+          </Link>
+          <Link href="/admin/plut/bank-data" className="flex items-center gap-3 px-4 py-3 text-neutral-400 hover:text-white hover:bg-neutral-800 rounded-xl font-medium transition-colors">
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" /></svg>
+            Bank Data
+          </Link>
+          <Link href="/admin/plut/agenda-regulasi" className="flex items-center gap-3 px-4 py-3 text-neutral-400 hover:text-white hover:bg-neutral-800 rounded-xl font-medium transition-colors">
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+            Agenda & Regulasi
+          </Link>
+        </nav>
+        <div className="p-4 mt-auto border-t border-neutral-800">
+          <Link href="/plut" target="_blank" className="flex items-center gap-2 text-sm text-neutral-400 hover:text-white transition-colors">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+            Lihat Website Publik
+          </Link>
+        </div>
+      </aside>
 
-      <section className="max-w-7xl mx-auto px-6 py-16 w-full grid grid-cols-1 lg:grid-cols-12 gap-12">
+      {/* MAIN KONTEN */}
+      <main className="flex-1 flex flex-col h-screen overflow-y-auto">
         
-        <div className="lg:col-span-8 space-y-12">
+        {/* Header Dashboard */}
+        <header className="bg-white border-b border-neutral-200 px-8 py-5 flex justify-between items-center sticky top-0 z-10">
           <div>
-            <div className="flex justify-between items-end mb-6 border-b border-neutral-200 pb-4">
-              <h2 className="text-2xl font-extrabold text-neutral-900 tracking-tight flex items-center gap-2">
-                <span className="w-1.5 h-6 bg-[#FF3C00] rounded-full"></span>
-                Berita & Kegiatan Terbaru
-              </h2>
-              <Link href="/plut/berita" className="text-sm font-bold text-[#FF3C00] hover:underline">
-                Lihat Semua &rarr;
-              </Link>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {latestNews && latestNews.length > 0 ? (
-                latestNews.map((news) => (
-                  <article key={news.id} className="bg-white rounded-2xl overflow-hidden border border-neutral-200 hover:shadow-lg transition-all group flex flex-col">
-                    <div className="relative h-40 w-full overflow-hidden bg-neutral-100">
-                      <Image 
-                        src={news.image_url || "/hero-image.jpeg"} 
-                        alt={news.title} 
-                        fill 
-                        className="object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
-                    </div>
-                    <div className="p-4 flex flex-col flex-grow">
-                      <span className="text-[10px] font-bold text-neutral-400 uppercase mb-1">
-                        {formatDate(news.published_date || news.created_at)}
-                      </span>
-                      <h3 className="font-bold text-neutral-900 text-sm line-clamp-2 leading-snug mb-2 group-hover:text-[#FF3C00] transition-colors">
-                        <Link href={`/plut/berita/${news.slug}`}>{news.title}</Link>
-                      </h3>
-                      <p className="text-xs text-neutral-600 line-clamp-2 mt-auto">
-                        {news.excerpt || "Klik untuk membaca selengkapnya mengenai agenda kegiatan kita."}
-                      </p>
-                    </div>
-                  </article>
-                ))
-              ) : (
-                <p className="text-sm text-neutral-500 col-span-full">Belum ada berita terbaru.</p>
-              )}
-            </div>
+            <h1 className="text-2xl font-extrabold text-neutral-900">Dashboard Overview</h1>
+            <p className="text-sm text-neutral-500">Selamat datang kembali di panel kendali PLUT Buleleng.</p>
           </div>
-
-          {/* BANNER INFOGRAFIS */}
-          <div>
-            <div className="flex justify-between items-end mb-6 border-b border-neutral-200 pb-4">
-              <h2 className="text-2xl font-extrabold text-neutral-900 tracking-tight flex items-center gap-2">
-                <span className="w-1.5 h-6 bg-[#FF3C00] rounded-full"></span>
-                Banner Infografis Kebijakan
-              </h2>
-              <Link href="/plut/infografis" className="text-sm font-bold text-[#FF3C00] hover:underline">
-                Lihat Semua &rarr;
-              </Link>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {latestInfographics && latestInfographics.length > 0 ? (
-                latestInfographics.map((info) => (
-                  <Link href={`/plut/berita/${info.slug}`} key={info.id} className="block group relative rounded-2xl overflow-hidden border border-neutral-200 aspect-[16/10] shadow-sm bg-neutral-900">
-                    <Image 
-                      src={info.image_url || "/hero-image.jpeg"} 
-                      alt={info.title} 
-                      fill 
-                      className="object-cover opacity-90 group-hover:scale-102 group-hover:opacity-70 transition-all duration-500"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-neutral-950/40 to-transparent p-5 flex flex-col justify-end">
-                      <h3 className="text-white font-bold text-base leading-snug line-clamp-2 group-hover:text-[#FF3C00] transition-colors">
-                        {info.title}
-                      </h3>
-                    </div>
-                  </Link>
-                ))
-              ) : (
-                <p className="text-sm text-neutral-500 col-span-full">Belum ada banner infografis.</p>
-              )}
-            </div>
+          <div className="flex items-center gap-4">
+            <div className="w-10 h-10 rounded-full bg-neutral-200 border-2 border-white shadow-sm flex items-center justify-center text-neutral-600 font-bold">A</div>
           </div>
-        </div>
+        </header>
 
-        {/* KOLOM KANAN: COMPONENTS PENGUMUMAN (col-span-4) */}
-        <div className="lg:col-span-4 space-y-6">
-          <div className="bg-white p-6 rounded-3xl border border-neutral-200 shadow-sm">
-            <div className="flex justify-between items-center mb-6 border-b border-neutral-100 pb-3">
-              <h2 className="font-extrabold text-lg text-neutral-900 flex items-center gap-2">
-                <svg className="w-5 h-5 text-[#FF3C00]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
-                Papan Pengumuman
-              </h2>
-              <Link href="/plut/pengumuman" className="text-xs font-bold text-[#FF3C00] hover:underline">Semua</Link>
-            </div>
-
-            <div className="space-y-4">
-              {latestAnnouncements && latestAnnouncements.length > 0 ? (
-                latestAnnouncements.map((ann) => (
-                  <Link href={`/plut/berita/${ann.slug}`} key={ann.id} className="block group p-3.5 rounded-xl border border-neutral-100 bg-neutral-50 hover:bg-[#FF3C00]/5 hover:border-[#FF3C00]/20 transition-all">
-                    <span className="text-[10px] font-bold text-neutral-400 block mb-1">
-                      {formatDate(ann.published_date || ann.created_at)}
-                    </span>
-                    <h3 className="font-bold text-neutral-800 text-sm leading-snug line-clamp-2 group-hover:text-[#FF3C00] transition-colors">
-                      {ann.title}
-                    </h3>
-                  </Link>
-                ))
-              ) : (
-                <p className="text-xs text-neutral-500">Tidak ada pengumuman baru.</p>
-              )}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 3. SECTION EMBED SOSIAL MEDIA & LINK TAUTAN CEPAT */}
-      <section className="bg-neutral-100 border-t border-b border-neutral-200 py-16 px-6">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+        <div className="p-8 space-y-8 max-w-7xl">
           
-          {/* Sisi Kiri: Embed Media Sosial */}
-          <div className="bg-white p-6 rounded-3xl border border-neutral-200 shadow-sm h-[380px] flex flex-col">
-            <h3 className="font-extrabold text-lg mb-4 flex items-center gap-2">
-              <span className="w-1 h-5 bg-[#FF3C00] rounded-full"></span>
-              Aktivitas Kanal YouTube Resmi
-            </h3>
-            <div className="flex-grow bg-neutral-900 rounded-2xl overflow-hidden relative">
-              {/* Tempat Embed Player YouTube Instansi */}
-              <iframe 
-                src="http://googleusercontent.com/youtube.com/0" 
-                className="absolute inset-0 w-full h-full border-0"
-                allowFullScreen
-                title="YouTube Instansi"
-              />
+          {/* MENU AKSES CEPAT (SHORTCUT) */}
+          <div className="bg-white p-6 rounded-2xl shadow-sm border border-neutral-100">
+            <h2 className="text-sm font-bold text-neutral-900 uppercase tracking-wider mb-4">Akses Cepat (Tambah Data)</h2>
+            <div className="flex flex-wrap gap-4">
+              <Link href="/admin/plut/edit/new" className="px-5 py-2.5 bg-blue-50 text-blue-700 hover:bg-blue-100 font-bold rounded-lg text-sm transition-colors border border-blue-200">
+                + Tulis Artikel/Berita
+              </Link>
+              <Link href="/admin/plut/umkm/new" className="px-5 py-2.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 font-bold rounded-lg text-sm transition-colors border border-emerald-200">
+                + Tambah UMKM Binaan
+              </Link>
+              <Link href="/admin/plut/bank-data/edit/new" className="px-5 py-2.5 bg-purple-50 text-purple-700 hover:bg-purple-100 font-bold rounded-lg text-sm transition-colors border border-purple-200">
+                + Upload Bank Data
+              </Link>
+              <Link href="/admin/plut/agenda/edit/new" className="px-5 py-2.5 bg-amber-50 text-amber-700 hover:bg-amber-100 font-bold rounded-lg text-sm transition-colors border border-amber-200">
+                + Buat Agenda Kegiatan
+              </Link>
             </div>
           </div>
 
-          {/* Sisi Kanan: Tautan Link-Link Penting Dinas */}
-          <div className="space-y-6">
-            <h3 className="font-extrabold text-xl text-neutral-900 tracking-tight">
-              Akses Layanan Terintegrasi
-            </h3>
-            <p className="text-neutral-500 text-sm leading-relaxed">
-              Guna mendukung transparansi data dan mempermudah regulasi, kita mengintegrasikan beberapa pranala luar resmi yang dapat diakses langsung oleh masyarakat.
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <a href="/plut/agenda-regulasi" className="p-4 bg-white rounded-2xl border border-neutral-200 hover:border-[#FF3C00]/30 shadow-sm transition-all flex items-center gap-3 group">
-                <div className="w-10 h-10 rounded-xl bg-neutral-50 text-[#FF3C00] flex items-center justify-center shrink-0 group-hover:bg-[#FF3C00] group-hover:text-white transition-colors">📄</div>
-                <span className="font-bold text-sm text-neutral-800 group-hover:text-[#FF3C00]">Portal JDIH Daerah</span>
-              </a>
-              <a href="/plut/agenda-regulasi" className="p-4 bg-white rounded-2xl border border-neutral-200 hover:border-[#FF3C00]/30 shadow-sm transition-all flex items-center gap-3 group">
-                <div className="w-10 h-10 rounded-xl bg-neutral-50 text-[#FF3C00] flex items-center justify-center shrink-0 group-hover:bg-[#FF3C00] group-hover:text-white transition-colors">📊</div>
-                <span className="font-bold text-sm text-neutral-800 group-hover:text-[#FF3C00]">Transparansi PPID</span>
-              </a>
-              <a href="https://bulelengkab.go.id" target="_blank" rel="noopener noreferrer" className="p-4 bg-white rounded-2xl border border-neutral-200 hover:border-[#FF3C00]/30 shadow-sm transition-all flex items-center gap-3 group">
-                <div className="w-10 h-10 rounded-xl bg-neutral-50 text-[#FF3C00] flex items-center justify-center shrink-0 group-hover:bg-[#FF3C00] group-hover:text-white transition-colors">🌐</div>
-                <span className="font-bold text-sm text-neutral-800 group-hover:text-[#FF3C00]">Web Pemkab Buleleng</span>
-              </a>
-              <a href="/plut/bank-data" className="p-4 bg-white rounded-2xl border border-neutral-200 hover:border-[#FF3C00]/30 shadow-sm transition-all flex items-center gap-3 group">
-                <div className="w-10 h-10 rounded-xl bg-neutral-50 text-[#FF3C00] flex items-center justify-center shrink-0 group-hover:bg-[#FF3C00] group-hover:text-white transition-colors">📁</div>
-                <span className="font-bold text-sm text-neutral-800 group-hover:text-[#FF3C00]">Bank Data Drive</span>
-              </a>
+          {/* KARTU STATISTIK */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-neutral-100 flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" /></svg>
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-neutral-500 uppercase">Postingan</p>
+                <p className="text-2xl font-extrabold text-neutral-900">{countPosts || 0}</p>
+              </div>
+            </div>
+            
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-neutral-100 flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-neutral-500 uppercase">UMKM Binaan</p>
+                <p className="text-2xl font-extrabold text-neutral-900">{countUmkm || 0}</p>
+              </div>
+            </div>
+
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-neutral-100 flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" /></svg>
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-neutral-500 uppercase">Bank Data</p>
+                <p className="text-2xl font-extrabold text-neutral-900">{countBankData || 0}</p>
+              </div>
+            </div>
+
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-neutral-100 flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-neutral-500 uppercase">Agenda</p>
+                <p className="text-2xl font-extrabold text-neutral-900">{countAgenda || 0}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* TABEL AKTIVITAS TERBARU */}
+          <div className="bg-white rounded-2xl shadow-sm border border-neutral-100 overflow-hidden">
+            <div className="p-6 border-b border-neutral-100 flex justify-between items-center">
+              <h2 className="text-lg font-bold text-neutral-900">Aktivitas Postingan Terakhir</h2>
+              <Link href="/admin/plut/manage" className="text-sm font-bold text-[#FF3C00] hover:underline">
+                Lihat Semua Artikel &rarr;
+              </Link>
+            </div>
+            
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-neutral-50 text-neutral-500 text-sm">
+                    <th className="px-6 py-4 font-semibold">Judul Postingan</th>
+                    <th className="px-6 py-4 font-semibold">Tipe</th>
+                    <th className="px-6 py-4 font-semibold">Tanggal Publish</th>
+                    <th className="px-6 py-4 font-semibold">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-neutral-100">
+                  {recentPosts && recentPosts.length > 0 ? (
+                    recentPosts.map((post) => (
+                      <tr key={post.id} className="hover:bg-neutral-50 transition-colors">
+                        <td className="px-6 py-4">
+                          <p className="font-bold text-neutral-900 line-clamp-1">{post.title}</p>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold bg-neutral-100 text-neutral-700 uppercase tracking-wider border border-neutral-200">
+                            {post.post_type}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-sm text-neutral-600">
+                          {formatDate(post.published_date || post.created_at)}
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            <Link href={`/admin/plut/edit/${post.slug}`} className="text-emerald-600 hover:text-emerald-800 font-semibold text-sm bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-100">
+                              Edit Data
+                            </Link>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={4} className="px-6 py-12 text-center text-neutral-500">
+                        Belum ada data postingan terbaru yang ditambahkan.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
             </div>
           </div>
 
         </div>
-      </section>
-
-      {/* 4. VIDEO INSTANSI (Profil Dinas Terbuka) */}
-      <section className="max-w-4xl mx-auto px-6 py-20 text-center w-full">
-        <span className="text-[#FF3C00] font-bold text-xs uppercase tracking-widest block mb-3">Multimedia</span>
-        <h2 className="text-3xl font-extrabold text-neutral-900 mb-4">Video Profil Instansi</h2>
-        <p className="text-neutral-500 max-w-xl mx-auto mb-10 text-sm">
-          Kenali lebih dekat visi, misi, dan aktivitas harian konsultan pendamping kita dalam membangun usaha rakyat.
-        </p>
-        <div className="w-full aspect-video bg-neutral-900 rounded-3xl shadow-xl overflow-hidden relative border border-neutral-200">
-          <iframe 
-            src="http://googleusercontent.com/youtube.com/0" 
-            className="absolute inset-0 w-full h-full border-0"
-            allowFullScreen
-            title="Video Profil Instansi PLUT"
-          />
-        </div>
-      </section>
-
+      </main>
     </div>
   );
 }
