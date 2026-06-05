@@ -17,6 +17,10 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Buleleng Mall",
   description: "Platform produk lokal Buleleng",
+  metadataBase: new URL("https://buleleng-mall-dev.vercel.app/"),
+  alternates: {
+    canonical: "/",
+  },
 };
 
 export default function RootLayout({
@@ -43,10 +47,7 @@ export default function RootLayout({
         />
 
         {/* Hanya panggil LayoutWrapper di sini, JANGAN ADA <Navbar /> lagi */}
-        <LayoutWrapper>
-          {children}
-        </LayoutWrapper>
-
+        <LayoutWrapper>{children}</LayoutWrapper>
       </body>
     </html>
   );

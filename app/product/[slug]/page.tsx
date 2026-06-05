@@ -4,10 +4,72 @@ import Link from "next/link";
 import ProductCard from "@/components/ProductCard";
 import ProductDescription from "@/components/ProductDescription"; // <-- Import komponen baru
 import { Product } from "@/types";
+import { Metadata, ResolvingMetadata } from "next";
 
 interface ProductDetailProps {
   params: {
     slug: string;
+  };
+}
+
+export async function generateMetadata(
+  { params }: ProductDetailProps,
+  parent: ResolvingMetadata,
+): Promise<Metadata> {
+  // Resolve params (Best practice for Next.js 14/15)
+  const resolvedParams = await Promise.resolve(params);
+  const slug = resolvedParams.slug;
+
+  // Initialize Supabase client
+  const supabase = await createClient();
+
+  // Fetch only the fields needed for SEO to keep the query light
+  const { data: product } = await supabase
+    .from("products")
+    .select("name, description, image_url, slug")
+    .eq("slug", slug)
+    .single();
+
+  // Handle 404 Metadata
+  if (!product) {
+    return {
+      title: "Produk Tidak Ditemukan | Buleleng Mall",
+    };
+  }
+
+  const previousImages = (await parent).openGraph?.images || [];
+  const siteName = "Buleleng Mall";
+
+  return {
+    title: `${product.name} | ${siteName}`,
+    description: product.description || `Beli ${product.name} di ${siteName}`,
+    alternates: {
+      canonical: `/product/${product.slug}`,
+    },
+    openGraph: {
+      title: product.name,
+      description: product.description || `Beli ${product.name} di ${siteName}`,
+      url: `/product/${product.slug}`,
+      siteName: siteName,
+      type: "website",
+      images: product.image_url
+        ? [
+            {
+              url: product.image_url,
+              width: 800,
+              height: 600,
+              alt: `Gambar ${product.name}`,
+            },
+            ...previousImages,
+          ]
+        : previousImages,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: product.name,
+      description: product.description || "",
+      images: product.image_url ? [product.image_url] : [],
+    },
   };
 }
 
@@ -61,7 +123,7 @@ export default async function ProductDetailPage({
   }
 
   const mainProduct = data as unknown as Product;
-  const productData = mainProduct as any; 
+  const productData = mainProduct as Product;
   const categoryData = mainProduct.categories[0];
   const businessData = mainProduct.businesses[0];
 
@@ -72,7 +134,6 @@ export default async function ProductDetailPage({
   return (
     <main className="w-full min-h-screen bg-gray-50/50 py-8 md:py-16 px-4 md:px-8 relative overflow-hidden">
       <section className="max-w-5xl mx-auto p-4 md:p-10 grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 relative z-10">
-        
         <div className="w-full aspect-square relative shadow-sm border border-gray-100 rounded-xl overflow-hidden bg-gray-100">
           {mainProduct.image_url ? (
             <Image
@@ -110,7 +171,10 @@ export default async function ProductDetailPage({
               className="text-3xl md:text-4xl font-bold mt-2 text-foreground border-b border-gray-100 pb-4 w-full"
               suppressHydrationWarning
             >
-              Rp{mainProduct.price ? mainProduct.price.toLocaleString("id-ID") : "0"}
+              Rp
+              {mainProduct.price
+                ? mainProduct.price.toLocaleString("id-ID")
+                : "0"}
             </div>
           </div>
 

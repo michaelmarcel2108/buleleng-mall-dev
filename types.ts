@@ -19,6 +19,7 @@ export interface Product {
   description: string;
   price: number;
   shopee_url?: string;
+  tokopedia_url?: string;
   image_url: string;
   categories: Category[];
   businesses: Business[];
