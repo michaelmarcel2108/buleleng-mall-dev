@@ -1,174 +1,297 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { createClient } from "@/lib/supabase/client";
-import { useRouter, useParams } from "next/navigation";
-import dynamic from "next/dynamic";
-import "react-quill-new/dist/quill.snow.css";
+import { useState, useEffect, use } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
+import { createClient } from "@/lib/supabase/client"; // Pastikan Anda punya supabase client
 
-const ReactQuill = dynamic(() => import("react-quill-new"), { ssr: false });
-
-export default function EditPlutNewsPage() {
+export default function EditPostPage({ params }: { params: Promise<{ slug: string }> | { slug: string } }) {
   const router = useRouter();
-  const params = useParams();
-  const slugParam = params.slug as string;
   const supabase = createClient();
-
-  const [articleId, setArticleId] = useState("");
-  const [title, setTitle] = useState("");
-  const [slug, setSlug] = useState("");
-  const [excerpt, setExcerpt] = useState("");
-  const [content, setContent] = useState("");
-  const [currentImageUrl, setCurrentImageUrl] = useState("");
-  const [newImage, setNewImage] = useState<File | null>(null);
   
-  const [loading, setLoading] = useState(false);
-  const [fetching, setFetching] = useState(true);
+  // Menggunakan React.use() untuk unwrap params (best practice Next.js 15+)
+  const resolvedParams = params instanceof Promise ? use(params) : params;
+  const isNewPost = resolvedParams.slug === "new";
 
-  // Ambil data artikel berdasarkan SLUG
+  // State Form
+  const [isLoading, setIsLoading] = useState(!isNewPost);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
+  
+  const [formData, setFormData] = useState({
+    title: "",
+    slug: "",
+    post_type: "berita",
+    image_url: "",
+    excerpt: "",
+    content: "",
+    author: "Admin PLUT",
+  });
+
+  // Fetch data jika ini adalah mode Edit
   useEffect(() => {
-    const fetchArticle = async () => {
-      const { data, error } = await supabase
-        .from("plut_articles")
-        .select("*")
-        .eq("slug", slugParam)
-        .single();
+    if (!isNewPost) {
+      const fetchPost = async () => {
+        const { data, error } = await supabase
+          .from("plut_posts")
+          .select("*")
+          .eq("slug", resolvedParams.slug)
+          .single();
 
-      if (data) {
-        setArticleId(data.id);
-        setTitle(data.title);
-        setSlug(data.slug);
-        setExcerpt(data.excerpt);
-        setContent(data.content);
-        setCurrentImageUrl(data.image_url);
-      } else if (error) {
-        alert("Artikel tidak ditemukan!");
-        router.push("/admin/plut");
+        if (error) {
+          setErrorMsg("Gagal memuat data postingan.");
+          setIsLoading(false);
+          return;
+        }
+
+        if (data) {
+          setFormData({
+            title: data.title || "",
+            slug: data.slug || "",
+            post_type: data.post_type || "berita",
+            image_url: data.image_url || "",
+            excerpt: data.excerpt || "",
+            content: data.content || "",
+            author: data.author || "Admin PLUT",
+          });
+        }
+        setIsLoading(false);
+      };
+      
+      fetchPost();
+    }
+  }, [isNewPost, resolvedParams.slug, supabase]);
+
+  // Handle Perubahan Input
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => {
+      const updated = { ...prev, [name]: value };
+      
+      // Auto-generate Slug jika Title berubah (Hanya saat membuat post baru)
+      if (isNewPost && name === "title") {
+        updated.slug = value
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-") // Ganti spasi/simbol dengan strip
+          .replace(/(^-|-$)+/g, "");   // Hapus strip di awal/akhir
       }
-      setFetching(false);
-    };
-
-    if (slugParam) fetchArticle();
-  }, [slugParam, supabase, router]);
-
-  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value;
-    setTitle(val);
-    setSlug(val.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, ""));
+      return updated;
+    });
   };
 
-  const handleUpdate = async (e: React.FormEvent) => {
+  // Handle Submit (Create / Update)
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    setIsSubmitting(true);
+    setErrorMsg("");
 
     try {
-      let finalImageUrl = currentImageUrl;
-
-      if (newImage) {
-        const fileExt = newImage.name.split(".").pop();
-        const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
-        const filePath = `berita/${fileName}`;
-
-        const { error: uploadError } = await supabase.storage.from("plut-public").upload(filePath, newImage);
-        if (uploadError) throw uploadError;
-
-        const { data: publicUrlData } = supabase.storage.from("plut-public").getPublicUrl(filePath);
-        finalImageUrl = publicUrlData.publicUrl;
+      if (isNewPost) {
+        // Mode INSERT (Baru)
+        const { error } = await supabase.from("plut_posts").insert([
+          {
+            title: formData.title,
+            slug: formData.slug,
+            post_type: formData.post_type,
+            image_url: formData.image_url,
+            excerpt: formData.excerpt,
+            content: formData.content,
+            author: formData.author,
+          }
+        ]);
+        if (error) throw error;
+      } else {
+        // Mode UPDATE (Edit)
+        const { error } = await supabase
+          .from("plut_posts")
+          .update({
+            title: formData.title,
+            slug: formData.slug, // Hati-hati jika slug diubah, URL akan berubah
+            post_type: formData.post_type,
+            image_url: formData.image_url,
+            excerpt: formData.excerpt,
+            content: formData.content,
+            author: formData.author,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("slug", resolvedParams.slug);
+        
+        if (error) throw error;
       }
 
-      // Update data di database menggunakan ID
-      const { error: updateError } = await supabase
-        .from("plut_articles")
-        .update({ title, slug, excerpt, content, image_url: finalImageUrl })
-        .eq("id", articleId);
-
-      if (updateError) throw updateError;
-
-      alert("Berita berhasil diperbarui!");
-      router.push("/admin/plut");
-
-    } catch (error: any) {
-      alert("Terjadi kesalahan: " + error.message);
-    } finally {
-      setLoading(false);
+      // Berhasil, kembali ke halaman manage
+      router.push("/admin/plut/manage");
+      router.refresh();
+      
+    } catch (err: any) {
+      setErrorMsg(err.message || "Terjadi kesalahan saat menyimpan data.");
+      setIsSubmitting(false);
     }
   };
 
-  const modules = {
-    toolbar: [
-      [{ header: [1, 2, 3, false] }],
-      ["bold", "italic", "underline", "strike"],
-      [{ list: "ordered" }, { list: "bullet" }],
-      ["link", "clean"],
-    ],
-  };
-
-  if (fetching) return <div className="min-h-screen flex items-center justify-center">Memuat data artikel...</div>;
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-neutral-50 flex items-center justify-center">
+        <p className="text-neutral-500 font-bold">Memuat data...</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-neutral-50 pb-20">
-      {/* NAVBAR KHUSUS ADMIN */}
-      <nav className="bg-white border-b border-neutral-200 sticky top-0 z-50 shadow-sm">
-        <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
+    <div className="min-h-screen bg-neutral-50 flex flex-col md:flex-row font-sans">
+      
+      {/* SIDEBAR ADMIN (Bisa diekstrak jadi komponen agar tidak mengulang) */}
+      <aside className="w-full md:w-64 bg-neutral-900 text-white flex flex-col shrink-0 hidden md:flex">
+        <div className="p-6 border-b border-neutral-800">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-neutral-900 rounded-lg flex items-center justify-center text-white font-bold">E</div>
-            <span className="font-bold text-lg text-neutral-900">Mode Edit Berita</span>
+            <div className="w-8 h-8 bg-[#FF3C00] rounded-lg flex items-center justify-center text-white font-bold shadow-md">P</div>
+            <span className="font-bold text-lg tracking-wide">Admin PLUT</span>
           </div>
-          <Link href="/admin/plut" className="text-sm font-medium text-neutral-600 hover:text-[#FF3C00] transition-colors">
-            &larr; Batal & Kembali ke Dashboard
-          </Link>
         </div>
-      </nav>
+        <nav className="flex-1 p-4 space-y-2">
+          <Link href="/admin/plut" className="block px-4 py-3 text-neutral-400 hover:text-white hover:bg-neutral-800 rounded-xl font-medium transition-colors">Dashboard</Link>
+          <Link href="/admin/plut/manage" className="block px-4 py-3 bg-[#FF3C00] text-white rounded-xl font-medium shadow-md">Kelola Postingan</Link>
+        </nav>
+      </aside>
 
-      <div className="max-w-6xl mx-auto px-6 mt-8">
-        <section className="bg-white p-8 rounded-2xl shadow-sm border border-neutral-200">
-          <form onSubmit={handleUpdate} className="space-y-6">
+      {/* MAIN KONTEN */}
+      <main className="flex-1 flex flex-col h-screen overflow-y-auto">
+        <header className="bg-white border-b border-neutral-200 px-8 py-5 flex items-center gap-4 sticky top-0 z-10">
+          <Link href="/admin/plut/manage" className="text-neutral-400 hover:text-[#FF3C00] transition-colors">
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+          </Link>
+          <div>
+            <h1 className="text-2xl font-extrabold text-neutral-900">
+              {isNewPost ? "Tambah Postingan Baru" : "Edit Postingan"}
+            </h1>
+          </div>
+        </header>
+
+        <div className="p-8 max-w-4xl">
+          {errorMsg && (
+            <div className="mb-6 p-4 bg-red-50 text-red-600 rounded-xl border border-red-100 text-sm font-medium">
+              {errorMsg}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-8 bg-white p-8 rounded-2xl shadow-sm border border-neutral-100">
+            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-semibold text-neutral-700 mb-2">Judul Artikel</label>
-                <input type="text" required value={title} onChange={handleTitleChange} className="w-full px-4 py-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-[#FF3C00] outline-none" />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-neutral-700 mb-2">Slug URL</label>
-                <input type="text" required value={slug} onChange={(e) => setSlug(e.target.value)} className="w-full px-4 py-3 border border-neutral-300 rounded-xl bg-neutral-50 focus:ring-2 focus:ring-[#FF3C00] outline-none" />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* JUDUL */}
               <div className="md:col-span-2">
-                <label className="block text-sm font-semibold text-neutral-700 mb-2">Cuplikan (Singkat)</label>
-                <textarea required value={excerpt} onChange={(e) => setExcerpt(e.target.value)} rows={4} className="w-full px-4 py-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-[#FF3C00] outline-none resize-none" />
+                <label className="block text-sm font-bold text-neutral-700 mb-2">Judul Postingan *</label>
+                <input 
+                  type="text" 
+                  name="title"
+                  required
+                  value={formData.title}
+                  onChange={handleChange}
+                  placeholder="Masukkan judul..."
+                  className="w-full px-4 py-3 rounded-xl border border-neutral-200 bg-neutral-50 focus:bg-white focus:ring-2 focus:ring-[#FF3C00] focus:border-transparent transition-all outline-none"
+                />
               </div>
-              <div className="md:col-span-1">
-                <label className="block text-sm font-semibold text-neutral-700 mb-2">Gambar Baru (Opsional)</label>
-                <div className="relative border-2 border-dashed border-neutral-300 rounded-xl h-[116px] flex flex-col items-center justify-center text-center hover:bg-neutral-50 cursor-pointer overflow-hidden">
-                  <input type="file" accept="image/*" onChange={(e) => setNewImage(e.target.files?.[0] || null)} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
-                  {currentImageUrl && !newImage && (
-                    <Image src={currentImageUrl} alt="Current" fill className="object-cover opacity-30" />
-                  )}
-                  <span className="text-sm font-semibold text-blue-600 z-10 relative">Ganti Gambar</span>
-                  {newImage && <div className="mt-1 text-xs font-bold text-green-600 truncate px-2 w-full z-10 relative">{newImage.name}</div>}
-                </div>
+
+              {/* SLUG */}
+              <div>
+                <label className="block text-sm font-bold text-neutral-700 mb-2">URL Slug *</label>
+                <input 
+                  type="text" 
+                  name="slug"
+                  required
+                  value={formData.slug}
+                  onChange={handleChange}
+                  placeholder="judul-postingan"
+                  className="w-full px-4 py-3 rounded-xl border border-neutral-200 bg-neutral-50 focus:bg-white focus:ring-2 focus:ring-[#FF3C00] focus:border-transparent transition-all outline-none font-mono text-sm"
+                />
+              </div>
+
+              {/* KATEGORI / POST TYPE */}
+              <div>
+                <label className="block text-sm font-bold text-neutral-700 mb-2">Kategori (Tipe) *</label>
+                <select 
+                  name="post_type"
+                  value={formData.post_type}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 rounded-xl border border-neutral-200 bg-neutral-50 focus:bg-white focus:ring-2 focus:ring-[#FF3C00] focus:border-transparent transition-all outline-none"
+                >
+                  <option value="berita">Berita</option>
+                  <option value="artikel">Artikel Edukasi</option>
+                  <option value="pengumuman">Pengumuman</option>
+                  <option value="infografis">Infografis</option>
+                  <option value="foto">Galeri Foto</option>
+                  <option value="video">Galeri Video</option>
+                </select>
+              </div>
+
+              {/* URL GAMBAR */}
+              <div className="md:col-span-2">
+                <label className="block text-sm font-bold text-neutral-700 mb-2">URL Gambar / Thumbnail</label>
+                <input 
+                  type="text" 
+                  name="image_url"
+                  value={formData.image_url}
+                  onChange={handleChange}
+                  placeholder="https://contoh.com/gambar.jpg"
+                  className="w-full px-4 py-3 rounded-xl border border-neutral-200 bg-neutral-50 focus:bg-white focus:ring-2 focus:ring-[#FF3C00] focus:border-transparent transition-all outline-none"
+                />
+              </div>
+
+              {/* KUTIPAN SINGKAT */}
+              <div className="md:col-span-2">
+                <label className="block text-sm font-bold text-neutral-700 mb-2">Kutipan Singkat (Excerpt)</label>
+                <textarea 
+                  name="excerpt"
+                  rows={2}
+                  value={formData.excerpt}
+                  onChange={handleChange}
+                  placeholder="Ringkasan singkat tentang postingan ini..."
+                  className="w-full px-4 py-3 rounded-xl border border-neutral-200 bg-neutral-50 focus:bg-white focus:ring-2 focus:ring-[#FF3C00] focus:border-transparent transition-all outline-none resize-none"
+                />
+              </div>
+
+              {/* KONTEN UTAMA */}
+              <div className="md:col-span-2">
+                <label className="block text-sm font-bold text-neutral-700 mb-2">Konten Lengkap (HTML Didukung) *</label>
+                {/* TIPS: Anda bisa mengganti textarea ini dengan React-Quill nanti */}
+                <textarea 
+                  name="content"
+                  required
+                  rows={10}
+                  value={formData.content}
+                  onChange={handleChange}
+                  placeholder="<p>Tulis isi konten di sini...</p>"
+                  className="w-full px-4 py-3 rounded-xl border border-neutral-200 bg-neutral-50 focus:bg-white focus:ring-2 focus:ring-[#FF3C00] focus:border-transparent transition-all outline-none font-mono text-sm"
+                />
               </div>
             </div>
 
-            <div className="pb-12">
-              <label className="block text-sm font-semibold text-neutral-700 mb-2">Isi Artikel</label>
-              <div className="h-[300px]">
-                <ReactQuill theme="snow" value={content} onChange={setContent} modules={modules} className="h-full rounded-xl" />
-              </div>
-            </div>
-
-            <div className="flex justify-end pt-4">
-              <button type="submit" disabled={loading} className={`px-10 py-3 rounded-xl text-white font-bold transition-all shadow-md ${loading ? "bg-neutral-400" : "bg-blue-600 hover:bg-blue-700"}`}>
-                {loading ? "Menyimpan..." : "Update Berita"}
+            <div className="flex justify-end pt-4 border-t border-neutral-100">
+              <button 
+                type="button"
+                onClick={() => router.push('/admin/plut/manage')}
+                className="px-6 py-3 mr-4 text-neutral-600 font-bold hover:bg-neutral-100 rounded-xl transition-colors"
+              >
+                Batal
+              </button>
+              <button 
+                type="submit"
+                disabled={isSubmitting}
+                className="px-8 py-3 bg-[#FF3C00] hover:bg-[#e03500] text-white font-bold rounded-xl transition-colors shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                {isSubmitting ? (
+                  <>Menyimpan...</>
+                ) : (
+                  <>
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" /></svg>
+                    Simpan Postingan
+                  </>
+                )}
               </button>
             </div>
+            
           </form>
-        </section>
-      </div>
+        </div>
+      </main>
     </div>
   );
 }

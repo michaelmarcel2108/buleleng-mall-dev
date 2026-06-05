@@ -1,124 +1,183 @@
-"use client";
+import Link from "next/link";
+import { Metadata } from "next";
+import { createClient } from "@/lib/supabase/server";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import TabToko from "@/components/admin/TabToko";
-import TabKategori from "@/components/admin/TabKategori";
-import TabBanner from "@/components/admin/TabBanner";
-import TabProfileKoperasi from "@/components/admin/TabProfileKoperasi";
-import TabArtikel from "@/components/admin/TabArtikel";
-import { createClient } from "@/lib/supabase/client";
-import TabProduk from "@/components/admin/TabProduk";
+export const metadata: Metadata = {
+  title: "Dashboard Admin PLUT - Buleleng",
+  description: "Panel kendali admin untuk mengelola data operasional PLUT Kabupaten Buleleng.",
+};
 
-export default function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState<
-    "toko" | "produk" | "kategori" | "banner" | "profil" | "artikel"
-  >("toko");
-  const [productSearchQuery, setProductSearchQuery] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
-  const router = useRouter();
-  const supabase = createClient();
+// Fungsi format tanggal
+const formatDate = (dateString: string) => {
+  if (!dateString) return "-";
+  const date = new Date(dateString);
+  return date.toLocaleDateString("id-ID", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+};
 
-  useEffect(() => {
-    const checkAuth = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (!session) router.push("/admin/login");
-      else setIsLoading(false);
-    };
-    checkAuth();
-  }, [router, supabase.auth]);
+export default async function AdminPlutDashboard() {
+  const supabase = await createClient();
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    router.push("/admin/login");
-  };
+  // Mengambil total data untuk statistik (Gunakan { count: 'exact' } agar efisien dan ringan)
+  const { count: countPosts } = await supabase.from("plut_posts").select("*", { count: "exact", head: true });
+  const { count: countUmkm } = await supabase.from("plut_umkm").select("*", { count: "exact", head: true });
+  const { count: countBankData } = await supabase.from("plut_bank_data").select("*", { count: "exact", head: true });
 
-  const handleViewProducts = (businessName: string) => {
-    setProductSearchQuery(businessName);
-    setActiveTab("produk");
-  };
-
-  if (isLoading)
-    return (
-      <div className="min-h-screen flex items-center justify-center text-[#274a6a] font-medium">
-        Memuat Dashboard...
-      </div>
-    );
+  // Mengambil 5 postingan terbaru untuk tabel aktivitas
+  const { data: recentPosts } = await supabase
+    .from("plut_posts")
+    .select("id, title, post_type, published_date, created_at, slug")
+    .order("created_at", { ascending: false })
+    .limit(5);
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col relative">
-      <header className="bg-[#274a6a] text-white px-6 md:px-12 py-4 flex justify-between items-center shadow-md">
-        <h1 className="text-xl font-bold font-display">Dashboard Admin</h1>
-        <button
-          onClick={handleLogout}
-          className="text-sm bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg transition-colors"
-        >
-          Keluar
-        </button>
-      </header>
-      <main className="flex-1 w-full max-w-7xl mx-auto px-4 md:px-12 py-8">
-        <div className="flex gap-4 mb-8 border-b border-gray-200 overflow-x-auto whitespace-nowrap">
-          <button
-            onClick={() => setActiveTab("toko")}
-            className={`pb-3 px-2 font-medium text-sm md:text-base transition-colors ${activeTab === "toko" ? "border-b-2 border-[#274a6a] text-[#274a6a]" : "text-gray-500 hover:text-gray-700"}`}
-          >
-            Kelola Toko
-          </button>
-
-          <button
-            onClick={() => {
-              setActiveTab("produk");
-              setProductSearchQuery("");
-            }}
-            className={`pb-3 px-2 font-medium text-sm md:text-base transition-colors ${activeTab === "produk" ? "border-b-2 border-[#274a6a] text-[#274a6a]" : "text-gray-500 hover:text-gray-700"}`}
-          >
-            Kelola Produk
-          </button>
-
-          <button
-            onClick={() => setActiveTab("kategori")}
-            className={`pb-3 px-2 font-medium text-sm md:text-base transition-colors ${activeTab === "kategori" ? "border-b-2 border-[#274a6a] text-[#274a6a]" : "text-gray-500 hover:text-gray-700"}`}
-          >
-            Kelola Kategori
-          </button>
-
-          <button
-            onClick={() => setActiveTab("banner")}
-            className={`pb-3 px-2 font-medium text-sm md:text-base transition-colors ${activeTab === "banner" ? "border-b-2 border-[#274a6a] text-[#274a6a]" : "text-gray-500 hover:text-gray-700"}`}
-          >
-            Kelola Banner
-          </button>
-
-          <button
-            onClick={() => setActiveTab("profil")}
-            className={`pb-3 px-2 font-medium text-sm md:text-base transition-colors ${activeTab === "profil" ? "border-b-2 border-[#274a6a] text-[#274a6a]" : "text-gray-500 hover:text-gray-700"}`}
-          >
-            Profil Koperasi
-          </button>
-
-          <button
-            onClick={() => setActiveTab("artikel")}
-            className={`pb-3 px-2 font-medium text-sm md:text-base transition-colors ${activeTab === "artikel" ? "border-b-2 border-[#274a6a] text-[#274a6a]" : "text-gray-500 hover:text-gray-700"}`}
-          >
-            Kelola Artikel
-          </button>
+    <div className="min-h-screen bg-neutral-50 flex flex-col md:flex-row font-sans">
+      
+      {/* SIDEBAR ADMIN */}
+      <aside className="w-full md:w-64 bg-neutral-900 text-white flex flex-col shrink-0">
+        <div className="p-6 border-b border-neutral-800">
+          <Link href="/admin/plut" className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-[#FF3C00] rounded-lg flex items-center justify-center text-white font-bold shadow-md">
+              P
+            </div>
+            <span className="font-bold text-lg tracking-wide">Admin PLUT</span>
+          </Link>
         </div>
+        <nav className="flex-1 p-4 space-y-2">
+          <Link href="/admin/plut" className="flex items-center gap-3 px-4 py-3 bg-[#FF3C00] text-white rounded-xl font-medium shadow-md">
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
+            Dashboard
+          </Link>
+          <Link href="/admin/plut/manage" className="flex items-center gap-3 px-4 py-3 text-neutral-400 hover:text-white hover:bg-neutral-800 rounded-xl font-medium transition-colors">
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" /></svg>
+            Kelola Postingan
+          </Link>
+          <Link href="/admin/plut/umkm" className="flex items-center gap-3 px-4 py-3 text-neutral-400 hover:text-white hover:bg-neutral-800 rounded-xl font-medium transition-colors">
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+            Database UMKM
+          </Link>
+          <Link href="/admin/plut/bank-data" className="flex items-center gap-3 px-4 py-3 text-neutral-400 hover:text-white hover:bg-neutral-800 rounded-xl font-medium transition-colors">
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" /></svg>
+            Bank Data
+          </Link>
+        </nav>
+        <div className="p-4 mt-auto border-t border-neutral-800">
+          <Link href="/plut" target="_blank" className="flex items-center gap-2 text-sm text-neutral-400 hover:text-white transition-colors">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+            Lihat Website Publik
+          </Link>
+        </div>
+      </aside>
 
-        {activeTab === "toko" && (
-          <TabToko onViewProducts={handleViewProducts} />
-        )}
-        {activeTab === "produk" && (
-          <TabProduk
-            prefilledSearch={productSearchQuery}
-            onSearchChange={setProductSearchQuery}
-          />
-        )}
-        {activeTab === "kategori" && <TabKategori />}
-        {activeTab === "banner" && <TabBanner />}
-        {activeTab === "profil" && <TabProfileKoperasi />}
-        {activeTab === "artikel" && <TabArtikel />}
+      {/* MAIN KONTEN */}
+      <main className="flex-1 flex flex-col h-screen overflow-y-auto">
+        {/* Header Dashboard */}
+        <header className="bg-white border-b border-neutral-200 px-8 py-5 flex justify-between items-center sticky top-0 z-10">
+          <h1 className="text-2xl font-extrabold text-neutral-900">Dashboard Overview</h1>
+          <div className="flex items-center gap-4">
+            <div className="w-10 h-10 rounded-full bg-neutral-200 border-2 border-white shadow-sm flex items-center justify-center text-neutral-600 font-bold">
+              A
+            </div>
+          </div>
+        </header>
+
+        <div className="p-8 space-y-8 max-w-7xl">
+          
+          {/* KARTU STATISTIK */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-neutral-100 flex items-center gap-6">
+              <div className="w-14 h-14 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" /></svg>
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-neutral-500 mb-1">Total Postingan</p>
+                <p className="text-3xl font-extrabold text-neutral-900">{countPosts || 0}</p>
+              </div>
+            </div>
+            
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-neutral-100 flex items-center gap-6">
+              <div className="w-14 h-14 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-neutral-500 mb-1">UMKM Binaan</p>
+                <p className="text-3xl font-extrabold text-neutral-900">{countUmkm || 0}</p>
+              </div>
+            </div>
+
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-neutral-100 flex items-center gap-6">
+              <div className="w-14 h-14 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+                <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" /></svg>
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-neutral-500 mb-1">Bank Data Publik</p>
+                <p className="text-3xl font-extrabold text-neutral-900">{countBankData || 0}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* TABEL AKTIVITAS TERBARU */}
+          <div className="bg-white rounded-2xl shadow-sm border border-neutral-100 overflow-hidden">
+            <div className="p-6 border-b border-neutral-100 flex justify-between items-center">
+              <h2 className="text-lg font-bold text-neutral-900">Aktivitas Postingan Terakhir</h2>
+              <Link href="/admin/plut/manage" className="text-sm font-bold text-[#FF3C00] hover:underline">
+                Lihat Semua
+              </Link>
+            </div>
+            
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-neutral-50 text-neutral-500 text-sm">
+                    <th className="px-6 py-4 font-semibold">Judul Postingan</th>
+                    <th className="px-6 py-4 font-semibold">Tipe</th>
+                    <th className="px-6 py-4 font-semibold">Tanggal Publish</th>
+                    <th className="px-6 py-4 font-semibold">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-neutral-100">
+                  {recentPosts && recentPosts.length > 0 ? (
+                    recentPosts.map((post) => (
+                      <tr key={post.id} className="hover:bg-neutral-50 transition-colors">
+                        <td className="px-6 py-4">
+                          <p className="font-bold text-neutral-900 line-clamp-1">{post.title}</p>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold bg-neutral-100 text-neutral-700 uppercase tracking-wider">
+                            {post.post_type}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-sm text-neutral-600">
+                          {formatDate(post.published_date || post.created_at)}
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            <Link href={`/admin/plut/edit/${post.slug}`} className="text-blue-600 hover:text-blue-800 font-semibold text-sm">
+                              Edit
+                            </Link>
+                            <Link href={`/plut/berita/${post.slug}`} target="_blank" className="text-neutral-500 hover:text-neutral-700 font-semibold text-sm">
+                              Lihat
+                            </Link>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={4} className="px-6 py-12 text-center text-neutral-500">
+                        Belum ada data postingan terbaru.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
       </main>
     </div>
   );

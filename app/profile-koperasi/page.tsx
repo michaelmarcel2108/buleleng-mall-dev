@@ -26,7 +26,6 @@ export default async function ProfileKoperasi() {
 
   return (
     <main className="min-h-screen bg-gray-50">
-      {/* Header Banner */}
       <section
         className="relative flex flex-col gap-4 py-12 md:py-20 overflow-hidden text-white bg-[#274a6a]"
         style={{
@@ -71,7 +70,6 @@ export default async function ProfileKoperasi() {
             unggulan Buleleng ke ekosistem pasar digital.
           </p>
 
-          {/* Deretan Ikon Sosial Media */}
           <div className="flex items-center gap-4 mt-2">
             {profile?.instagram_url && (
               <a href={profile.instagram_url} target="_blank" rel="noopener noreferrer" className="p-2 bg-white/10 hover:bg-white/20 border border-white/20 rounded-full backdrop-blur-sm transition-all" title="Instagram">
@@ -100,10 +98,8 @@ export default async function ProfileKoperasi() {
         </div>
       </section>
 
-      {/* Detail Konten */}
       <section className="max-w-5xl mx-auto px-8 md:px-16 py-12 flex flex-col gap-6 md:gap-8">
         
-        {/* Tentang Koperasi - Sekarang mengambil dari database */}
         <div className="bg-white p-6 md:p-8 rounded-xl shadow-sm border border-gray-100 flex flex-col gap-4">
           <h2 className="text-xl md:text-2xl font-bold text-[#274a6a] font-display border-b-2 border-[#274a6a]/10 pb-2">
             Tentang Koperasi
@@ -113,7 +109,6 @@ export default async function ProfileKoperasi() {
           </p>
         </div>
 
-        {/* Visi Misi */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col gap-3">
             <h3 className="text-lg font-bold text-[#274a6a] font-display flex items-center gap-2">
@@ -136,7 +131,6 @@ export default async function ProfileKoperasi() {
           </div>
         </div>
 
-        {/* Box Tambahan Dinamis - Dibuat full width (grid-cols-1) */}
         {profile?.extra_boxes && profile.extra_boxes.length > 0 && (
           <div className="grid grid-cols-1 gap-6">
             {profile.extra_boxes.map(
