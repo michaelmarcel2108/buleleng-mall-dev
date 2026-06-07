@@ -1,198 +1,148 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
-import { Metadata } from "next";
-import { createClient } from "@/lib/supabase/server";
 
-export const metadata: Metadata = {
-  title: "Kelola Postingan - Admin PLUT",
-  description: "Manajemen data berita, artikel, pengumuman, dan galeri PLUT.",
-};
-
+// Fungsi format tanggal
 const formatDate = (dateString: string) => {
-  if (!dateString) return "-";
   const date = new Date(dateString);
   return date.toLocaleDateString("id-ID", {
     day: "numeric",
     month: "short",
     year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
   });
 };
 
-export default async function ManagePostsPage({
-  searchParams,
-}: {
-  searchParams?: Promise<{ q?: string }> | { q?: string };
-}) {
-  const resolvedSearchParams = await searchParams;
-  const searchQuery = resolvedSearchParams?.q || "";
+export default function ManagePostsPage() {
+  const [posts, setPosts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const supabase = createClient();
 
-  const supabase = await createClient();
+  // Fungsi untuk mengambil data dari tabel
+  const fetchPosts = async () => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from("plut_posts")
+      .select("*")
+      .order("created_at", { ascending: false });
 
-  let query = supabase
-    .from("plut_posts")
-    .select("id, title, post_type, author, published_date, created_at, slug")
-    .order("created_at", { ascending: false });
+    if (error) {
+      console.error("Gagal mengambil data:", error.message);
+    } else {
+      setPosts(data || []);
+    }
+    setLoading(false);
+  };
 
-  if (searchQuery) {
-    query = query.ilike("title", `%${searchQuery}%`);
-  }
+  useEffect(() => {
+    fetchPosts();
+  }, [supabase]);
 
-  const { data: posts, error } = await query;
+  // Fungsi untuk menghapus data
+  const handleDelete = async (id: string, title: string) => {
+    if (!window.confirm(`Yakin ingin menghapus postingan "${title}"? Data tidak bisa dikembalikan.`)) return;
+
+    try {
+      const { error } = await supabase.from("plut_posts").delete().eq("id", id);
+      if (error) throw error;
+      
+      alert("Postingan berhasil dihapus!");
+      fetchPosts(); // Segarkan tabel setelah menghapus
+    } catch (error: any) {
+      alert("Gagal menghapus: " + error.message);
+    }
+  };
+
+  // Desain warna label (badge) sesuai jenis postingan
+  const getBadgeColor = (type: string) => {
+    switch (type) {
+      case "berita": return "bg-blue-100 text-blue-700 border-blue-200";
+      case "pengumuman": return "bg-green-100 text-green-700 border-green-200";
+      case "infografis": return "bg-purple-100 text-purple-700 border-purple-200";
+      default: return "bg-neutral-100 text-neutral-700 border-neutral-200";
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-neutral-50 flex flex-col md:flex-row font-sans">
+    <div className="max-w-6xl mx-auto py-10 px-6 font-sans">
       
-      {/* SIDEBAR ADMIN */}
-      <aside className="w-full md:w-64 bg-neutral-900 text-white flex flex-col shrink-0">
-        <div className="p-6 border-b border-neutral-800">
-          <Link href="/admin/plut" className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-[#FF3C00] rounded-lg flex items-center justify-center text-white font-bold shadow-md">
-              P
-            </div>
-            <span className="font-bold text-lg tracking-wide">Admin PLUT</span>
+      {/* HEADER */}
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-8 gap-4">
+        <div>
+          <h1 className="text-2xl font-extrabold text-neutral-900">Kelola Postingan Publik</h1>
+          <p className="text-neutral-500 text-sm mt-1">Atur semua berita, pengumuman, dan infografis portal PLUT kita di sini.</p>
+        </div>
+        <div className="flex gap-3">
+          <Link href="/admin/plut" className="px-5 py-2.5 text-sm font-bold text-neutral-600 bg-white border border-neutral-200 rounded-lg hover:bg-neutral-50 transition-colors">
+            Kembali
+          </Link>
+          <Link href="/admin/plut/edit/new" className="px-5 py-2.5 text-sm font-bold text-white bg-[#FF3C00] rounded-lg hover:bg-[#d63200] transition-colors shadow-sm">
+            + Tulis Postingan Baru
           </Link>
         </div>
-        <nav className="flex-1 p-4 space-y-2">
-          <Link href="/admin/plut" className="flex items-center gap-3 px-4 py-3 text-neutral-400 hover:text-white hover:bg-neutral-800 rounded-xl font-medium transition-colors">
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
-            Dashboard
-          </Link>
-          <Link href="/admin/plut/manage" className="flex items-center gap-3 px-4 py-3 bg-[#FF3C00] text-white rounded-xl font-medium shadow-md">
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" /></svg>
-            Kelola Postingan
-          </Link>
-          <Link href="/admin/plut/settings" className="flex items-center gap-3 px-4 py-3 text-neutral-400 hover:text-white hover:bg-neutral-800 rounded-xl font-medium transition-colors">
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-            Pengaturan
-          </Link>
-        </nav>
-      </aside>
+      </div>
 
-      <main className="flex-1 flex flex-col h-screen overflow-y-auto">
-        <header className="bg-white border-b border-neutral-200 px-8 py-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sticky top-0 z-10">
-          <div>
-            <h1 className="text-2xl font-extrabold text-neutral-900">Manajemen Postingan</h1>
-            <p className="text-sm text-neutral-500">Kelola berita, pengumuman, dan galeri PLUT Buleleng.</p>
-          </div>
-          
-          {/* ACTION BUTTONS & SEARCH */}
-          <div className="flex w-full sm:w-auto items-center gap-3">
-            <form action="/admin/plut/manage" method="GET" className="relative w-full sm:w-64">
-              <input
-                type="text"
-                name="q"
-                defaultValue={searchQuery}
-                placeholder="Cari judul..."
-                className="w-full pl-4 pr-10 py-2.5 bg-neutral-100 border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#FF3C00]"
-              />
-              <button type="submit" className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-[#FF3C00]">
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-              </button>
-            </form>
-            
-            <Link 
-              href="/admin/plut/edit/new" 
-              className="shrink-0 flex items-center gap-2 px-4 py-2.5 bg-[#FF3C00] hover:bg-[#e03500] text-white text-sm font-bold rounded-lg transition-colors shadow-sm"
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
-              Tambah Baru
-            </Link>
-          </div>
-        </header>
-
-        <div className="p-8 max-w-7xl">
-          {error && (
-            <div className="mb-6 p-4 bg-red-50 text-red-600 rounded-xl border border-red-100 text-sm">
-              Gagal memuat data dari database: {error.message}
-            </div>
-          )}
-
-          <div className="bg-white rounded-2xl shadow-sm border border-neutral-100 overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-neutral-50 text-neutral-500 text-xs uppercase tracking-wider">
-                    <th className="px-6 py-4 font-semibold">Judul Postingan</th>
-                    <th className="px-6 py-4 font-semibold">Kategori</th>
-                    <th className="px-6 py-4 font-semibold">Penulis</th>
-                    <th className="px-6 py-4 font-semibold">Tanggal Publish</th>
-                    <th className="px-6 py-4 font-semibold text-right">Aksi</th>
+      {/* TABEL DATA */}
+      <div className="bg-white border border-neutral-200 rounded-2xl shadow-sm overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm">
+            <thead className="bg-neutral-50 border-b border-neutral-200 text-neutral-500 uppercase text-[11px] font-extrabold tracking-wider">
+              <tr>
+                <th className="px-6 py-4">Judul Postingan</th>
+                <th className="px-6 py-4 w-32 text-center">Jenis</th>
+                <th className="px-6 py-4 w-40 text-center">Tanggal Dibuat</th>
+                <th className="px-6 py-4 w-32 text-right">Aksi</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-neutral-100">
+              {loading ? (
+                <tr>
+                  <td colSpan={4} className="px-6 py-12 text-center text-neutral-400 font-medium">Memuat data...</td>
+                </tr>
+              ) : posts.length === 0 ? (
+                <tr>
+                  <td colSpan={4} className="px-6 py-12 text-center text-neutral-400 font-medium">Belum ada postingan. Silakan buat baru.</td>
+                </tr>
+              ) : (
+                posts.map((post) => (
+                  <tr key={post.id} className="hover:bg-neutral-50/50 transition-colors">
+                    <td className="px-6 py-4">
+                      <div className="font-bold text-neutral-900 line-clamp-1">{post.title}</div>
+                      <div className="text-[11px] text-neutral-400 font-mono mt-1">/{post.slug}</div>
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <span className={`inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${getBadgeColor(post.post_type)}`}>
+                        {post.post_type}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-center text-neutral-500">
+                      {formatDate(post.created_at)}
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <div className="flex justify-end gap-2">
+                        <Link 
+                          href={`/admin/plut/edit/${post.slug}`}
+                          className="px-3 py-1.5 text-xs font-bold text-blue-600 bg-blue-50 rounded-md hover:bg-blue-100 transition-colors"
+                        >
+                          Edit
+                        </Link>
+                        <button 
+                          onClick={() => handleDelete(post.id, post.title)}
+                          className="px-3 py-1.5 text-xs font-bold text-red-600 bg-red-50 rounded-md hover:bg-red-100 transition-colors"
+                        >
+                          Hapus
+                        </button>
+                      </div>
+                    </td>
                   </tr>
-                </thead>
-                <tbody className="divide-y divide-neutral-100">
-                  {posts && posts.length > 0 ? (
-                    posts.map((post) => (
-                      <tr key={post.id} className="hover:bg-neutral-50 transition-colors">
-                        <td className="px-6 py-4">
-                          <p className="font-bold text-neutral-900 max-w-md truncate" title={post.title}>
-                            {post.title}
-                          </p>
-                          <p className="text-xs text-neutral-400 mt-1 font-mono truncate max-w-md">/{post.slug}</p>
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold bg-neutral-100 text-neutral-700 uppercase tracking-wider border border-neutral-200">
-                            {post.post_type}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-sm text-neutral-600">
-                          {post.author || "Admin"}
-                        </td>
-                        <td className="px-6 py-4 text-sm text-neutral-600">
-                          {formatDate(post.published_date || post.created_at)}
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex items-center justify-end gap-2">
-                            {/* Tombol Preview */}
-                            <Link 
-                              href={`/plut/berita/${post.slug}`} 
-                              target="_blank"
-                              className="p-2 text-neutral-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                              title="Lihat Halaman"
-                            >
-                              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
-                            </Link>
-                            
-                            {/* Tombol Edit */}
-                            <Link 
-                              href={`/admin/plut/edit/${post.slug}`} 
-                              className="p-2 text-neutral-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
-                              title="Edit Data"
-                            >
-                              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-                            </Link>
-
-                            {/* Tombol Hapus (Perlu Client Component untuk aksi on-click konfirmasi) */}
-                            <button 
-                              type="button"
-                              className="p-2 text-neutral-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                              title="Hapus Data"
-                            >
-                              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={5} className="px-6 py-16 text-center">
-                        <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-neutral-100 text-neutral-400 mb-3">
-                          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-                        </div>
-                        <p className="text-neutral-900 font-bold">Data Tidak Ditemukan</p>
-                        <p className="text-neutral-500 text-sm mt-1">
-                          {searchQuery ? `Tidak ada hasil untuk pencarian "${searchQuery}"` : "Belum ada postingan yang ditambahkan."}
-                        </p>
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
-      </main>
+      </div>
+
     </div>
   );
 }

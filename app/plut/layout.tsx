@@ -1,9 +1,12 @@
 import Link from "next/link";
 import { ReactNode } from "react";
+import PlutNavbar from "@/components/PlutNavbar"; // Import komponen navbar yang baru dibuat
 
 export default function PlutLayout({ children }: { children: ReactNode }) {
   return (
     <div className="flex flex-col min-h-screen">
+      
+      {/* TOP BAR (Baris hitam paling atas) */}
       <div className="bg-neutral-900 text-neutral-300 py-2 px-4 text-xs font-medium hidden sm:block">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div className="flex gap-4">
@@ -22,61 +25,11 @@ export default function PlutLayout({ children }: { children: ReactNode }) {
         </div>
       </div>
 
-      {/* MAIN NAVBAR DENGAN DROPDOWN */}
-      <header className="bg-white border-b border-neutral-100 sticky top-0 z-50 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <Link href="/plut" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-            <div className="w-10 h-10 bg-[#FF3C00] rounded-xl flex items-center justify-center text-white font-black text-xl shadow-md">
-              P
-            </div>
-            <div>
-              <span className="font-extrabold text-xl text-neutral-900 block leading-none mb-1">PLUT</span>
-              <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest block leading-none">Kab. Buleleng</span>
-            </div>
-          </Link>
-
-          {/* Navigasi Desktop */}
-          <nav className="hidden md:flex gap-8 items-center">
-            <Link href="/plut" className="text-sm font-bold text-neutral-600 hover:text-[#FF3C00] transition-colors">Beranda</Link>
-            
-            <div className="relative group">
-              <Link href="/plut/profil" className="text-sm font-bold text-neutral-600 hover:text-[#FF3C00] transition-colors flex items-center gap-1">
-                Profil
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-              </Link>
-              {/* Dropdown Menu */}
-              <div className="absolute left-0 mt-2 w-48 bg-white border border-neutral-100 rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all transform translate-y-2 group-hover:translate-y-0">
-                <div className="py-2 flex flex-col">
-                  <Link href="/plut/profil" className="px-4 py-2 text-sm text-neutral-600 hover:bg-neutral-50 hover:text-[#FF3C00]">Tupoksi & Maklumat</Link>
-                  <Link href="/plut/kontak" className="px-4 py-2 text-sm text-neutral-600 hover:bg-neutral-50 hover:text-[#FF3C00]">Kontak & Sosial Media</Link>
-                </div>
-              </div>
-            </div>
-
-            <Link href="/plut/layanan" className="text-sm font-bold text-neutral-600 hover:text-[#FF3C00] transition-colors">Layanan KUMKM</Link>
-            <Link href="/plut/katalog" className="text-sm font-bold text-neutral-600 hover:text-[#FF3C00] transition-colors">Katalog Produk</Link>
-            
-            <div className="relative group">
-              <Link href="/plut/berita" className="text-sm font-bold text-neutral-600 hover:text-[#FF3C00] transition-colors flex items-center gap-1">
-                Informasi
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-              </Link>
-              <div className="absolute left-0 mt-2 w-48 bg-white border border-neutral-100 rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all transform translate-y-2 group-hover:translate-y-0">
-                <div className="py-2 flex flex-col">
-                  <Link href="/plut/berita" className="px-4 py-2 text-sm text-neutral-600 hover:bg-neutral-50 hover:text-[#FF3C00]">Berita & Pengumuman</Link>
-                  <Link href="/plut/agenda-regulasi" className="px-4 py-2 text-sm text-neutral-600 hover:bg-neutral-50 hover:text-[#FF3C00]">Agenda & Regulasi</Link>
-                  <Link href="/plut/galeri" className="px-4 py-2 text-sm text-neutral-600 hover:bg-neutral-50 hover:text-[#FF3C00]">Galeri Media</Link>
-                </div>
-              </div>
-            </div>
-
-            <Link href="/plut/pengaduan" className="text-sm font-bold text-neutral-600 hover:text-[#FF3C00] transition-colors">Pengaduan</Link>
-          </nav>
-        </div>
-      </header>
+      {/* PANGGIL KOMPONEN NAVBAR PLUT DI SINI */}
+      <PlutNavbar />
 
       {/* KONTEN HALAMAN (Beranda, Profil, Berita, dll akan masuk ke sini) */}
-      <main className="flex-grow">
+      <main className="flex-grow bg-neutral-50">
         {children}
       </main>
 

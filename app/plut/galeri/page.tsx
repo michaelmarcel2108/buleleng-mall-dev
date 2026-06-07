@@ -8,7 +8,6 @@ export const metadata: Metadata = {
   description: "Dokumentasi visual foto dan video kegiatan, edukasi, dan sosialisasi PLUT Kabupaten Buleleng.",
 };
 
-// Fungsi pembantu untuk format tanggal
 const formatDate = (dateString: string) => {
   if (!dateString) return "";
   const date = new Date(dateString);
@@ -22,7 +21,6 @@ const formatDate = (dateString: string) => {
 export default async function GaleriMediaPage() {
   const supabase = await createClient();
 
-  // 1. Mengambil data khusus untuk Galeri Foto
   const { data: galeriFoto } = await supabase
     .from("plut_posts")
     .select("*")
@@ -30,7 +28,6 @@ export default async function GaleriMediaPage() {
     .order("created_at", { ascending: false })
     .limit(6);
 
-  // 2. Mengambil data khusus untuk Galeri Video
   const { data: galeriVideo } = await supabase
     .from("plut_posts")
     .select("*")
