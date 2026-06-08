@@ -45,13 +45,13 @@ export default async function PengumumanPage({
   return (
     <div className="min-h-screen bg-neutral-50 font-sans">
       
-      {/* HERO SECTION PENGUMUMAN */}
-      <section className="bg-neutral-900 text-white py-16 px-6 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-[#FF3C00]/10 rounded-full blur-3xl pointer-events-none"></div>
+      {/* HERO SECTION PENGUMUMAN (Aksen Biru PLUT) */}
+      <section className="bg-neutral-900 text-white py-16 px-6 relative overflow-hidden border-b-4 border-[#407d99]">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-[#407d99]/10 rounded-full blur-3xl pointer-events-none"></div>
         <div className="max-w-4xl mx-auto text-center relative z-10">
-          <span className="text-[#FF3C00] font-bold text-sm tracking-widest uppercase mb-3 block">Layanan Informasi</span>
+          <span className="text-[#407d99] font-bold text-sm tracking-widest uppercase mb-3 block">Layanan Informasi</span>
           <h1 className="text-4xl md:text-5xl font-extrabold mb-4 tracking-tight">
-            Pengumuman <span className="text-[#FF3C00]">Resmi</span>
+            Pengumuman <span className="text-[#407d99]">Resmi</span>
           </h1>
           <p className="text-lg text-neutral-400">
             Pusat informasi surat edaran, harga pokok pasar, jadwal kurasi, dan pemberitahuan penting lainnya dari PLUT Buleleng.
@@ -69,12 +69,12 @@ export default async function PengumumanPage({
               type="text"
               name="q"
               defaultValue={searchQuery}
-              className="block w-full pl-5 pr-24 py-3.5 border border-neutral-200 rounded-xl bg-white text-neutral-900 placeholder-neutral-400 focus:ring-2 focus:ring-[#FF3C00] transition-all outline-none shadow-sm"
+              className="block w-full pl-5 pr-24 py-3.5 border border-neutral-200 rounded-xl bg-white text-neutral-900 placeholder-neutral-400 focus:ring-2 focus:ring-[#407d99] transition-all outline-none shadow-sm"
               placeholder="Cari judul pengumuman..."
             />
             <button
               type="submit"
-              className="absolute inset-y-1.5 right-1.5 px-6 bg-[#FF3C00] hover:bg-[#e03500] text-white text-sm font-bold rounded-lg transition-colors"
+              className="absolute inset-y-1.5 right-1.5 px-6 bg-[#407d99] hover:bg-[#326278] text-white text-sm font-bold rounded-lg transition-colors"
             >
               Cari
             </button>
@@ -82,7 +82,7 @@ export default async function PengumumanPage({
           {searchQuery && (
              <div className="text-center mt-4">
                <p className="text-neutral-600 text-sm">Hasil pencarian: <strong>"{searchQuery}"</strong></p>
-               <Link href="/plut/pengumuman" className="text-xs text-[#FF3C00] hover:underline mt-1 inline-block">Reset Pencarian</Link>
+               <Link href="/plut/pengumuman" className="text-xs text-[#407d99] hover:underline mt-1 inline-block">Reset Pencarian</Link>
              </div>
           )}
         </div>
@@ -92,10 +92,10 @@ export default async function PengumumanPage({
           {pengumumanList && pengumumanList.length > 0 ? (
             pengumumanList.map((item) => (
               <Link href={`/plut/berita/${item.slug}`} key={item.id} className="block group">
-                <div className="bg-white p-6 rounded-2xl border border-neutral-200 shadow-sm hover:border-[#FF3C00]/30 hover:shadow-md transition-all flex flex-col sm:flex-row gap-5 items-start sm:items-center">
+                <div className="bg-white p-6 rounded-2xl border border-neutral-200 shadow-sm hover:border-[#407d99]/30 hover:shadow-md transition-all flex flex-col sm:flex-row gap-5 items-start sm:items-center">
                   
                   {/* Ikon Pengumuman */}
-                  <div className="shrink-0 w-12 h-12 bg-amber-50 text-amber-600 rounded-full flex items-center justify-center group-hover:bg-[#FF3C00] group-hover:text-white transition-colors">
+                  <div className="shrink-0 w-12 h-12 bg-[#407d99]/10 text-[#407d99] rounded-full flex items-center justify-center group-hover:bg-[#407d99] group-hover:text-white transition-colors">
                     <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
                     </svg>
@@ -107,9 +107,9 @@ export default async function PengumumanPage({
                       <span className="text-xs font-bold text-neutral-500 uppercase tracking-wider">
                         {formatDate(item.published_date || item.created_at)}
                       </span>
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#FF3C00] animate-pulse"></span>
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#407d99] animate-pulse"></span>
                     </div>
-                    <h3 className="text-lg font-bold text-neutral-900 group-hover:text-[#FF3C00] transition-colors leading-snug mb-2">
+                    <h3 className="text-lg font-bold text-neutral-900 group-hover:text-[#407d99] transition-colors leading-snug mb-2">
                       {item.title}
                     </h3>
                     <p className="text-sm text-neutral-600 line-clamp-2">
@@ -118,7 +118,7 @@ export default async function PengumumanPage({
                   </div>
 
                   {/* Panah */}
-                  <div className="shrink-0 text-neutral-300 group-hover:text-[#FF3C00] transition-colors hidden sm:block">
+                  <div className="shrink-0 text-neutral-300 group-hover:text-[#407d99] transition-colors hidden sm:block">
                     <svg className="w-6 h-6 transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                     </svg>

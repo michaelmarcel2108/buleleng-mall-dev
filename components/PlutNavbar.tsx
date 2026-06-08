@@ -6,8 +6,6 @@ import { useState } from "react";
 
 export default function PlutNavbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  // Pemetaan URL yang disesuaikan dengan folder fisik halaman PLUT Anda
   const menuItems = [
     { name: "Beranda", href: "/plut" },
     {
@@ -18,7 +16,7 @@ export default function PlutNavbar() {
         { name: "Data Pegawai", href: "/plut/profil#pegawai" },
         { name: "Maklumat & Motto Pelayanan", href: "/plut/profil#maklumat" },
         { name: "Prosedur Informasi Publik", href: "/plut/profil#prosedur" },
-        { name: "Alamat & Kontak Fisik", href: "/plut/kontak" }, // Mengarah langsung ke halaman /plut/kontak
+        { name: "Alamat & Kontak Fisik", href: "/plut/kontak" },
       ],
     },
     {
@@ -54,23 +52,18 @@ export default function PlutNavbar() {
   return (
     <header className="bg-white border-b border-neutral-100 sticky top-0 z-50 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-        
-        {/* IDENTITAS VISUAL BRANDING */}
         <Link href="/plut" className="flex items-center gap-3 hover:opacity-90 transition-opacity">
-          <div className="relative w-10 h-10">
+          <div className="relative h-12 w-auto shrink-0"> {/* h-12 = 48px, pas untuk tinggi navbar */}
             <Image 
               src="/logo-plut.png" 
               alt="Logo PLUT" 
-              width={40}
-              height={40}
-              className="object-contain"
+              width={48} 
+              height={48}
+              className="object-contain h-full w-auto" 
               priority 
             />
           </div>
-          <div>
-            <span className="font-extrabold text-xl text-neutral-900 block leading-none mb-1">PLUT</span>
-            <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest block leading-none">Kab. Buleleng</span>
-          </div>
+          
         </Link>
 
         {/* PANEL NAVIGASI DESKTOP */}
@@ -85,8 +78,6 @@ export default function PlutNavbar() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>
                   </button>
-
-                  {/* KOTAK DROPDOWN - Stabil Menggunakan Kombinasi group-hover */}
                   <div className="absolute left-0 mt-2 w-60 bg-white border border-neutral-100 rounded-xl shadow-xl py-2 flex flex-col opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                     {menu.dropdown.map((sub) => (
                       <Link 
@@ -107,8 +98,6 @@ export default function PlutNavbar() {
             </div>
           ))}
         </nav>
-
-        {/* TOMBOL MENU RESPONSIVITAS MOBILE */}
         <button 
           className="md:hidden p-2 text-neutral-600" 
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -119,8 +108,6 @@ export default function PlutNavbar() {
           </svg>
         </button>
       </div>
-
-      {/* PANEL NAVIGASI MOBILE DROPDOWN */}
       {mobileMenuOpen && (
         <div className="md:hidden bg-white border-t border-neutral-100 p-4 space-y-2 max-h-[calc(100vh-80px)] overflow-y-auto">
           {menuItems.map((menu) => (

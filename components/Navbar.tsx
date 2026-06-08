@@ -2,13 +2,12 @@
 
 import { useState, useEffect, useRef, useMemo } from "react";
 import Link from "next/link";
+import Image from "next/image"; // <-- Tambahkan import Image
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Category, Product } from "@/types";
 
 export default function Navbar() {
-  // Memoize the supabase client so it doesn't trigger unnecessary re-renders
-  // when added to the useEffect dependency array.
   const supabase = useMemo(() => createClient(), []);
 
   const [isOpen, setIsOpen] = useState(false);
@@ -17,7 +16,6 @@ export default function Navbar() {
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [suggestions, setSuggestions] = useState<{
     categories: Category[];
-    // Use Partial<Product> because our search query only fetches a few fields, not the whole product
     products: Partial<Product>[];
   }>({ categories: [], products: [] });
   const [isSearching, setIsSearching] = useState(false);
@@ -46,7 +44,7 @@ export default function Navbar() {
 
   useEffect(() => {
     const keyword = searchQuery.trim();
-    if (!keyword) return; // The clearing is now handled safely in the onChange handler!
+    if (!keyword) return;
 
     const delayDebounceFn = setTimeout(async () => {
       const { data: categories } = await supabase
@@ -69,13 +67,12 @@ export default function Navbar() {
     }, 400);
 
     return () => clearTimeout(delayDebounceFn);
-  }, [searchQuery, supabase]); // Added supabase to the dependency array
+  }, [searchQuery, supabase]);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     setSearchQuery(val);
 
-    // Clear suggestions immediately and safely without triggering the useEffect warning
     if (!val.trim()) {
       setSuggestions({ categories: [], products: [] });
       setIsSearching(false);
@@ -93,10 +90,9 @@ export default function Navbar() {
     }
   };
 
-  // Replaced 'any' with a Partial union to satisfy TypeScript
   const handleSuggestionClick = (
     type: "category" | "product",
-    item: { id?: string | number; name?: string; slug?: string }, // Clean, duck-typed properties
+    item: { id?: string | number; name?: string; slug?: string },
   ) => {
     setIsSearchFocused(false);
     setSearchQuery("");
@@ -114,11 +110,21 @@ export default function Navbar() {
       suppressHydrationWarning
       className="w-full bg-white/95 backdrop-blur-sm text-gray-800 px-4 md:px-16 py-3 md:py-4 flex items-center justify-between sticky top-0 z-50 shadow-sm border-b border-gray-100 gap-2 md:gap-4"
     >
+      {/* BRANDING LOGO & TEKS */}
       <Link
         href="/"
-        className="font-display text-lg md:text-2xl font-bold tracking-wide text-[#274a6a] shrink-0"
+        className="flex items-center gap-1 font-display text-lg md:text-2xl font-bold tracking-wide text-[#274a6a] shrink-0 hover:opacity-90 transition-opacity"
       >
-        Buleleng Mall
+        <div className="relative w-10 h-10 md:w-12 md:h-12">
+          <Image 
+            src="/logo-bm.png"
+            alt="Logo Buleleng Mall" 
+            fill 
+            className="object-contain"
+            priority 
+          />
+        </div>
+        <span className="hidden sm:block">Buleleng Mall</span>
       </Link>
 
       <div ref={searchRef} className="flex-1 max-w-md mx-2 md:mx-8 relative">

@@ -33,8 +33,8 @@ export default function PlutLayout({ children }: { children: ReactNode }) {
         {children}
       </main>
 
-      {/* FOOTER GLOBAL PLUT */}
-      <footer className="bg-neutral-900 text-white pt-16 pb-8 border-t-4 border-[#FF3C00]">
+      {/* FOOTER GLOBAL PLUT (Aksen Biru PLUT) */}
+      <footer className="bg-neutral-900 text-white pt-16 pb-8 border-t-4 border-[#407d99]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
           <div>
             <h3 className="text-xl font-extrabold mb-4">PLUT Buleleng</h3>
@@ -44,7 +44,7 @@ export default function PlutLayout({ children }: { children: ReactNode }) {
             <p className="text-sm text-neutral-400">Jl. Melur No. 31, Singaraja, Bali</p>
           </div>
           <div>
-            <h4 className="font-bold mb-4 text-[#FF3C00]">Tautan Cepat</h4>
+            <h4 className="font-bold mb-4 text-[#407d99]">Tautan Cepat</h4>
             <ul className="space-y-2 text-sm text-neutral-400">
               <li><Link href="/plut/katalog" className="hover:text-white transition-colors">Katalog Produk UMKM</Link></li>
               <li><Link href="/plut/layanan" className="hover:text-white transition-colors">Pendaftaran Klinik KUMKM</Link></li>
@@ -52,11 +52,11 @@ export default function PlutLayout({ children }: { children: ReactNode }) {
             </ul>
           </div>
           <div>
-            <h4 className="font-bold mb-4 text-[#FF3C00]">Jam Operasional</h4>
+            <h4 className="font-bold mb-4 text-[#407d99]">Jam Operasional</h4>
             <ul className="space-y-2 text-sm text-neutral-400">
               <li className="flex justify-between border-b border-neutral-800 pb-2"><span>Senin - Kamis</span> <span>08.00 - 16.00</span></li>
               <li className="flex justify-between border-b border-neutral-800 pb-2"><span>Jumat</span> <span>08.00 - 15.00</span></li>
-              <li className="flex justify-between text-red-400 pt-2"><span>Sabtu - Minggu</span> <span>Tutup</span></li>
+              <li className="flex justify-between text-white pt-2"><span>Sabtu - Minggu</span> <span>Tutup</span></li>
             </ul>
           </div>
         </div>

@@ -38,16 +38,15 @@ export default async function GaleriMediaPage() {
   return (
     <div className="min-h-screen bg-neutral-50 font-sans">
       
-
-      {/* HERO SECTION */}
-      <section className="bg-neutral-900 text-white py-16 px-4 text-center relative overflow-hidden">
+      {/* HERO SECTION (Aksen Biru PLUT) */}
+      <section className="bg-neutral-900 text-white py-16 px-4 text-center relative overflow-hidden border-b-4 border-[#407d99]">
         {/* Dekorasi Latar */}
-        <div className="absolute top-0 right-1/4 w-96 h-96 bg-[#FF3C00]/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div className="absolute top-0 right-1/4 w-96 h-96 bg-[#407d99]/10 rounded-full blur-3xl pointer-events-none"></div>
         
         <div className="max-w-3xl mx-auto relative z-10">
-          <span className="text-[#FF3C00] font-bold text-sm tracking-widest uppercase mb-4 block">Dokumentasi Visual</span>
+          <span className="text-[#407d99] font-bold text-sm tracking-widest uppercase mb-4 block">Dokumentasi Visual</span>
           <h1 className="text-4xl md:text-5xl font-extrabold mb-6 tracking-tight">
-            Galeri <span className="text-[#FF3C00]">Media</span>
+            Galeri <span className="text-[#407d99]">Media</span>
           </h1>
           <p className="text-lg text-neutral-400">
             Kumpulan momen kegiatan, pelatihan, serta video edukasi yang kita dedikasikan untuk kemajuan UMKM di Kabupaten Buleleng.
@@ -82,10 +81,10 @@ export default async function GaleriMediaPage() {
                       <div className="absolute inset-0 bg-gradient-to-t from-neutral-900/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                     </div>
                     <div className="pt-4 pb-2 px-2 flex-grow flex flex-col">
-                      <p className="text-xs font-bold text-[#FF3C00] mb-1">
+                      <p className="text-xs font-bold text-[#407d99] mb-1">
                         {formatDate(foto.published_date || foto.created_at)}
                       </p>
-                      <h3 className="text-base font-bold text-neutral-900 leading-snug line-clamp-2">
+                      <h3 className="text-base font-bold text-neutral-900 leading-snug line-clamp-2 group-hover:text-[#407d99] transition-colors">
                         {foto.title}
                       </h3>
                     </div>
@@ -122,18 +121,18 @@ export default async function GaleriMediaPage() {
                     />
                     {/* Play Button Overlay */}
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center group-hover:scale-110 group-hover:bg-[#FF3C00]/90 transition-all duration-300">
+                      <div className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center group-hover:scale-110 group-hover:bg-[#407d99]/90 transition-all duration-300">
                         <svg className="w-8 h-8 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
                           <path d="M8 5v14l11-7z" />
                         </svg>
                       </div>
                     </div>
                     {/* Badge Penanda Video */}
-                    <div className="absolute bottom-3 right-3 bg-[#FF3C00] backdrop-blur px-2.5 py-1 text-[10px] font-bold text-white rounded shadow-sm uppercase tracking-wider">
+                    <div className="absolute bottom-3 right-3 bg-[#407d99] backdrop-blur px-2.5 py-1 text-[10px] font-bold text-white rounded shadow-sm uppercase tracking-wider">
                       VIDEO
                     </div>
                   </div>
-                  <h3 className="text-lg font-bold text-neutral-900 group-hover:text-[#FF3C00] transition-colors leading-snug line-clamp-2">
+                  <h3 className="text-lg font-bold text-neutral-900 group-hover:text-[#407d99] transition-colors leading-snug line-clamp-2">
                     {video.title}
                   </h3>
                 </Link>

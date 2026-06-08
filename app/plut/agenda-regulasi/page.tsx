@@ -38,13 +38,12 @@ export default async function AgendaRegulasiPage() {
   return (
     <div className="min-h-screen bg-neutral-50 font-sans">
       
-
-      {/* HERO SECTION */}
-      <section className="bg-neutral-900 text-white py-16 px-4 text-center">
+      {/* HERO SECTION (Aksen Biru PLUT) */}
+      <section className="bg-neutral-900 text-white py-16 px-4 text-center border-b-4 border-[#407d99]">
         <div className="max-w-3xl mx-auto">
-          <span className="text-[#FF3C00] font-bold text-sm tracking-widest uppercase mb-4 block">Transparansi & Informasi Terbuka</span>
+          <span className="text-[#407d99] font-bold text-sm tracking-widest uppercase mb-4 block">Transparansi & Informasi Terbuka</span>
           <h1 className="text-4xl md:text-5xl font-extrabold mb-6 tracking-tight">
-            Agenda & <span className="text-[#FF3C00]">Regulasi</span>
+            Agenda & <span className="text-[#407d99]">Regulasi</span>
           </h1>
           <p className="text-lg text-neutral-400">
             Ketahui jadwal pelatihan terbaru yang bisa Anda ikuti, serta unduh berbagai dokumen regulasi, landasan hukum, dan informasi publik (PPID/JDIH) yang kita sediakan.
@@ -68,15 +67,15 @@ export default async function AgendaRegulasiPage() {
                 return (
                   <div key={agenda.id} className="bg-white rounded-2xl p-5 border border-neutral-100 shadow-sm hover:shadow-md transition-shadow flex gap-6 items-start group">
                     {/* Kotak Tanggal */}
-                    <div className="shrink-0 w-20 h-24 bg-neutral-50 rounded-xl border border-neutral-100 flex flex-col items-center justify-center text-center group-hover:border-[#FF3C00]/30 group-hover:bg-[#FF3C00]/5 transition-colors">
-                      <span className="text-sm font-bold text-[#FF3C00]">{tgl.bulan}</span>
+                    <div className="shrink-0 w-20 h-24 bg-neutral-50 rounded-xl border border-neutral-100 flex flex-col items-center justify-center text-center group-hover:border-[#407d99]/30 group-hover:bg-[#407d99]/5 transition-colors">
+                      <span className="text-sm font-bold text-[#407d99]">{tgl.bulan}</span>
                       <span className="text-3xl font-extrabold text-neutral-900 leading-none my-1">{tgl.hari}</span>
                       <span className="text-xs font-semibold text-neutral-500">{tgl.tahun}</span>
                     </div>
 
                     {/* Detail Agenda */}
                     <div className="flex-grow">
-                      <h3 className="text-xl font-bold text-neutral-900 mb-2 group-hover:text-[#FF3C00] transition-colors">{agenda.judul_kegiatan}</h3>
+                      <h3 className="text-xl font-bold text-neutral-900 mb-2 group-hover:text-[#407d99] transition-colors">{agenda.judul_kegiatan}</h3>
                       <p className="text-neutral-600 text-sm mb-4 line-clamp-2">{agenda.deskripsi}</p>
                       
                       <div className="flex flex-wrap items-center gap-4 text-sm font-medium text-neutral-500">
@@ -85,7 +84,7 @@ export default async function AgendaRegulasiPage() {
                           {agenda.lokasi || "Gedung PLUT Buleleng"}
                         </div>
                         {agenda.link_pendaftaran && (
-                          <a href={agenda.link_pendaftaran} target="_blank" rel="noopener noreferrer" className="text-[#FF3C00] hover:underline flex items-center gap-1">
+                          <a href={agenda.link_pendaftaran} target="_blank" rel="noopener noreferrer" className="text-[#407d99] hover:underline flex items-center gap-1">
                             Daftar Sekarang
                             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
                           </a>
@@ -133,7 +132,7 @@ export default async function AgendaRegulasiPage() {
                       <p className="text-xs text-neutral-500 mb-2">
                         {reg.nomor_dokumen} • Tahun {reg.tahun} • {reg.kategori}
                       </p>
-                      <a href={reg.file_url} target="_blank" rel="noopener noreferrer" className="text-xs font-bold text-[#FF3C00] hover:underline flex items-center gap-1 w-fit">
+                      <a href={reg.file_url} target="_blank" rel="noopener noreferrer" className="text-xs font-bold text-[#407d99] hover:underline flex items-center gap-1 w-fit">
                         <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
                         Unduh Dokumen
                       </a>

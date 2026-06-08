@@ -10,13 +10,15 @@ export default function PengaduanPlutPage() {
   return (
     <div className="min-h-screen bg-neutral-50 font-sans">
       
-
-      {/* HERO SECTION */}
-      <section className="bg-neutral-900 text-white py-16 px-4 text-center">
-        <div className="max-w-3xl mx-auto">
-          <span className="text-[#FF3C00] font-bold text-sm tracking-widest uppercase mb-4 block">Layanan Aspirasi</span>
+      {/* HERO SECTION (Aksen Biru PLUT) */}
+      <section className="bg-neutral-900 text-white py-16 px-4 text-center relative overflow-hidden border-b-4 border-[#407d99]">
+        {/* Dekorasi Latar */}
+        <div className="absolute top-0 right-1/4 w-96 h-96 bg-[#407d99]/10 rounded-full blur-3xl pointer-events-none"></div>
+        
+        <div className="max-w-3xl mx-auto relative z-10">
+          <span className="text-[#407d99] font-bold text-sm tracking-widest uppercase mb-4 block">Layanan Aspirasi</span>
           <h1 className="text-4xl md:text-5xl font-extrabold mb-6 tracking-tight">
-            Pengaduan & <span className="text-[#FF3C00]">Kritik Saran</span>
+            Pengaduan & <span className="text-[#407d99]">Kritik Saran</span>
           </h1>
           <p className="text-lg text-neutral-400">
             Suara Anda sangat berarti bagi kemajuan UMKM Buleleng. Sampaikan aspirasi, pengaduan, maupun saran untuk pelayanan PLUT yang lebih baik.
@@ -27,7 +29,7 @@ export default function PengaduanPlutPage() {
       <main className="py-16 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
           
-          {/* BAGIAN 1: INTEGRASI SP4N-LAPOR! */}
+          {/* BAGIAN 1: INTEGRASI SP4N-LAPOR! (Tetap menggunakan aksen merah resmi LAPOR) */}
           <div className="bg-white p-8 md:p-10 rounded-3xl shadow-sm border border-neutral-100">
             <div className="w-16 h-16 bg-red-50 text-red-600 rounded-2xl flex items-center justify-center mb-6 border border-red-100">
               <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -62,10 +64,10 @@ export default function PengaduanPlutPage() {
             </a>
           </div>
 
-          {/* BAGIAN 2: FORM KRITIK & SARAN LOKAL */}
+          {/* BAGIAN 2: FORM KRITIK & SARAN LOKAL (Aksen Biru PLUT) */}
           <div className="bg-white p-8 md:p-10 rounded-3xl shadow-lg border border-neutral-100 relative overflow-hidden">
             {/* Dekorasi kecil di sudut form */}
-            <div className="absolute -top-10 -right-10 w-32 h-32 bg-[#FF3C00]/5 rounded-full"></div>
+            <div className="absolute -top-10 -right-10 w-32 h-32 bg-[#407d99]/5 rounded-full"></div>
             
             <div className="relative z-10">
               <h2 className="text-2xl font-extrabold text-neutral-900 mb-2">Kritik & Saran</h2>
@@ -79,7 +81,7 @@ export default function PengaduanPlutPage() {
                   <input 
                     type="text" 
                     id="nama" 
-                    className="w-full px-4 py-3 rounded-xl border border-neutral-200 bg-neutral-50 focus:bg-white focus:ring-2 focus:ring-[#FF3C00] focus:border-transparent transition-all outline-none"
+                    className="w-full px-4 py-3 rounded-xl border border-neutral-200 bg-neutral-50 focus:bg-white focus:ring-2 focus:ring-[#407d99] focus:border-transparent transition-all outline-none"
                     placeholder="Contoh: Budi Santoso / Kopi Buleleng"
                   />
                 </div>
@@ -89,7 +91,7 @@ export default function PengaduanPlutPage() {
                   <input 
                     type="text" 
                     id="kontak" 
-                    className="w-full px-4 py-3 rounded-xl border border-neutral-200 bg-neutral-50 focus:bg-white focus:ring-2 focus:ring-[#FF3C00] focus:border-transparent transition-all outline-none"
+                    className="w-full px-4 py-3 rounded-xl border border-neutral-200 bg-neutral-50 focus:bg-white focus:ring-2 focus:ring-[#407d99] focus:border-transparent transition-all outline-none"
                     placeholder="Agar kami bisa merespons masukan Anda"
                   />
                 </div>
@@ -98,7 +100,7 @@ export default function PengaduanPlutPage() {
                   <label htmlFor="kategori" className="block text-sm font-semibold text-neutral-700 mb-1.5">Kategori Masukan</label>
                   <select 
                     id="kategori"
-                    className="w-full px-4 py-3 rounded-xl border border-neutral-200 bg-neutral-50 focus:bg-white focus:ring-2 focus:ring-[#FF3C00] focus:border-transparent transition-all outline-none text-neutral-700"
+                    className="w-full px-4 py-3 rounded-xl border border-neutral-200 bg-neutral-50 focus:bg-white focus:ring-2 focus:ring-[#407d99] focus:border-transparent transition-all outline-none text-neutral-700"
                   >
                     <option value="">-- Pilih Kategori --</option>
                     <option value="fasilitas">Fasilitas Gedung PLUT</option>
@@ -114,14 +116,14 @@ export default function PengaduanPlutPage() {
                   <textarea 
                     id="pesan" 
                     rows={4}
-                    className="w-full px-4 py-3 rounded-xl border border-neutral-200 bg-neutral-50 focus:bg-white focus:ring-2 focus:ring-[#FF3C00] focus:border-transparent transition-all outline-none resize-none"
+                    className="w-full px-4 py-3 rounded-xl border border-neutral-200 bg-neutral-50 focus:bg-white focus:ring-2 focus:ring-[#407d99] focus:border-transparent transition-all outline-none resize-none"
                     placeholder="Tuliskan kritik, saran, atau pertanyaan Anda di sini..."
                   ></textarea>
                 </div>
 
                 <button 
                   type="button" // Ubah ke submit jika sudah dihubungkan ke backend (Supabase)
-                  className="w-full py-4 mt-2 bg-[#FF3C00] hover:bg-[#e03500] text-white font-bold rounded-xl transition-colors shadow-md flex justify-center items-center gap-2"
+                  className="w-full py-4 mt-2 bg-[#407d99] hover:bg-[#326278] text-white font-bold rounded-xl transition-colors shadow-md flex justify-center items-center gap-2"
                 >
                   Kirim Masukan
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

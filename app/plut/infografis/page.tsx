@@ -20,13 +20,13 @@ export default async function InfografisPage() {
 
   return (
     <div className="min-h-screen bg-neutral-50 font-sans">
-      {/* HERO SECTION */}
-      <section className="bg-neutral-900 text-white py-16 px-6 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-[#FF3C00]/10 rounded-full blur-3xl pointer-events-none"></div>
+      {/* HERO SECTION (Aksen Biru PLUT) */}
+      <section className="bg-neutral-900 text-white py-16 px-6 relative overflow-hidden border-b-4 border-[#407d99]">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-[#407d99]/10 rounded-full blur-3xl pointer-events-none"></div>
         <div className="max-w-4xl mx-auto text-center relative z-10">
-          <span className="text-[#FF3C00] font-bold text-sm tracking-widest uppercase mb-3 block">Layanan Informasi</span>
+          <span className="text-[#407d99] font-bold text-sm tracking-widest uppercase mb-3 block">Layanan Informasi</span>
           <h1 className="text-4xl md:text-5xl font-extrabold mb-4 tracking-tight">
-            Galeri <span className="text-[#FF3C00]">Infografis</span>
+            Galeri <span className="text-[#407d99]">Infografis</span>
           </h1>
           <p className="text-lg text-neutral-400">
             Edukasi, statistik, dan panduan kebijakan pemerintah yang disajikan dalam ringkasan visual yang mudah dipahami.
@@ -52,7 +52,7 @@ export default async function InfografisPage() {
                   <div className="absolute inset-0 bg-neutral-900/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center backdrop-blur-sm">
                     <Link 
                       href={`/plut/berita/${item.slug}`} 
-                      className="px-6 py-3 bg-[#FF3C00] text-white font-bold rounded-xl shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 flex items-center gap-2"
+                      className="px-6 py-3 bg-[#407d99] hover:bg-[#326278] text-white font-bold rounded-xl shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 flex items-center gap-2"
                     >
                       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
                       Lihat Detail
@@ -61,7 +61,7 @@ export default async function InfografisPage() {
                 </div>
                 {/* Judul Infografis */}
                 <div className="p-5 text-center flex-grow flex items-center justify-center border-t border-neutral-100">
-                  <h3 className="text-lg font-bold text-neutral-900 leading-snug line-clamp-2 group-hover:text-[#FF3C00] transition-colors">
+                  <h3 className="text-lg font-bold text-neutral-900 leading-snug line-clamp-2 group-hover:text-[#407d99] transition-colors">
                     {item.title}
                   </h3>
                 </div>

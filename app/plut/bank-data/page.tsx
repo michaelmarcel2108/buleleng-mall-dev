@@ -27,12 +27,13 @@ export default async function BankDataPage() {
 
   return (
     <div className="min-h-screen bg-neutral-50 font-sans">
-      {/* HERO SECTION */}
-      <section className="bg-neutral-900 text-white py-16 px-6 relative overflow-hidden">
+      
+      {/* HERO SECTION DENGAN AKSEN BIRU PLUT */}
+      <section className="bg-neutral-900 text-white py-16 px-6 relative overflow-hidden border-b-4 border-[#407d99]">
         <div className="max-w-4xl mx-auto text-center relative z-10">
-          <span className="text-[#FF3C00] font-bold text-sm tracking-widest uppercase mb-3 block">Layanan Informasi</span>
+          <span className="text-[#407d99] font-bold text-sm tracking-widest uppercase mb-3 block">Layanan Informasi</span>
           <h1 className="text-4xl md:text-5xl font-extrabold mb-4 tracking-tight">
-            Bank <span className="text-[#FF3C00]">Data</span>
+            Bank <span className="text-[#407d99]">Data</span>
           </h1>
           <p className="text-lg text-neutral-400">
             Pusat repositori dokumen digital, formulir, dan template bisnis yang terhubung langsung dengan penyimpanan awan resmi instansi.
@@ -57,15 +58,15 @@ export default async function BankDataPage() {
                         href={item.link_url} 
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-4 p-4 rounded-2xl border border-neutral-100 hover:border-[#FF3C00]/30 hover:bg-[#FF3C00]/5 hover:shadow-sm transition-all group"
+                        className="flex items-center gap-4 p-4 rounded-2xl border border-neutral-100 hover:border-[#407d99]/30 hover:bg-[#407d99]/5 hover:shadow-sm transition-all group"
                       >
                         <div className="w-12 h-12 bg-neutral-100 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-white group-hover:shadow-sm transition-colors">
-                          <svg className="w-6 h-6 text-[#FF3C00]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <svg className="w-6 h-6 text-[#407d99]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
                           </svg>
                         </div>
                         <div className="flex-grow">
-                          <h3 className="font-bold text-neutral-900 group-hover:text-[#FF3C00] transition-colors line-clamp-2">
+                          <h3 className="font-bold text-neutral-900 group-hover:text-[#407d99] transition-colors line-clamp-2">
                             {item.nama_dokumen}
                           </h3>
                           <p className="text-xs text-neutral-500 mt-1 flex items-center gap-1">
