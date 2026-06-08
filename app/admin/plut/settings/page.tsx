@@ -20,12 +20,12 @@ export default function PlutSettingsPage() {
   
   const supabase = createClient();
 
-  // 1. Ambil list banner yang ada
   const fetchBanners = async () => {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("plut_banners")
       .select("*")
       .order("id", { ascending: true });
+    if (error) console.error("Error Fetch:", error);
     if (data) setBanners(data);
   };
 
@@ -33,46 +33,55 @@ export default function PlutSettingsPage() {
     fetchBanners();
   }, [supabase]);
 
-  // 2. Tambah Banner Baru
   const handleAddBanner = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!desktopFile || !mobileFile) return alert("Pilih gambar desktop & mobile!");
+    if (!desktopFile || !mobileFile) return alert("Pilih kedua gambar!");
     setLoading(true);
 
     try {
       const timestamp = Date.now();
       
-      // Upload Desktop
-      const { data: dData } = await supabase.storage
+      const { data: dData, error: dError } = await supabase.storage
         .from("plut-public")
         .upload(`banners/d-${timestamp}`, desktopFile);
       
-      // Upload Mobile
-      const { data: mData } = await supabase.storage
+      if (dError) throw new Error("Gagal upload Desktop: " + dError.message);
+
+      const { data: mData, error: mError } = await supabase.storage
         .from("plut-public")
         .upload(`banners/m-${timestamp}`, mobileFile);
+
+      if (mError) throw new Error("Gagal upload Mobile: " + mError.message);
 
       const desktopUrl = supabase.storage.from("plut-public").getPublicUrl(dData!.path).data.publicUrl;
       const mobileUrl = supabase.storage.from("plut-public").getPublicUrl(mData!.path).data.publicUrl;
 
-      await supabase.from("plut_banners").insert({
+      // DEBUG: Cek apa yang mau di-insert
+      console.log("Data insert:", { desktopUrl, mobileUrl });
+
+      const { error: insertError } = await supabase.from("plut_banners").insert({
         image_url_desktop: desktopUrl,
         image_url_mobile: mobileUrl,
         active: true
       });
 
-      alert("Banner berhasil ditambah!");
+      if (insertError) {
+        console.error("Database Insert Error:", insertError);
+        throw new Error("Gagal simpan ke database: " + insertError.message);
+      }
+
+      alert("Banner berhasil ditambahkan!");
       setDesktopFile(null);
       setMobileFile(null);
       fetchBanners();
     } catch (err: any) {
-      alert("Gagal upload: " + err.message);
+      console.error("Full Error:", err);
+      alert(err.message);
     } finally {
       setLoading(false);
     }
   };
 
-  // 3. Hapus Banner
   const handleDelete = async (id: number) => {
     if (!confirm("Hapus banner ini?")) return;
     await supabase.from("plut_banners").delete().eq("id", id);
@@ -91,7 +100,6 @@ export default function PlutSettingsPage() {
         </Link>
       </div>
 
-      {/* LIST BANNER AKTIF */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
         {banners.map((banner) => (
           <div key={banner.id} className="bg-white p-4 rounded-2xl border border-neutral-200 shadow-sm">
@@ -108,7 +116,6 @@ export default function PlutSettingsPage() {
         ))}
       </div>
 
-      {/* FORM TAMBAH BARU */}
       <form onSubmit={handleAddBanner} className="bg-white p-8 rounded-2xl shadow-sm border border-neutral-100">
         <h2 className="text-lg font-bold mb-6">Tambah Banner Baru</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
