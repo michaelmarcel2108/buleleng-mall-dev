@@ -8,46 +8,44 @@ interface Banner {
   id: number;
   image_url_desktop: string;
   image_url_mobile: string;
+  active: boolean;
 }
 
 export default function PlutBannerSlideshow() {
   const supabase = createClient();
   const [banners, setBanners] = useState<Banner[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchBanners = async () => {
       const { data, error } = await supabase
         .from("plut_banners")
         .select("*")
-        .eq("active", true);
+        .eq("active", true)
+        .order("id", { ascending: true });
 
       if (error) {
-        console.error("DEBUG BANNER ERROR:", error);
+        console.error("Error fetching banners:", error);
       } else {
-        console.log("DEBUG BANNER DATA:", data); // Lihat di console browser
         setBanners(data || []);
       }
+      setIsLoading(false);
     };
 
     fetchBanners();
   }, [supabase]);
 
-  // LOGIKA SLIDE SHOW
+  // Logika Auto-Slide
   useEffect(() => {
     if (banners.length <= 1) return;
-
     const timer = setInterval(() => {
-      setCurrentIndex((prev) => {
-        const next = (prev + 1) % banners.length;
-        console.log("Slide berpindah ke:", next); // Cek apakah interval jalan
-        return next;
-      });
+      setCurrentIndex((prev) => (prev === banners.length - 1 ? 0 : prev + 1));
     }, 5000);
-
     return () => clearInterval(timer);
   }, [banners.length]);
 
+  if (isLoading) return <div className="w-full h-[350px] md:h-[450px] bg-neutral-200 animate-pulse" />;
   if (banners.length === 0) return null;
 
   return (
@@ -59,6 +57,7 @@ export default function PlutBannerSlideshow() {
             index === currentIndex ? "opacity-100 z-10" : "opacity-0 z-0"
           }`}
         >
+          {/* Mobile Image */}
           <Image
             fill
             src={banner.image_url_mobile}
@@ -67,6 +66,7 @@ export default function PlutBannerSlideshow() {
             priority={index === 0}
             sizes="100vw"
           />
+          {/* Desktop Image */}
           <Image
             fill
             src={banner.image_url_desktop}
