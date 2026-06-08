@@ -9,7 +9,6 @@ export const metadata = {
 export default async function DaftarBeritaPage() {
   const supabase = await createClient();
   
-  // Tarik SEMUA data yang tipenya 'berita', urutkan dari yang paling baru
   const { data: posts } = await supabase
     .from("plut_posts")
     .select("*")

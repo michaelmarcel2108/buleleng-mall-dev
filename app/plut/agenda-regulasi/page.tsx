@@ -37,20 +37,7 @@ export default async function AgendaRegulasiPage() {
 
   return (
     <div className="min-h-screen bg-neutral-50 font-sans">
-      {/* NAVBAR */}
-      <header className="bg-white border-b border-neutral-100 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <Link href="/plut" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-            <div className="w-8 h-8 bg-[#FF3C00] rounded-lg flex items-center justify-center text-white font-bold">
-              P
-            </div>
-            <span className="font-bold text-lg text-neutral-900">PLUT Buleleng</span>
-          </Link>
-          <Link href="/plut" className="text-sm font-medium text-neutral-500 hover:text-[#FF3C00] transition-colors">
-            &larr; Kembali
-          </Link>
-        </div>
-      </header>
+      
 
       {/* HERO SECTION */}
       <section className="bg-neutral-900 text-white py-16 px-4 text-center">
