@@ -2,7 +2,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { Business } from "@/types";
 
-type ExtendedBusiness = Business & { rating?: number };
+// Menambahkan logo_url agar TypeScript membaca kolom dari database
+type ExtendedBusiness = Business & { rating?: number; logo_url?: string };
 
 interface BrandCardProps {
   business: ExtendedBusiness; 
@@ -14,39 +15,43 @@ export default function BrandCard({ business }: BrandCardProps) {
   return (
     <Link
       href={`/brand/${business.slug}`}
-      className="w-full flex flex-col gap-2 rounded-lg p-2 md:p-4 hover:bg-gray-100 transition-colors cursor-pointer bg-white outline-2 outline-[#407d99] border-none ring-0 shadow-sm"
+      // Class box ini sudah 100% sama dengan ProductCard, ditambah 'group' untuk efek hover
+      className="group w-full flex flex-col gap-2 rounded-lg p-2 md:p-4 hover:bg-gray-100 transition-colors cursor-pointer bg-white outline-2 outline-[#407d99] border-none ring-0 shadow-sm"
     >
-      <div className="relative w-full aspect-square bg-gray-100 overflow-hidden">
-        {business.image_url ? (
+      {/* KOTAK LOGO TOKO (Style kotak gambar disamakan dengan ProductCard) */}
+      <div className="w-full aspect-square bg-gray-200 relative rounded-md overflow-hidden flex items-center justify-center">
+        {business.logo_url ? (
           <Image
-            width={500}
-            height={500}
-            src={business.image_url}
-            alt={business.name}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            fill
+            sizes="(max-width: 768px) 100vw, 50vw"
+            src={business.logo_url}
+            alt={`Logo ${business.name}`}
+            // Tetap menggunakan object-contain dan bg-white agar logo tidak terpotong dan tetap rapi di atas abu-abu
+            className="object-contain p-4 bg-white group-hover:scale-110 transition-transform duration-500"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-gray-400 font-bold text-2xl">
+          <div className="w-full h-full flex items-center justify-center text-gray-400 font-extrabold text-4xl bg-gray-300">
             {business.name.charAt(0).toUpperCase()}
           </div>
         )}
       </div>
 
-      <div className="p-4 flex flex-col grow">
-        <h3 className="font-semibold text-gray-800 text-sm md:text-base line-clamp-1 group-hover:text-[#274a6a] transition-colors">
+      {/* INFO TOKO */}
+      <div className="pt-2 flex flex-col grow text-center items-center">
+        <h3 className="font-display font-medium text-gray-900 text-base md:text-lg line-clamp-1 group-hover:text-[#407d99] transition-colors">
           {business.name}
         </h3>
         
-        <p className="text-xs md:text-sm text-gray-500 line-clamp-2 mt-1">
+        <p className="text-[11px] md:text-xs text-gray-500 line-clamp-2 mt-1 px-2">
           {business.desc || "Sentra produk UMKM Buleleng lokal terbaik."}
         </p>
 
-        <div className="flex items-center gap-1 mt-auto pt-3">
+        {/* RATING */}
+        <div className="flex items-center justify-center gap-1 mt-auto pt-3">
           <div className="flex text-amber-400">
             {[1, 2, 3, 4, 5].map((star) => (
               <svg 
                 key={star} 
-                // Mewarnai kuning jika nilai star lebih kecil atau sama dengan hasil pembulatan rating
                 className={`w-3.5 h-3.5 md:w-4 md:h-4 ${star <= Math.round(ratingValue) ? 'fill-current' : 'text-gray-300'}`} 
                 viewBox="0 0 20 20"
               >
@@ -54,8 +59,8 @@ export default function BrandCard({ business }: BrandCardProps) {
               </svg>
             ))}
           </div>
-          <span className="text-xs text-gray-500 font-medium ml-1">
-            ({Number(ratingValue).toFixed(1)})
+          <span className="text-xs text-gray-500 font-bold ml-1">
+            {Number(ratingValue).toFixed(1)}
           </span>
         </div>
 

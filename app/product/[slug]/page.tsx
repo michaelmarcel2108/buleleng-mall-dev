@@ -18,7 +18,8 @@ export default async function ProductDetailPage({
 
   const supabase = await createClient();
 
-  const { data, error } = await supabase
+  // PERBAIKAN: Mengubah .single() menjadi .limit(1) agar aman jika ada slug duplikat
+  const { data: products, error } = await supabase
     .from("products")
     .select(
       `
@@ -35,7 +36,7 @@ export default async function ProductDetailPage({
       `
     )
     .eq("slug", slug)
-    .single();
+    .limit(1);
 
   const { data: catalogProducts } = await supabase
     .from("products")
@@ -43,7 +44,7 @@ export default async function ProductDetailPage({
     .neq("slug", slug)
     .limit(4);
 
-  if (error || !data) {
+  if (error || !products || products.length === 0) {
     return (
       <div className="p-16 text-center min-h-[60vh] flex flex-col items-center justify-center gap-4 bg-gray-50/50">
         <h1 className="text-2xl font-bold font-display">Produk tidak ditemukan</h1>
@@ -54,7 +55,8 @@ export default async function ProductDetailPage({
     );
   }
 
-  const mainProduct = data as any;
+  // Ambil data produk pertama dari hasil array
+  const mainProduct = products[0] as any;
   const productData = mainProduct;
   
   const categoryData = Array.isArray(mainProduct.categories) ? mainProduct.categories[0] : mainProduct.categories;
@@ -91,7 +93,7 @@ export default async function ProductDetailPage({
           </div>
         </div>
 
-        {/* BAGIAN KANAN: DETAIL PRODUK (Tinggi dinamis mengikuti panjang deskripsi) */}
+        {/* BAGIAN KANAN: DETAIL PRODUK */}
         <div className="flex flex-col w-full">
           
           <div className="flex flex-col items-start gap-3 w-full">
@@ -108,7 +110,7 @@ export default async function ProductDetailPage({
             <ProductDescription text={mainProduct.description || ""} />
           </div>
 
-          {/* TOMBOL (Nempel tepat di bawah deskripsi) */}
+          {/* TOMBOL */}
           <div className="flex flex-col gap-2 w-full mt-6">
             {mainProduct.shopee_url && (
               <Link href={mainProduct.shopee_url} target="_blank" rel="noopener noreferrer" className="w-full bg-[#EE4D2D] py-2 px-4 text-white text-center rounded-lg font-medium hover:opacity-90 transition-all text-sm shadow-sm">
