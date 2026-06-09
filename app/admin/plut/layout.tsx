@@ -13,8 +13,6 @@ export default function AdminPlutLayout({ children }: { children: React.ReactNod
     { name: "Kelola Banner", href: "/admin/plut/banners" },
     { name: "Agenda & Regulasi", href: "/admin/plut/agenda" },
     { name: "Bank Data", href: "/admin/plut/bank-data" },
-    { name: "Database UMKM", href: "/admin/plut/umkm" },
-    { name: "Pengaturan Web", href: "/admin/plut/settings" },
   ];
 
   return (

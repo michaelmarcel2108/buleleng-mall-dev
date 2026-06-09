@@ -3,85 +3,138 @@
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import Image from "next/image";
+import Link from "next/link";
 
-export default function ManageBannersPage() {
-  const supabase = createClient();
-  const [banners, setBanners] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [uploading, setUploading] = useState(false);
+interface Banner {
+  id: number;
+  image_url_desktop: string;
+  image_url_mobile: string;
+  active: boolean;
+}
 
-  // State untuk form
-  const [altText, setAltText] = useState("");
-  const [mobileFile, setMobileFile] = useState<File | null>(null);
+export default function PlutSettingsPage() {
+  const [banners, setBanners] = useState<Banner[]>([]);
+  const [loading, setLoading] = useState(false);
   const [desktopFile, setDesktopFile] = useState<File | null>(null);
+  const [mobileFile, setMobileFile] = useState<File | null>(null);
+  
+  const supabase = createClient();
 
   const fetchBanners = async () => {
-    const { data } = await supabase.from("plut_banners").select("*").order("id");
-    setBanners(data || []);
-    setLoading(false);
+    const { data, error } = await supabase
+      .from("plut_banners")
+      .select("*")
+      .order("id", { ascending: true });
+    if (error) console.error("Error Fetch:", error);
+    if (data) setBanners(data);
   };
 
-  useEffect(() => { fetchBanners(); }, []);
+  useEffect(() => {
+    fetchBanners();
+  }, [supabase]);
 
-  const handleUpload = async (e: React.FormEvent) => {
+  const handleAddBanner = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!mobileFile || !desktopFile) return alert("Pilih kedua gambar!");
-    setUploading(true);
+    if (!desktopFile || !mobileFile) return alert("Pilih kedua gambar!");
+    setLoading(true);
 
     try {
-      const { data: mData } = await supabase.storage.from("plut-public").upload(`banners/${Date.now()}-m.jpg`, mobileFile);
-      const { data: mUrl } = supabase.storage.from("plut-public").getPublicUrl(mData!.path);
-      const { data: dData } = await supabase.storage.from("plut-public").upload(`banners/${Date.now()}-d.jpg`, desktopFile);
-      const { data: dUrl } = supabase.storage.from("plut-public").getPublicUrl(dData!.path);
+      const timestamp = Date.now();
+      
+      const { data: dData, error: dError } = await supabase.storage
+        .from("plut-public")
+        .upload(`banners/d-${timestamp}`, desktopFile);
+      
+      if (dError) throw new Error("Gagal upload Desktop: " + dError.message);
 
-      await supabase.from("plut_banners").insert([{
-        image_url_mobile: mUrl.publicUrl,
-        image_url_desktop: dUrl.publicUrl,
-        alt_text: altText
-      }]);
+      const { data: mData, error: mError } = await supabase.storage
+        .from("plut-public")
+        .upload(`banners/m-${timestamp}`, mobileFile);
 
-      alert("Banner berhasil ditambah!");
+      if (mError) throw new Error("Gagal upload Mobile: " + mError.message);
+
+      const desktopUrl = supabase.storage.from("plut-public").getPublicUrl(dData!.path).data.publicUrl;
+      const mobileUrl = supabase.storage.from("plut-public").getPublicUrl(mData!.path).data.publicUrl;
+
+      // DEBUG: Cek apa yang mau di-insert
+      console.log("Data insert:", { desktopUrl, mobileUrl });
+
+      const { error: insertError } = await supabase.from("plut_banners").insert({
+        image_url_desktop: desktopUrl,
+        image_url_mobile: mobileUrl,
+        active: true
+      });
+
+      if (insertError) {
+        console.error("Database Insert Error:", insertError);
+        throw new Error("Gagal simpan ke database: " + insertError.message);
+      }
+
+      alert("Banner berhasil ditambahkan!");
+      setDesktopFile(null);
+      setMobileFile(null);
       fetchBanners();
-      setMobileFile(null); setDesktopFile(null); setAltText("");
-    } catch (err) {
-      console.error(err);
-      alert("Gagal upload banner");
+    } catch (err: any) {
+      console.error("Full Error:", err);
+      alert(err.message);
     } finally {
-      setUploading(false);
+      setLoading(false);
     }
   };
 
   const handleDelete = async (id: number) => {
+    if (!confirm("Hapus banner ini?")) return;
     await supabase.from("plut_banners").delete().eq("id", id);
     fetchBanners();
   };
 
   return (
-    <div className="p-8 max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">Kelola Banner Slideshow</h1>
-
-      {/* Form Tambah Banner */}
-      <form onSubmit={handleUpload} className="bg-white p-6 rounded-xl border mb-8 space-y-4">
-        <input type="text" placeholder="Alt Text (Contoh: Banner Pelatihan)" className="w-full p-2 border rounded" value={altText} onChange={(e) => setAltText(e.target.value)} />
-        <div className="grid grid-cols-2 gap-4">
-          <div><label className="text-xs font-bold">Mobile (430x288)</label><input type="file" onChange={(e) => setMobileFile(e.target.files![0])} /></div>
-          <div><label className="text-xs font-bold">Desktop (1920x500)</label><input type="file" onChange={(e) => setDesktopFile(e.target.files![0])} /></div>
+    <div className="max-w-5xl mx-auto py-10 px-6 font-sans">
+      <div className="flex justify-between items-center mb-8">
+        <div>
+          <h1 className="text-2xl font-extrabold text-neutral-900">Kelola Banner Slideshow</h1>
+          <p className="text-neutral-500 text-sm">Tambahkan atau hapus slide untuk tampilan utama.</p>
         </div>
-        <button disabled={uploading} className="bg-[#FF3C00] text-white px-6 py-2 rounded font-bold">
-          {uploading ? "Mengunggah..." : "Tambah Banner"}
-        </button>
-      </form>
+        <Link href="/admin/plut" className="text-sm font-bold text-neutral-500 hover:text-[#407d99] transition-colors">
+          &larr; Kembali
+        </Link>
+      </div>
 
-      {/* Daftar Banner */}
-      <div className="grid grid-cols-1 gap-4">
-        {banners.map((b) => (
-          <div key={b.id} className="flex items-center gap-4 p-4 border rounded-lg bg-white">
-            <div className="w-20 h-12 relative bg-gray-200"><Image src={b.image_url_desktop} alt="b" fill className="object-cover" /></div>
-            <div className="flex-1 text-sm font-bold">{b.alt_text}</div>
-            <button onClick={() => handleDelete(b.id)} className="text-red-500 font-bold text-sm">Hapus</button>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+        {banners.map((banner) => (
+          <div key={banner.id} className="bg-white p-4 rounded-2xl border border-neutral-200 shadow-sm">
+            <div className="relative aspect-[16/9] w-full bg-neutral-100 rounded-xl overflow-hidden mb-4">
+              <Image src={banner.image_url_desktop} alt="Banner" fill className="object-cover" />
+            </div>
+            <button 
+              onClick={() => handleDelete(banner.id)}
+              className="w-full py-2 bg-red-50 text-red-600 font-bold rounded-lg text-sm hover:bg-red-100 transition-colors"
+            >
+              Hapus Banner
+            </button>
           </div>
         ))}
       </div>
+
+      <form onSubmit={handleAddBanner} className="bg-white p-8 rounded-2xl shadow-sm border border-neutral-100">
+        <h2 className="text-lg font-bold mb-6">Tambah Banner Baru</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-sm font-bold mb-2">Gambar Desktop (16:9)</label>
+            <input type="file" onChange={(e) => setDesktopFile(e.target.files?.[0] || null)} className="w-full p-3 bg-neutral-50 border rounded-xl" />
+          </div>
+          <div>
+            <label className="block text-sm font-bold mb-2">Gambar Mobile (9:16)</label>
+            <input type="file" onChange={(e) => setMobileFile(e.target.files?.[0] || null)} className="w-full p-3 bg-neutral-50 border rounded-xl" />
+          </div>
+        </div>
+        <button 
+          disabled={loading}
+          className="mt-6 w-full py-4 bg-[#407d99] text-white font-bold rounded-xl hover:bg-[#326278] transition-colors disabled:bg-neutral-400"
+        >
+          {loading ? "Mengunggah..." : "Tambah ke Slideshow"}
+        </button>
+      </form>
     </div>
   );
 }

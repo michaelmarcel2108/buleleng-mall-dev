@@ -21,9 +21,9 @@ const formatDate = (dateString: string) => {
 export default async function AdminPlutDashboard() {
   const supabase = await createClient();
 
-  // Mengambil total data untuk kartu statistik
+  // Mengambil total data untuk 4 kartu statistik
   const { count: countPosts } = await supabase.from("plut_posts").select("*", { count: "exact", head: true });
-  const { count: countUmkm } = await supabase.from("plut_umkm").select("*", { count: "exact", head: true });
+  const { count: countBanners } = await supabase.from("plut_banners").select("*", { count: "exact", head: true });
   const { count: countBankData } = await supabase.from("plut_bank_data").select("*", { count: "exact", head: true });
   const { count: countAgenda } = await supabase.from("plut_agendas").select("*", { count: "exact", head: true });
 
@@ -56,26 +56,31 @@ export default async function AdminPlutDashboard() {
           {/* MENU AKSES CEPAT (SHORTCUT) */}
           <div className="bg-white p-6 rounded-2xl shadow-sm border border-neutral-100">
             <h2 className="text-sm font-bold text-neutral-900 uppercase tracking-wider mb-4">Akses Cepat (Tambah Data)</h2>
-            <div className="flex flex-wrap gap-4">
-              <Link href="/admin/plut/edit/new" className="px-5 py-2.5 bg-blue-50 text-blue-700 hover:bg-blue-100 font-bold rounded-lg text-sm transition-colors border border-blue-200">
+            <div className="flex flex-wrap gap-3">
+              <Link href="/admin/plut/edit/new" className="px-5 py-2.5 bg-[#407d99]/10 text-[#407d99] hover:bg-[#407d99]/20 font-bold rounded-lg text-sm transition-colors border border-[#407d99]/20">
                 + Tulis Artikel/Berita
               </Link>
-              <Link href="/admin/plut/umkm/new" className="px-5 py-2.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 font-bold rounded-lg text-sm transition-colors border border-emerald-200">
-                + Tambah UMKM Binaan
+              <Link href="/admin/plut/umkm/new" className="px-5 py-2.5 bg-[#407d99]/10 text-[#407d99] hover:bg-[#407d99]/20 font-bold rounded-lg text-sm transition-colors border border-[#407d99]/20">
+                + Tambah UMKM
               </Link>
-              <Link href="/admin/plut/bank-data/edit/new" className="px-5 py-2.5 bg-purple-50 text-purple-700 hover:bg-purple-100 font-bold rounded-lg text-sm transition-colors border border-purple-200">
+              <Link href="/admin/plut/bank-data/edit/new" className="px-5 py-2.5 bg-[#407d99]/10 text-[#407d99] hover:bg-[#407d99]/20 font-bold rounded-lg text-sm transition-colors border border-[#407d99]/20">
                 + Upload Bank Data
               </Link>
-              <Link href="/admin/plut/agenda/edit/new" className="px-5 py-2.5 bg-amber-50 text-amber-700 hover:bg-amber-100 font-bold rounded-lg text-sm transition-colors border border-amber-200">
+              <Link href="/admin/plut/agenda/edit/new" className="px-5 py-2.5 bg-[#407d99]/10 text-[#407d99] hover:bg-[#407d99]/20 font-bold rounded-lg text-sm transition-colors border border-[#407d99]/20">
                 + Buat Agenda Kegiatan
+              </Link>
+              <Link href="/admin/plut/banners" className="px-5 py-2.5 bg-[#407d99]/10 text-[#407d99] hover:bg-[#407d99]/20 font-bold rounded-lg text-sm transition-colors border border-[#407d99]/20">
+                + Tambah Banner
               </Link>
             </div>
           </div>
 
-          {/* KARTU STATISTIK */}
+          {/* KARTU STATISTIK (Satu Warna) */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            
+            {/* 1. Postingan */}
             <div className="bg-white p-6 rounded-2xl shadow-sm border border-neutral-100 flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+              <div className="w-12 h-12 rounded-xl bg-[#407d99]/10 text-[#407d99] flex items-center justify-center shrink-0">
                 <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" /></svg>
               </div>
               <div>
@@ -84,18 +89,20 @@ export default async function AdminPlutDashboard() {
               </div>
             </div>
             
+            {/* 2. Banner */}
             <div className="bg-white p-6 rounded-2xl shadow-sm border border-neutral-100 flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+              <div className="w-12 h-12 rounded-xl bg-[#407d99]/10 text-[#407d99] flex items-center justify-center shrink-0">
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
               </div>
               <div>
-                <p className="text-xs font-semibold text-neutral-500 uppercase">UMKM Binaan</p>
-                <p className="text-2xl font-extrabold text-neutral-900">{countUmkm || 0}</p>
+                <p className="text-xs font-semibold text-neutral-500 uppercase">Banner</p>
+                <p className="text-2xl font-extrabold text-neutral-900">{countBanners || 0}</p>
               </div>
             </div>
 
+            {/* 3. Bank Data */}
             <div className="bg-white p-6 rounded-2xl shadow-sm border border-neutral-100 flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
+              <div className="w-12 h-12 rounded-xl bg-[#407d99]/10 text-[#407d99] flex items-center justify-center shrink-0">
                 <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" /></svg>
               </div>
               <div>
@@ -104,8 +111,9 @@ export default async function AdminPlutDashboard() {
               </div>
             </div>
 
+            {/* 4. Agenda */}
             <div className="bg-white p-6 rounded-2xl shadow-sm border border-neutral-100 flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+              <div className="w-12 h-12 rounded-xl bg-[#407d99]/10 text-[#407d99] flex items-center justify-center shrink-0">
                 <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
               </div>
               <div>
@@ -113,13 +121,14 @@ export default async function AdminPlutDashboard() {
                 <p className="text-2xl font-extrabold text-neutral-900">{countAgenda || 0}</p>
               </div>
             </div>
+            
           </div>
 
           {/* TABEL AKTIVITAS TERBARU */}
           <div className="bg-white rounded-2xl shadow-sm border border-neutral-100 overflow-hidden">
             <div className="p-6 border-b border-neutral-100 flex justify-between items-center">
               <h2 className="text-lg font-bold text-neutral-900">Aktivitas Postingan Terakhir</h2>
-              <Link href="/admin/plut/manage" className="text-sm font-bold text-[#FF3C00] hover:underline">
+              <Link href="/admin/plut/manage" className="text-sm font-bold text-[#407d99] hover:underline">
                 Lihat Semua Artikel &rarr;
               </Link>
             </div>
@@ -142,7 +151,7 @@ export default async function AdminPlutDashboard() {
                           <p className="font-bold text-neutral-900 line-clamp-1">{post.title}</p>
                         </td>
                         <td className="px-6 py-4">
-                          <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold bg-neutral-100 text-neutral-700 uppercase tracking-wider border border-neutral-200">
+                          <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold bg-[#407d99]/10 text-[#407d99] uppercase tracking-wider border border-[#407d99]/20">
                             {post.post_type}
                           </span>
                         </td>
@@ -151,7 +160,7 @@ export default async function AdminPlutDashboard() {
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
-                            <Link href={`/admin/plut/edit/${post.slug}`} className="text-emerald-600 hover:text-emerald-800 font-semibold text-sm bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-100">
+                            <Link href={`/admin/plut/edit/${post.slug}`} className="text-[#407d99] hover:text-[#326278] font-semibold text-sm bg-[#407d99]/10 px-3 py-1.5 rounded-lg border border-[#407d99]/20">
                               Edit Data
                             </Link>
                           </div>
