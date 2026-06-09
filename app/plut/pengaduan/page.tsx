@@ -58,7 +58,7 @@ export default function PengaduanPlutPage() {
               href="https://www.lapor.go.id/" 
               target="_blank"
               rel="noopener noreferrer"
-              className="block w-full py-3.5 text-center bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-colors shadow-md"
+              className="block w-full py-3.5 text-center bg-primary hover:bg-foreground text-white font-bold rounded-xl transition-colors shadow-md"
             >
               Kunjungi Portal LAPOR!
             </a>

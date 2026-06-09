@@ -87,19 +87,50 @@ export default async function KontakPage() {
                 Ikuti perkembangan terbaru dan kegiatan harian PLUT Buleleng melalui kanal media sosial resmi <strong>(Klik Dagperin)</strong>.
               </p>
               
+              {/* TOMBOL LINK SOSIAL MEDIA */}
               <div className="flex gap-4">
-                <a href="#" className="w-12 h-12 bg-white/20 backdrop-blur rounded-full flex items-center justify-center hover:bg-white hover:text-[#407d99] transition-colors shadow-sm">
-                   {/* Icon FB Sederhana */}
-                  <span className="font-bold text-xl">f</span>
+                
+                {/* 1. LINK FACEBOOK */}
+                <a 
+                  href="https://facebook.com/disdagperinkopukmbuleleng" // GANTI LINK FACEBOOK DI SINI
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="w-12 h-12 bg-white/20 backdrop-blur rounded-full flex items-center justify-center hover:bg-white hover:text-blue-600 transition-colors shadow-sm group"
+                  aria-label="Facebook"
+                >
+                  <svg className="w-6 h-6 text-white group-hover:text-blue-600 transition-colors" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path fillRule="evenodd" d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" clipRule="evenodd" />
+                  </svg>
                 </a>
-                <a href="#" className="w-12 h-12 bg-white/20 backdrop-blur rounded-full flex items-center justify-center hover:bg-white hover:text-[#407d99] transition-colors shadow-sm">
-                   {/* Icon IG Sederhana */}
-                   <span className="font-bold text-xl">ig</span>
+
+                {/* 2. LINK INSTAGRAM */}
+                <a 
+                  href="https://instagram.com/disdagperinkopukmbuleleng" // GANTI LINK INSTAGRAM DI SINI
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="w-12 h-12 bg-white/20 backdrop-blur rounded-full flex items-center justify-center hover:bg-white hover:text-pink-600 transition-colors shadow-sm group"
+                  aria-label="Instagram"
+                >
+                  <svg className="w-6 h-6 text-white group-hover:text-pink-600 transition-colors" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                    <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                    <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                  </svg>
                 </a>
-                <a href="#" className="w-12 h-12 bg-white/20 backdrop-blur rounded-full flex items-center justify-center hover:bg-white hover:text-red-600 transition-colors shadow-sm">
-                   {/* Icon YT Sederhana */}
-                   <span className="font-bold text-xl">yt</span>
+
+                {/* 3. LINK YOUTUBE */}
+                <a 
+                  href="https://youtube.com/@disdagperinkopukmbuleleng" // GANTI LINK YOUTUBE DI SINI
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="w-12 h-12 bg-white/20 backdrop-blur rounded-full flex items-center justify-center hover:bg-white hover:text-red-600 transition-colors shadow-sm group"
+                  aria-label="YouTube"
+                >
+                  <svg className="w-6 h-6 text-white group-hover:text-red-600 transition-colors" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path fillRule="evenodd" d="M19.812 5.418c.861.23 1.538.907 1.768 1.768C21.998 8.746 22 12 22 12s0 3.255-.418 4.814a2.504 2.504 0 0 1-1.768 1.768c-1.56.419-7.814.419-7.814.419s-6.255 0-7.814-.419a2.505 2.505 0 0 1-1.768-1.768C2 15.255 2 12 2 12s0-3.255.417-4.814a2.507 2.507 0 0 1 1.768-1.768C5.744 5 11.998 5 11.998 5s6.255 0 7.814.418ZM15.194 12 10 15V9l5.194 3Z" clipRule="evenodd" />
+                  </svg>
                 </a>
+                
               </div>
             </div>
 
@@ -113,17 +144,17 @@ export default async function KontakPage() {
               <div className="grid grid-cols-2 gap-3">
                 {galeriFoto && galeriFoto.length > 0 ? (
                   galeriFoto.map((foto, idx) => (
-                    <div key={idx} className="relative h-28 rounded-xl overflow-hidden bg-neutral-100">
+                    <div key={idx} className="relative h-28 rounded-xl overflow-hidden bg-neutral-100 group">
                       <Image
                         src={foto.image_url || "/hero-image.jpeg"}
                         alt={foto.title}
                         fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-500"
+                        className="object-cover group-hover:scale-110 transition-transform duration-500"
                       />
                     </div>
                   ))
                 ) : (
-                  <div className="col-span-2 py-8 text-center text-sm text-neutral-500 bg-neutral-50 rounded-xl">
+                  <div className="col-span-2 py-8 text-center text-sm text-neutral-500 bg-neutral-50 rounded-xl border border-dashed border-neutral-200">
                     Belum ada sorotan foto.
                   </div>
                 )}
@@ -133,14 +164,15 @@ export default async function KontakPage() {
         </div>
 
         {/* GOOGLE MAPS EMBED */}
-        <div className="w-full h-[400px] bg-neutral-200 rounded-3xl overflow-hidden shadow-sm border border-neutral-100">
+        <div className="w-full h-[450px] bg-neutral-200 rounded-3xl overflow-hidden shadow-sm border border-neutral-100">
           <iframe 
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1m3!1d1976!2d115.088!3d-8.112!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zOMKwMDYnNDMuMiJTIDExNcKwMDUnMTYuOCJF!5e0!3m2!1sen!2sid!4v1620000000000!5m2!1sen!2sid" // Pastikan link embed maps diganti dengan yang asli
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3946.069152646271!2d115.0932087!3d-8.1132228!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2dd19b1b79c3dcb9%3A0xc6c7648fcf709774!2sPLUT%20KUMKM%20Buleleng!5e0!3m2!1sid!2sid!4v1700000000000!5m2!1sid!2sid" // Gunakan URL embed maps asli dari Google Maps di sini
             width="100%" 
             height="100%" 
             style={{ border: 0 }} 
             allowFullScreen={false} 
             loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
             title="Lokasi PLUT Buleleng"
           ></iframe>
         </div>

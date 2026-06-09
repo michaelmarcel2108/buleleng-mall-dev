@@ -5,7 +5,6 @@ import ProductCard from "@/components/ProductCard";
 import ProductDescription from "@/components/ProductDescription";
 import { Product } from "@/types";
 
-// Interface untuk Next.js 15 (params adalah Promise)
 interface ProductDetailProps {
   params: Promise<{
     slug: string;
@@ -59,7 +58,6 @@ export default async function ProductDetailPage({
     );
   }
 
-  // 4. Ambil data produk lainnya untuk katalog
   const { data: catalogProducts } = await supabase
     .from("products")
     .select("*, businesses(name)")
@@ -67,9 +65,7 @@ export default async function ProductDetailPage({
     .limit(4);
 
   const mainProduct = data as unknown as Product;
-  const productData = mainProduct as any; 
-  
-  // 5. Gunakan Optional Chaining untuk mencegah error jika relasi kosong
+  const productData = mainProduct as any;
   const categoryData = mainProduct.categories?.[0];
   const businessData = mainProduct.businesses?.[0];
 
@@ -100,7 +96,6 @@ export default async function ProductDetailPage({
         <div className="flex flex-col gap-5 items-start justify-start h-full">
           <div className="flex flex-col items-start gap-3 w-full">
             <div className="flex flex-wrap items-center gap-2">
-              {/* BADGE TOKO */}
               {businessData?.name && (
                 <Link
                   href={`/brand/${businessData.slug}`}
