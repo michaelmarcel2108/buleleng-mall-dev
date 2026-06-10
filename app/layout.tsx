@@ -15,8 +15,12 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Buleleng Mall",
-  description: "Platform produk lokal Buleleng",
+  title: {
+    template: "%s | Buleleng Mall",
+    default: "Buleleng Mall - Sentra Produk UMKM Lokal Buleleng",
+  },
+  description: "Platform e-commerce resmi untuk menjelajahi dan berbelanja produk lokal, kerajinan tangan, dan kuliner terbaik hasil binaan UMKM Kabupaten Buleleng.",
+  keywords: ["Buleleng Mall", "UMKM Buleleng", "Produk Lokal Singaraja", "Kerajinan Bali", "Belanja Online Buleleng"],
 };
 
 export default function RootLayout({

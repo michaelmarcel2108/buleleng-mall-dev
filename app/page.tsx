@@ -39,8 +39,8 @@ export default async function Home() {
 
           <div className="flex flex-col gap-4 px-4 md:px-16 text-white font-sans max-w-4xl mx-auto text-center items-center">
             <h1 className="font-display text-2xl md:text-4xl lg:text-5xl font-bold text-white leading-tight drop-shadow-sm">
-              Bangga Karya Buleleng. <br className="hidden md:block" /> Kualitas
-              Global, Pesona Lokal.
+              Bangga Karya Buleleng <br className="hidden md:block" /> Kualitas
+              Global, Pesona Lokal
             </h1>
             <p className="text-sm md:text-base text-white/90 max-w-2xl leading-relaxed">
               Temukan koleksi eksklusif dari UMKM terbaik Buleleng. Dari
