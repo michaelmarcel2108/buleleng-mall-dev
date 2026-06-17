@@ -131,8 +131,7 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
         <div className="flex flex-col gap-8">
           <div className="w-full grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
             {products.map((product) => (
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              <ProductCard key={product.id} product={product as any} />
+              <ProductCard key={(product as any).id} product={product as any} />
             ))}
           </div>
 
