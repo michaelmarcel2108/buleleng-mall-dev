@@ -18,7 +18,7 @@ export default async function ProductDetailPage({
 
   const supabase = await createClient();
 
-  // PERBAIKAN: Mengubah .single() menjadi .limit(1) agar aman jika ada slug duplikat
+  // Query disesuaikan menjadi categories (id, name, color) untuk Many-to-Many
   const { data: products, error } = await supabase
     .from("products")
     .select(
@@ -31,7 +31,7 @@ export default async function ProductDetailPage({
       image_url,
       shopee_url,
       tokopedia_url, 
-      categories:category_id (id, name, color),
+      categories (id, name, color),
       businesses (id, name, slug)
       `
     )
@@ -105,10 +105,15 @@ export default async function ProductDetailPage({
     );
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const mainProduct = products[0] as any;
   const productData = mainProduct;
   
-  const categoryData = Array.isArray(mainProduct.categories) ? mainProduct.categories[0] : mainProduct.categories;
+  // Ambil semua kategori sebagai list
+  const categoriesList = Array.isArray(mainProduct.categories) 
+    ? mainProduct.categories 
+    : (mainProduct.categories ? [mainProduct.categories] : []);
+    
   const businessData = Array.isArray(mainProduct.businesses) ? mainProduct.businesses[0] : mainProduct.businesses;
 
   const waNumber = "6282341657788";
@@ -122,11 +127,18 @@ export default async function ProductDetailPage({
         {/* BAGIAN KIRI: GAMBAR */}
         <div className="flex flex-col gap-4 w-full">
           <div className="flex flex-wrap items-center gap-2">
-            {categoryData?.name && (
-              <div className="inline-block px-3 py-1.5 rounded-md text-white font-medium text-xs shadow-sm" style={{ backgroundColor: categoryData?.color || "#274a6a" }}>
-                {categoryData.name}
+            
+            {/* TAMPILKAN SEMUA KATEGORI */}
+            {categoriesList.map((cat: any) => (
+              <div 
+                key={cat.id} 
+                className="inline-block px-3 py-1.5 rounded-md text-white font-medium text-xs shadow-sm" 
+                style={{ backgroundColor: cat.color || "#274a6a" }}
+              >
+                {cat.name}
               </div>
-            )}
+            ))}
+
             {businessData?.name && (
               <Link href={`/brand/${businessData.slug}`} className="text-xs px-4 py-1.5 font-medium rounded-full bg-blue-50 text-blue-800 hover:bg-blue-100 transition-colors border border-blue-100 shadow-sm">
                 Toko: {businessData.name}

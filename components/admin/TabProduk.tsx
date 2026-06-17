@@ -5,9 +5,8 @@ import { Business, Category, Product } from "@/types";
 import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 
-// Extended state to include tokopedia_url explicitly just in case it's not in the base Product type yet
 type ProductFormState = Partial<Product> & {
-  category_id?: string;
+  category_ids?: string[]; // Diubah menjadi array untuk multi-kategori
   business_id?: string;
   tokopedia_url?: string;
 };
@@ -66,8 +65,8 @@ export default function TabProduk({
     type: "success" | "error";
   } | null>(null);
 
-  // --- THE FETCHER PATTERN ---
   const fetchProductsData = useCallback(async () => {
+    // Karena menggunakan junction table, supabase otomatis mengambil lewat relasinya
     const { data } = await supabase
       .from("products")
       .select("*, businesses(*), categories(*)")
@@ -87,7 +86,6 @@ export default function TabProduk({
     return data;
   }, [supabase]);
 
-  // --- THE CONSUMER EFFECT ---
   useEffect(() => {
     let isMounted = true;
 
@@ -125,24 +123,24 @@ export default function TabProduk({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const bizData = p.businesses as any;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const catData = p.categories as any;
+    const catData = p.categories as any[];
 
     const businessName = Array.isArray(bizData)
       ? bizData[0]?.name
       : bizData?.name;
-    const categoryName = Array.isArray(catData)
-      ? catData[0]?.name
-      : catData?.name;
+      
+    // Gabungkan semua nama kategori agar bisa dicari
+    const categoryNames = Array.isArray(catData) 
+      ? catData.map(c => c.name).join(" ") 
+      : "";
 
     const finalBusinessName = businessName || "";
-    const finalCategoryName = categoryName || "";
-
     const query = searchQuery.toLowerCase();
 
     return (
       p.name.toLowerCase().includes(query) ||
       finalBusinessName.toLowerCase().includes(query) ||
-      finalCategoryName.toLowerCase().includes(query) 
+      categoryNames.toLowerCase().includes(query) 
     );
   });
 
@@ -151,13 +149,13 @@ export default function TabProduk({
     setSelectedFileProduct(null);
     setEditingItem({
       name: "",
-      description: "", // Reset deskripsi saat tambah baru
+      description: "", 
       price: 0,
       image_url: "",
       shopee_url: "",
       tokopedia_url: "",
       business_id: businesses[0]?.id || "",
-      category_id: String(categories[0]?.id || ""),
+      category_ids: [], // Kosongkan array untuk produk baru
     });
     setIsModalOpen(true);
   };
@@ -165,8 +163,19 @@ export default function TabProduk({
   const openEditModal = (item: Product) => {
     setIsEditMode(true);
     setSelectedFileProduct(null);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const itemData = item as any;
-    setEditingItem({ ...item, tokopedia_url: itemData.tokopedia_url || "" });
+
+    // Ambil semua ID kategori yang dimiliki produk saat ini
+    const existingCategoryIds = Array.isArray(itemData.categories)
+      ? itemData.categories.map((c: any) => String(c.id))
+      : [];
+
+    setEditingItem({ 
+      ...item, 
+      tokopedia_url: itemData.tokopedia_url || "",
+      category_ids: existingCategoryIds 
+    });
     setIsModalOpen(true);
   };
 
@@ -210,27 +219,46 @@ export default function TabProduk({
           .data.publicUrl;
       }
 
+      // Payload untuk tabel products (tanpa category_id)
       const payload = {
         name: editingItem.name,
         slug: generateSlug(editingItem.name || ""),
-        description: editingItem.description || null, // Menambahkan Deskripsi ke payload
+        description: editingItem.description || null,
         price: editingItem.price,
         image_url: finalImageUrl,
         shopee_url: editingItem.shopee_url || null,
         tokopedia_url: editingItem.tokopedia_url || null,
         business_id: editingItem.business_id,
-        category_id: editingItem.category_id,
       };
 
+      let savedProductId = editingItem.id;
+
       if (isEditMode && editingItem.id) {
+        // Update tabel products
         const { error } = await supabase
           .from("products")
           .update(payload)
           .eq("id", editingItem.id);
         if (error) throw error;
+
+        // Hapus relasi kategori lama
+        await supabase.from("product_categories").delete().eq("product_id", editingItem.id);
       } else {
-        const { error } = await supabase.from("products").insert([payload]);
+        // Insert tabel products, dapatkan ID yang baru dibuat
+        const { data, error } = await supabase.from("products").insert([payload]).select().single();
         if (error) throw error;
+        savedProductId = data.id;
+      }
+
+      // Insert ke tabel relasi product_categories jika ada kategori yang dipilih
+      if (editingItem.category_ids && editingItem.category_ids.length > 0) {
+        const categoryRelations = editingItem.category_ids.map((catId) => ({
+          product_id: savedProductId,
+          category_id: catId,
+        }));
+        
+        const { error: relError } = await supabase.from("product_categories").insert(categoryRelations);
+        if (relError) throw relError;
       }
 
       setIsModalOpen(false);
@@ -272,7 +300,7 @@ export default function TabProduk({
             </svg>
             <input
               type="text"
-              placeholder="Cari nama / toko..."
+              placeholder="Cari nama / toko / kategori..."
               value={searchQuery}
               onChange={(e) => handleSearch(e.target.value)}
               className="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#274a6a] outline-none text-sm"
@@ -301,7 +329,6 @@ export default function TabProduk({
             {filteredProducts.map((p) => {
               const catData = p.categories as Category[];
               const bizData = p.businesses as Business[];
-              const categoryName = catData[0]?.name || catData?.[0]?.name || "";
               const businessName = bizData[0]?.name || bizData?.[0]?.name || "";
 
               return (
@@ -326,13 +353,17 @@ export default function TabProduk({
                     <span>{p.name}</span>
                   </td>
                   <td className="p-4 text-gray-500">
-                    {categoryName ? (
-                      <span className="px-2.5 py-1 bg-blue-50 text-[#274a6a] rounded-full text-xs font-medium border border-blue-100">
-                        {categoryName}
-                      </span>
-                    ) : (
-                      "-"
-                    )}
+                    <div className="flex flex-wrap gap-1">
+                      {catData && catData.length > 0 ? (
+                        catData.map((c) => (
+                          <span key={c.id} className="px-2.5 py-1 bg-blue-50 text-[#274a6a] rounded-full text-[10px] font-medium border border-blue-100">
+                            {c.name}
+                          </span>
+                        ))
+                      ) : (
+                        <span>-</span>
+                      )}
+                    </div>
                   </td>
                   <td className="p-4 text-gray-500">{businessName || "-"}</td>
                   <td className="p-4 text-gray-500 hidden md:table-cell">
@@ -420,33 +451,35 @@ export default function TabProduk({
                   </select>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Pilih Kategori Produk
+                <div className="md:col-span-2 mt-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Pilih Kategori Produk (Bisa lebih dari satu)
                   </label>
-                  <select
-                    value={editingItem?.category_id || ""}
-                    onChange={(e) =>
-                      setEditingItem({
-                        ...editingItem,
-                        category_id: e.target.value,
-                      })
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                    required
-                  >
-                    <option value="" disabled>
-                      Pilih Kategori
-                    </option>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3 border border-gray-300 p-4 rounded-lg max-h-48 overflow-y-auto bg-gray-50/50">
                     {categories.map((c) => (
-                      <option key={c.id} value={String(c.id)}>
-                        {c.name}
-                      </option>
+                      <label key={c.id} className="flex items-center gap-2 cursor-pointer text-sm hover:bg-gray-100 p-1.5 rounded transition-colors">
+                        <input
+                          type="checkbox"
+                          checked={editingItem?.category_ids?.includes(String(c.id)) || false}
+                          onChange={(e) => {
+                            const checked = e.target.checked;
+                            const currentIds = editingItem?.category_ids || [];
+                            setEditingItem({
+                              ...editingItem,
+                              category_ids: checked
+                                ? [...currentIds, String(c.id)]
+                                : currentIds.filter(id => id !== String(c.id))
+                            });
+                          }}
+                          className="w-4 h-4 rounded text-[#274a6a] focus:ring-[#274a6a] border-gray-300 cursor-pointer"
+                        />
+                        <span className="text-gray-700 font-medium">{c.name}</span>
+                      </label>
                     ))}
-                  </select>
+                  </div>
                 </div>
 
-                <div>
+                <div className="md:col-span-1">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Nama Produk
                   </label>
@@ -461,7 +494,7 @@ export default function TabProduk({
                   />
                 </div>
 
-                <div>
+                <div className="md:col-span-1">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Harga (Rp)
                   </label>
@@ -479,7 +512,6 @@ export default function TabProduk({
                   />
                 </div>
 
-                {/* --- TAMBAHAN: TEXTAREA DESKRIPSI PRODUK --- */}
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Deskripsi Produk (Opsional)
@@ -497,7 +529,6 @@ export default function TabProduk({
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#274a6a] outline-none resize-y"
                   />
                 </div>
-                {/* --- END TEXTAREA DESKRIPSI PRODUK --- */}
 
                 <div className="md:col-span-1">
                   <label className="block text-sm font-medium text-gray-700 mb-1">

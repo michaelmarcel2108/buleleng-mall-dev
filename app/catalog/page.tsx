@@ -23,11 +23,19 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
   const from = (currentPage - 1) * ITEMS_PER_PAGE;
   const to = from + ITEMS_PER_PAGE - 1;
 
+  // Jika ada filter kategori, gunakan relasi !inner agar mem-filter produk yang match.
+  // Jika tidak, gunakan select biasa agar semua produk tampil.
+  let selectQuery = "*, businesses(name), categories(*)";
+  if (categoryParam) {
+    selectQuery = "*, businesses(name), categories!inner(*)";
+  }
+
   let productQuery = supabase
     .from("products")
-    .select("*, businesses(name)", { count: "exact" });
+    .select(selectQuery, { count: "exact" });
 
   if (queryText) {
+    // Cari kategori yang namanya mirip dengan kata pencarian
     const { data: matchedCategories } = await supabase
       .from("categories")
       .select("id")
@@ -36,24 +44,29 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
     const categoryIds = matchedCategories?.map((cat) => cat.id) || [];
 
     if (categoryIds.length > 0) {
-      productQuery = productQuery.or(
-        `name.ilike.%${queryText}%,category_id.in.(${categoryIds.join(",")})`,
-      );
+      // Jika kata kunci adalah nama kategori, cari produk yang punya relasi ke ID kategori tsb
+      const { data: matchedProductCats } = await supabase
+        .from("product_categories")
+        .select("product_id")
+        .in("category_id", categoryIds);
+        
+      const productIds = matchedProductCats?.map((pc) => pc.product_id) || [];
+
+      if (productIds.length > 0) {
+        // Cari produk berdasarkan nama produk ATAU ID produk yang sudah di-filter via kategori
+        productQuery = productQuery.or(
+          `name.ilike.%${queryText}%,id.in.(${productIds.join(",")})`
+        );
+      } else {
+        productQuery = productQuery.ilike("name", `%${queryText}%`);
+      }
     } else {
       productQuery = productQuery.ilike("name", `%${queryText}%`);
     }
   }
 
   if (categoryParam) {
-    const { data: categoryData } = await supabase
-      .from("categories")
-      .select("id")
-      .eq("slug", categoryParam)
-      .maybeSingle();
-
-    if (categoryData) {
-      productQuery = productQuery.eq("category_id", categoryData.id);
-    }
+    productQuery = productQuery.eq("categories.slug", categoryParam);
   }
 
   productQuery = productQuery.range(from, to);
@@ -118,7 +131,8 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
         <div className="flex flex-col gap-8">
           <div className="w-full grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
             {products.map((product) => (
-              <ProductCard key={product.id} product={product} />
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              <ProductCard key={product.id} product={product as any} />
             ))}
           </div>
 
