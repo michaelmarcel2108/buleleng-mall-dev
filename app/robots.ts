@@ -12,7 +12,6 @@ export default function robots(): MetadataRoute.Robots {
         '/admin/login'
       ],
     },
-    //ganti url aseli
-    sitemap: 'https://bulelengmall.com/sitemap.xml',
+    sitemap: 'https://bulelengmall.com/sitemap.xml', //belum deploy nunggu uang publish
   };
 }

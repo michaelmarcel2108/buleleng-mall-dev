@@ -1,3 +1,4 @@
+import { Metadata, ResolvingMetadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import Image from "next/image";
 import Link from "next/link";
@@ -9,6 +10,56 @@ interface ProductDetailProps {
   params: Promise<{
     slug: string;
   }>;
+}
+
+// METADATA DINAMIS (OG IG, WA, DAN TWITER)
+export async function generateMetadata(
+  { params }: ProductDetailProps,
+  parent: ResolvingMetadata
+): Promise<Metadata> {
+  const { slug } = await params;
+  const supabase = await createClient();
+
+  // Hanya ambil data yang diperlukan untuk SEO agar proses cepat
+  const { data: product } = await supabase
+    .from("products")
+    .select("name, description, image_url")
+    .eq("slug", slug)
+    .single();
+
+  if (!product) {
+    return {
+      title: "Produk Tidak Ditemukan",
+    };
+  }
+
+  const previousImages = (await parent).openGraph?.images || [];
+  const productImage = product.image_url || "/logo-bm.png";
+  
+  // LIMIT 155 KARAKTERR
+  const cleanDescription = product.description 
+    ? product.description.replace(/<[^>]+>/g, '').substring(0, 155) + "..." 
+    : `Beli ${product.name} di Buleleng Mall.`;
+
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://bulelengmall.com';
+
+  return {
+    title: product.name,
+    description: cleanDescription,
+    openGraph: {
+      title: `${product.name} | Buleleng Mall`,
+      description: cleanDescription,
+      url: `${baseUrl}/product/${slug}`,
+      images: [productImage, ...previousImages],
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: product.name,
+      description: cleanDescription,
+      images: [productImage],
+    },
+  };
 }
 
 export default async function ProductDetailPage({
@@ -119,9 +170,38 @@ export default async function ProductDetailPage({
   const waNumber = "6282341657788";
   const waMessage = `Halo ${businessData?.name || "Admin"}, saya tertarik untuk membeli produk *${mainProduct.name}* seharga Rp${mainProduct.price ? mainProduct.price.toLocaleString("id-ID") : "0"} yang saya temukan di Buleleng Mall. Apakah stoknya masih tersedia?`;
   const waLink = `https://wa.me/${waNumber}?text=${encodeURIComponent(waMessage)}`;
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://bulelengmall.com';
 
   return (
     <main className="w-full min-h-screen bg-gray-50/50 py-8 md:py-16 px-4 md:px-8 relative overflow-hidden">
+      
+      {/* SCHEMA MARKUP JSON */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org/",
+            "@type": "Product",
+            "name": mainProduct.name,
+            "image": [mainProduct.image_url || `${baseUrl}/logo-bm.png`],
+            "description": mainProduct.description?.replace(/<[^>]+>/g, '') || `Beli ${mainProduct.name} di Buleleng Mall`,
+            "sku": mainProduct.id,
+            "brand": {
+              "@type": "Brand",
+              "name": businessData?.name || "Buleleng Mall"
+            },
+            "offers": {
+              "@type": "Offer",
+              "url": `${baseUrl}/product/${mainProduct.slug}`,
+              "priceCurrency": "IDR",
+              "price": mainProduct.price || 0,
+              "availability": "https://schema.org/InStock",
+              "itemCondition": "https://schema.org/NewCondition"
+            }
+          }),
+        }}
+      />
+
       <section className="max-w-5xl mx-auto p-4 md:p-10 grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 relative z-10 items-start">
         
         {/* BAGIAN KIRI: GAMBAR */}
