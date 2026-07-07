@@ -4,8 +4,8 @@ import { useState } from "react";
 
 export default function ProductDescription({ text }: { text: string }) {
   const [isExpanded, setIsExpanded] = useState(false);
-  
-  const maxLength = 150; 
+
+  const maxLength = 150;
   const shouldTruncate = text.length > maxLength;
 
   if (!text) {
@@ -25,7 +25,7 @@ export default function ProductDescription({ text }: { text: string }) {
       >
         {text}
       </div>
-      
+
       {shouldTruncate && (
         <button
           onClick={() => setIsExpanded(!isExpanded)}
