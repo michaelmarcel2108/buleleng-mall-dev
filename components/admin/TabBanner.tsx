@@ -14,7 +14,8 @@ export default function TabBanner() {
   const [editingItem, setEditingItem] = useState<Partial<Banner> | null>(null);
   const [isEditMode, setIsEditMode] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedFileDesktop, setSelectedFileDesktop] = useState<File | null>(null);
+  const [selectedFileMobile, setSelectedFileMobile] = useState<File | null>(null);
 
   const [deleteConfirm, setDeleteConfirm] = useState({
     isOpen: false,
@@ -68,14 +69,16 @@ export default function TabBanner() {
 
   const openAddModal = () => {
     setIsEditMode(false);
-    setSelectedFile(null);
-    setEditingItem({ alt_text: "", link_url: "", image_url_desktop: "" });
+    setSelectedFileDesktop(null);
+    setSelectedFileMobile(null);
+    setEditingItem({ alt_text: "", link_url: "", image_url_desktop: "", image_url_mobile: "" });
     setIsModalOpen(true);
   };
 
   const openEditModal = (item: Partial<Banner>) => {
     setIsEditMode(true);
-    setSelectedFile(null);
+    setSelectedFileDesktop(null);
+    setSelectedFileMobile(null);
     setEditingItem({ ...item });
     setIsModalOpen(true);
   };
@@ -105,25 +108,40 @@ export default function TabBanner() {
     if (editingItem === null) return;
     setIsSaving(true);
     try {
-      let finalImageUrl = editingItem.image_url_desktop || "";
+      let finalImageUrlDesktop = editingItem.image_url_desktop || "";
+      let finalImageUrlMobile = editingItem.image_url_mobile || "";
 
-      // Proses upload gambar banner
-      if (selectedFile) {
-        const fileExt = selectedFile.name.split(".").pop();
-        const fileName = `banner-${Date.now()}-${Math.floor(Math.random() * 1000)}.${fileExt}`;
+      // Proses upload gambar banner desktop
+      if (selectedFileDesktop) {
+        const fileExt = selectedFileDesktop.name.split(".").pop();
+        const fileName = `banner-desktop-${Date.now()}-${Math.floor(Math.random() * 1000)}.${fileExt}`;
         const { error: uploadError } = await supabase.storage
           .from("image")
-          .upload(fileName, selectedFile);
+          .upload(fileName, selectedFileDesktop);
         if (uploadError) throw uploadError;
 
-        finalImageUrl = supabase.storage.from("image").getPublicUrl(fileName)
+        finalImageUrlDesktop = supabase.storage.from("image").getPublicUrl(fileName)
+          .data.publicUrl;
+      }
+
+      // Proses upload gambar banner mobile
+      if (selectedFileMobile) {
+        const fileExt = selectedFileMobile.name.split(".").pop();
+        const fileName = `banner-mobile-${Date.now()}-${Math.floor(Math.random() * 1000)}.${fileExt}`;
+        const { error: uploadError } = await supabase.storage
+          .from("image")
+          .upload(fileName, selectedFileMobile);
+        if (uploadError) throw uploadError;
+
+        finalImageUrlMobile = supabase.storage.from("image").getPublicUrl(fileName)
           .data.publicUrl;
       }
 
       const payload = {
         alt_text: editingItem.alt_text,
         link_url: editingItem.link_url || null,
-        image_url_desktop: finalImageUrl,
+        image_url_desktop: finalImageUrlDesktop,
+        image_url_mobile: finalImageUrlMobile,
       };
 
       if (isEditMode) {
@@ -298,16 +316,16 @@ export default function TabBanner() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Gambar Banner (Landscape)
+                    Gambar Banner Desktop (1920x500)
                   </label>
                   {isEditMode &&
                     editingItem.image_url_desktop &&
-                    !selectedFile && (
+                    !selectedFileDesktop && (
                       <Image
                         width={500}
                         height={500}
                         src={editingItem.image_url_desktop}
-                        alt="Preview"
+                        alt="Preview Desktop"
                         className="w-full h-32 object-cover rounded-lg border border-gray-200 mb-2 shadow-sm"
                       />
                     )}
@@ -315,10 +333,36 @@ export default function TabBanner() {
                     type="file"
                     accept="image/*"
                     onChange={(e) =>
-                      e.target.files && setSelectedFile(e.target.files[0])
+                      e.target.files && setSelectedFileDesktop(e.target.files[0])
                     }
                     className="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-[#274a6a]/10 file:text-[#274a6a]"
                     required={!isEditMode && !editingItem.image_url_desktop}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1 mt-3">
+                    Gambar Banner Mobile (430x288)
+                  </label>
+                  {isEditMode &&
+                    editingItem.image_url_mobile &&
+                    !selectedFileMobile && (
+                      <Image
+                        width={500}
+                        height={500}
+                        src={editingItem.image_url_mobile}
+                        alt="Preview Mobile"
+                        className="w-full h-32 object-cover rounded-lg border border-gray-200 mb-2 shadow-sm"
+                      />
+                    )}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) =>
+                      e.target.files && setSelectedFileMobile(e.target.files[0])
+                    }
+                    className="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-[#274a6a]/10 file:text-[#274a6a]"
+                    required={!isEditMode && !editingItem.image_url_mobile}
                   />
                 </div>
 
