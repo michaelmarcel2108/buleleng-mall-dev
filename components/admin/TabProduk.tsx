@@ -328,8 +328,11 @@ export default function TabProduk({
           <tbody className="text-sm divide-y divide-gray-100">
             {filteredProducts.map((p) => {
               const catData = p.categories as Category[];
-              const bizData = p.businesses as Business[];
-              const businessName = bizData[0]?.name || bizData?.[0]?.name || "";
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              const bizData = p.businesses as any;
+              const businessName = Array.isArray(bizData)
+                ? bizData[0]?.name
+                : bizData?.name || "";
 
               return (
                 <tr
