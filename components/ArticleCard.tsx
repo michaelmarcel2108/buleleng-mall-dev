@@ -17,7 +17,7 @@ export default function ArticleCard({ post }: { post: any }) {
   });
 
   return (
-    <Link href={`/plut/berita/${post.slug || '#'}`} className="group bg-white rounded-2xl border border-neutral-200 overflow-hidden hover:shadow-xl transition-all duration-300 flex flex-col h-full">
+    <Link href={`/article/${post.slug || '#'}`} className="group bg-white rounded-2xl border border-neutral-200 overflow-hidden hover:shadow-xl transition-all duration-300 flex flex-col h-full">
       <div className="relative h-48 w-full bg-neutral-100 overflow-hidden">
         <Image 
           src={imageSrc} 
