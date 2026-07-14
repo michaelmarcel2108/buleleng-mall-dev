@@ -52,9 +52,11 @@ export default function ProductCard({ product }: ProductCardProps) {
             {product.businesses[0]?.name}
           </div>
         )}
-        <div className="font-bold mt-1 text-[#caa74a]" suppressHydrationWarning>
-          Rp{product.price ? product.price.toLocaleString("id-ID") : "0"}
-        </div>
+        {!!product.price && (
+          <div className="font-bold mt-1 text-[#caa74a]" suppressHydrationWarning>
+            Rp{product.price.toLocaleString("id-ID")}
+          </div>
+        )}
       </div>
     </Link>
   );

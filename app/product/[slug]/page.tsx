@@ -168,7 +168,7 @@ export default async function ProductDetailPage({
   const businessData = Array.isArray(mainProduct.businesses) ? mainProduct.businesses[0] : mainProduct.businesses;
 
   const waNumber = "6282341657788";
-  const waMessage = `Halo ${businessData?.name || "Admin"}, saya tertarik untuk membeli produk *${mainProduct.name}* seharga Rp${mainProduct.price ? mainProduct.price.toLocaleString("id-ID") : "0"} yang saya temukan di Buleleng Mall. Apakah stoknya masih tersedia?`;
+  const waMessage = `Halo ${businessData?.name || "Admin"}, saya tertarik untuk membeli produk *${mainProduct.name}*${mainProduct.price ? ` seharga Rp${mainProduct.price.toLocaleString("id-ID")}` : ""} yang saya temukan di Buleleng Mall. Apakah stoknya masih tersedia?`;
   const waLink = `https://wa.me/${waNumber}?text=${encodeURIComponent(waMessage)}`;
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://bulelengmall.com';
 
@@ -237,11 +237,13 @@ export default async function ProductDetailPage({
         {/* BAGIAN KANAN: DETAIL PRODUK */}
         <div className="flex flex-col w-full">
           
-          <div className="flex flex-col items-start gap-3 w-full">
+          <div className="flex flex-col items-start gap-3 w-full border-b border-gray-100 pb-4">
             <h1 className="font-display text-3xl md:text-4xl font-bold text-gray-900">{mainProduct.name}</h1>
-            <div className="text-3xl md:text-4xl font-bold text-foreground border-b border-gray-100 pb-4 w-full" suppressHydrationWarning>
-              Rp{mainProduct.price ? mainProduct.price.toLocaleString("id-ID") : "0"}
-            </div>
+            {!!mainProduct.price && (
+              <div className="text-3xl md:text-4xl font-bold text-foreground w-full" suppressHydrationWarning>
+                Rp{mainProduct.price.toLocaleString("id-ID")}
+              </div>
+            )}
           </div>
 
           <div className="w-full flex flex-col mt-4">

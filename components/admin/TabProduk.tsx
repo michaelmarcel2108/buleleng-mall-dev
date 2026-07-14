@@ -150,7 +150,7 @@ export default function TabProduk({
     setEditingItem({
       name: "",
       description: "", 
-      price: 0,
+      price: "" as any,
       image_url: "",
       shopee_url: "",
       tokopedia_url: "",
@@ -503,15 +503,14 @@ export default function TabProduk({
                   </label>
                   <input
                     type="number"
-                    value={editingItem?.price || ""}
+                    value={editingItem?.price ?? ""}
                     onChange={(e) =>
                       setEditingItem({
                         ...editingItem,
-                        price: Number(e.target.value),
+                        price: e.target.value === "" ? (null as any) : Number(e.target.value),
                       })
                     }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                    required
                   />
                 </div>
 
